@@ -74,6 +74,16 @@ export default function App() {
     }
   }, [sessions, report, setReport])
 
+  // Scroll phone screen to show element when annotation panel item is hovered
+  useEffect(() => {
+    if (!hoveredAnnotationId) return
+    const el = document.querySelector(
+      `[data-annotation-id="${hoveredAnnotationId}"]`
+    ) as HTMLElement | null
+    if (!el) return
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }, [hoveredAnnotationId])
+
   // Keyboard shortcuts for Live Demo
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
