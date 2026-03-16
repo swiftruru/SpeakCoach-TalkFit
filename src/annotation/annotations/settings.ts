@@ -36,11 +36,4 @@ export const settingsAnnotations: AnnotationItem[] = [
     description: '串接 Apple Intelligence 的語音辨識框架，支援繁體中文、粵語、英文等多語言。辨識在裝置本機執行，音訊不上傳雲端，符合隱私設計原則。',
     type: 'feature',
   },
-  {
-    id: 'settings-microphone',
-    targetId: 'settings-microphone',
-    title: '輸入裝置',
-    description: '選擇語音辨識使用的麥克風裝置。連接耳機或外部麥克風時可在此切換，確保收音品質。',
-    type: 'feature',
-  },
 ]
