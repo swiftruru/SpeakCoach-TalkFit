@@ -131,8 +131,8 @@ export default function App() {
         `}</style>
       )}
 
-      {/* Top bar — three-column: logo | nav (center) | tools */}
-      <div className="flex-shrink-0 border-b border-divider px-8 py-3.5 grid grid-cols-3 items-center">
+      {/* Top bar */}
+      <div className="flex-shrink-0 border-b border-divider px-8 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <img src="/app-icon.png" alt="TalkFit" className="w-20 h-20 rounded-2xl object-cover flex-shrink-0 shadow-sm" />
           <div>
@@ -153,25 +153,8 @@ export default function App() {
           </a>
         </div>
 
-        {/* Screen nav — centered */}
-        <div className="flex items-center justify-center gap-1">
-          {SCREEN_NAV.map(({ id, label }) => (
-            <button
-              key={id}
-              onClick={() => setScreen(id)}
-              className={`relative text-xs px-3.5 py-1.5 rounded-full transition-all ${
-                screen === id
-                  ? 'bg-bg-card border border-accent-blue/40 text-accent-blue-light'
-                  : 'text-text-muted hover:text-text-secondary border border-transparent'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
         {/* Action buttons */}
-        <div className="flex items-center gap-3 justify-end">
+        <div className="flex items-center gap-3">
           {/* Design story */}
           <button
             onClick={() => setShowStoryModal(true)}
@@ -264,7 +247,23 @@ export default function App() {
       <div className="flex-1 flex overflow-hidden">
 
         {/* Phone area */}
-        <div className="flex-1 flex items-start justify-center px-10 pt-6 pb-8 overflow-auto">
+        <div className="flex-1 flex flex-col items-center px-10 pt-5 pb-8 overflow-auto gap-3">
+          {/* Screen nav — sits directly above the phone */}
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {SCREEN_NAV.map(({ id, label }) => (
+              <button
+                key={id}
+                onClick={() => setScreen(id)}
+                className={`text-xs px-3.5 py-1.5 rounded-full border transition-all ${
+                  screen === id
+                    ? 'bg-bg-card border-accent-blue/40 text-accent-blue-light'
+                    : 'border-divider text-text-muted hover:text-text-secondary'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
           <div
             onMouseOver={handlePhoneMouseOver}
             onMouseOut={handlePhoneMouseOut}
