@@ -119,7 +119,7 @@ export default function App() {
       {/* Top bar */}
       <div className="flex-shrink-0 border-b border-divider px-8 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img src="/app-icon.png" alt="TalkFit" className="w-14 h-14 rounded-2xl object-cover flex-shrink-0 shadow-sm" />
+          <img src="/app-icon.png" alt="TalkFit" className="w-20 h-20 rounded-2xl object-cover flex-shrink-0 shadow-sm" />
           <div>
             <h1 className="text-sm font-semibold text-text-primary leading-none">說來話長 TalkFit</h1>
             <p className="text-[10px] text-text-muted mt-0.5">React Prototype</p>
