@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useNavigationStore } from './stores/navigationStore'
 import { useHistoryStore } from './stores/historyStore'
 import { useReportStore } from './stores/reportStore'
@@ -43,6 +44,7 @@ export default function App() {
   const [hoveredAnnotationId, setHoveredAnnotationId] = useState<string | null>(null)
   const [showMicMenu, setShowMicMenu] = useState(false)
   const [showStoryModal, setShowStoryModal] = useState(false)
+  const [showDesktopNotice, setShowDesktopNotice] = useState(true)
   const sessions = useHistoryStore((s) => s.sessions)
   const report = useReportStore((s) => s.report)
   const setReport = useReportStore((s) => s.setReport)
@@ -137,23 +139,6 @@ export default function App() {
             <h1 className="text-sm font-semibold text-text-primary leading-none">說來話長 TalkFit</h1>
             <p className="text-[10px] text-text-muted mt-0.5">React Prototype</p>
           </div>
-          {/* Desktop notice tooltip */}
-          <div className="relative group ml-1">
-            <div className="text-accent-amber/70 hover:text-accent-amber transition-colors cursor-default">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="2" y="3" width="20" height="14" rx="2" />
-                <line x1="8" y1="21" x2="16" y2="21" />
-                <line x1="12" y1="17" x2="12" y2="21" />
-              </svg>
-            </div>
-            <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-              <div className="bg-bg-card border border-accent-amber/30 text-accent-amber text-[11px] px-2.5 py-1.5 rounded-lg shadow-lg whitespace-nowrap">
-                建議於電腦瀏覽器操作，以獲得最佳互動體驗
-              </div>
-              <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-bg-card border-l border-t border-accent-amber/30 rotate-45" />
-            </div>
-          </div>
-
           {/* GitHub link */}
           <a
             href="https://github.com/swiftruru/SpeakCoach-TalkFit"
@@ -305,6 +290,36 @@ export default function App() {
 
       <DesignStoryModal isOpen={showStoryModal} onClose={() => setShowStoryModal(false)} />
       <DemoOverlay />
+
+      {/* Desktop notice — floating card, bottom-right */}
+      <AnimatePresence>
+        {showDesktopNotice && (
+          <motion.div
+            className="fixed bottom-6 right-6 z-40 flex items-start gap-2.5 px-4 py-3 rounded-2xl border border-accent-amber/35 bg-bg-card shadow-xl max-w-[260px]"
+            initial={{ opacity: 0, y: 12, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+            transition={{ duration: 0.22 }}
+          >
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" className="text-accent-amber flex-shrink-0 mt-0.5">
+              <rect x="2" y="3" width="20" height="14" rx="2" />
+              <line x1="8" y1="21" x2="16" y2="21" />
+              <line x1="12" y1="17" x2="12" y2="21" />
+            </svg>
+            <p className="text-xs text-text-secondary leading-relaxed flex-1">
+              此原型網頁建議於<span className="text-accent-amber font-medium">電腦瀏覽器</span>操作，以獲得最佳互動體驗
+            </p>
+            <button
+              onClick={() => setShowDesktopNotice(false)}
+              className="text-text-muted hover:text-text-primary transition-colors flex-shrink-0 mt-0.5"
+            >
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
