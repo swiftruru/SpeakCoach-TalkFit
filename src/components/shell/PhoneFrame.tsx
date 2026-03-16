@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { StatusBar } from './StatusBar'
 import { TabBar } from './TabBar'
+import { PhoneNotificationBanner } from './PhoneNotificationBanner'
 import type { Screen } from '../../types'
 
 interface PhoneFrameProps {
@@ -74,6 +75,7 @@ export function PhoneFrame({ screen, children }: PhoneFrameProps) {
                 style={{ clipPath: `inset(0 round ${outerR - ringW - 12}px)` }}
               >
                 <StatusBar />
+                <PhoneNotificationBanner />
 
                 <div className="flex-1 overflow-hidden relative">
                   <AnimatePresence mode="wait">

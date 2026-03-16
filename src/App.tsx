@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { useNavigationStore } from './stores/navigationStore'
 import { useHistoryStore } from './stores/historyStore'
 import { useReportStore } from './stores/reportStore'
+import { usePhoneNotificationStore } from './stores/phoneNotificationStore'
 import { MOCK_SESSIONS } from './lib/mockData'
 import { PhoneFrame } from './components/shell/PhoneFrame'
 import { AnnotationPanel } from './annotation/AnnotationPanel'
@@ -45,6 +46,7 @@ export default function App() {
   const sessions = useHistoryStore((s) => s.sessions)
   const report = useReportStore((s) => s.report)
   const setReport = useReportStore((s) => s.setReport)
+  const showPhoneNotification = usePhoneNotificationStore((s) => s.show)
   const { startDemo, stopDemo, isDemoActive } = useDemoStore()
   const currentStepIndex = useDemoStore((s) => s.currentStepIndex)
   const goToStep = useDemoStore((s) => s.goToStep)
@@ -153,6 +155,10 @@ export default function App() {
             onClick={() => {
               useHistoryStore.setState({ sessions: MOCK_SESSIONS })
               setReport(MOCK_SESSIONS[0])
+              showPhoneNotification({
+                title: 'App 已新增 Mock 資料',
+                body: '練習紀錄、分析報告已載入，可直接瀏覽各頁面',
+              })
             }}
             className="text-xs px-3 py-1.5 rounded-full border border-accent-amber/40 text-accent-amber hover:bg-accent-amber/10 transition-all"
           >
