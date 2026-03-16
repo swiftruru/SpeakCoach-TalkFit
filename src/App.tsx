@@ -153,8 +153,8 @@ export default function App() {
           </a>
         </div>
 
-        {/* Action buttons + screen nav */}
-        <div className="flex items-center gap-3 flex-wrap">
+        {/* Action buttons */}
+        <div className="flex items-center gap-3">
           {/* Design story */}
           <button
             onClick={() => setShowStoryModal(true)}
@@ -176,6 +176,7 @@ export default function App() {
           >
             ✦ Mock 資料
           </button>
+
           <button
             onClick={startDemo}
             disabled={isDemoActive}
@@ -186,6 +187,8 @@ export default function App() {
             </svg>
             Live Demo
           </button>
+
+          <div className="w-px h-4 bg-border-divider" />
 
           {/* Mic selector — icon only */}
           <div className="relative">
@@ -237,25 +240,32 @@ export default function App() {
               </svg>
             )}
           </button>
-
-          <div className="w-px h-4 bg-border-divider" />
-
-          {SCREEN_NAV.map(({ id, label }) => (
-            <button
-              key={id}
-              onClick={() => setScreen(id)}
-              className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
-                screen === id
-                  ? 'bg-bg-card border-accent-blue/40 text-accent-blue-light'
-                  : 'border-divider text-text-secondary hover:text-text-primary'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
         </div>
       </div>
 
+      {/* Screen navigation bar */}
+      <div className="flex-shrink-0 border-b border-divider bg-bg-surface px-8 flex items-center gap-1">
+        {SCREEN_NAV.map(({ id, label }) => (
+          <button
+            key={id}
+            onClick={() => setScreen(id)}
+            className={`relative text-sm px-4 py-2.5 transition-all ${
+              screen === id
+                ? 'text-accent-blue-light font-medium'
+                : 'text-text-muted hover:text-text-secondary'
+            }`}
+          >
+            {label}
+            {screen === id && (
+              <motion.div
+                layoutId="screen-nav-indicator"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-blue-light rounded-full"
+                transition={{ type: 'spring', stiffness: 500, damping: 40 }}
+              />
+            )}
+          </button>
+        ))}
+      </div>
 
       {/* Main content: phone + annotation panel */}
       <div className="flex-1 flex overflow-hidden">
