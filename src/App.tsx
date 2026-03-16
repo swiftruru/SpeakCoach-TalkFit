@@ -235,13 +235,13 @@ export default function App() {
         {/* Left: design story panel */}
         <div
           className="bg-bg-surface flex flex-col flex-shrink-0 border-r border-divider"
-          style={{ width: 280 }}
+          style={{ width: 340 }}
         >
           <DesignStoryPanel />
         </div>
 
         {/* Phone area */}
-        <div className="flex-1 flex items-center justify-center px-10 py-8 overflow-auto">
+        <div className="flex-1 flex items-start justify-center px-10 pt-6 pb-8 overflow-auto">
           <div
             onMouseOver={handlePhoneMouseOver}
             onMouseOut={handlePhoneMouseOut}
