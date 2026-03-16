@@ -97,7 +97,7 @@ export function AboutSection() {
           </p>
 
           <p className="text-sm text-text-secondary leading-relaxed">
-            程式基礎方面，平常主要寫 Web 前端、Python 和 .NET，學新語言和框架不算從零開始。比較缺的是 iOS 的實戰經驗，還有和其他開發者合作碰撞想法的機會。能在三天內走完從想法到產品的流程，是平常自學很難得到的體驗。
+            程式基礎方面，平常主要寫 Web 前端、Python 和 .NET，面對新語言和框架時有一些可以借力的基礎。比較缺的是 iOS 的實戰經驗，還有和其他開發者合作碰撞想法的機會。能在三天內走完從想法到產品的流程，是平常自學很難得到的體驗。
           </p>
 
           <p className="text-sm text-text-secondary leading-relaxed">
