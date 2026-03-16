@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body, #root {
+    height: 100%;
+  }
+
+  /* Light theme (default) */
+  :root {
+    --color-bg-base: #f8f9fa;
+    --color-bg-surface: #ffffff;
+    --color-bg-card: #ffffff;
+    --color-bg-card2: #f3f4f6;
+    --color-text-primary: #111827;
+    --color-text-secondary: #6b7280;
+    --color-text-muted: #9ca3af;
+    --color-border-divider: #e5e7eb;
+  }
+
+  /* Dark theme — Dracula-inspired */
+  .dark {
+    --color-bg-base: #282a36;
+    --color-bg-surface: #21222c;
+    --color-bg-card: #44475a;
+    --color-bg-card2: #383a4a;
+    --color-text-primary: #f8f8f2;
+    --color-text-secondary: #b0bad6;
+    --color-text-muted: #6272a4;
+    --color-border-divider: rgba(68,71,90,0.9);
+  }
+
+  body {
+    font-family: 'Noto Sans TC', system-ui, sans-serif;
+    background-color: var(--color-bg-base);
+    color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Custom scrollbar for phone inner */
+  .phone-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  .phone-scroll {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@layer utilities {
+  .annotation-highlight {
+    @apply ring-2 ring-accent-blue/60 shadow-glow transition-all duration-200;
+  }
+
+  .annotation-panel-highlight {
+    @apply bg-accent-blue/10 border-l-2 border-accent-blue;
+  }
+}
