@@ -11,6 +11,7 @@ import { ReportScreen } from './screens/ReportScreen'
 import { HistoryScreen } from './screens/HistoryScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
 import { MicSelector } from './components/MicSelector'
+import { AboutSection } from './components/AboutSection'
 import { useDemoStore } from './demo/demoStore'
 import { useLiveDemo } from './demo/useLiveDemo'
 import { DemoOverlay } from './demo/DemoOverlay'
@@ -225,6 +226,8 @@ export default function App() {
           />
         </div>
       </div>
+
+      <AboutSection />
 
       <DemoOverlay />
     </div>
