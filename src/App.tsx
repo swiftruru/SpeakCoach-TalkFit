@@ -5,7 +5,7 @@ import { useReportStore } from './stores/reportStore'
 import { MOCK_SESSIONS } from './lib/mockData'
 import { PhoneFrame } from './components/shell/PhoneFrame'
 import { AnnotationPanel } from './annotation/AnnotationPanel'
-import { DesignStoryPanel } from './components/DesignStoryPanel'
+import { DesignStoryModal } from './components/DesignStoryModal'
 import { HomeScreen } from './screens/HomeScreen'
 import { PracticeScreen } from './screens/PracticeScreen'
 import { ReportScreen } from './screens/ReportScreen'
@@ -41,6 +41,7 @@ export default function App() {
   const { screen, setScreen } = useNavigationStore()
   const [hoveredAnnotationId, setHoveredAnnotationId] = useState<string | null>(null)
   const [showMicMenu, setShowMicMenu] = useState(false)
+  const [showStoryModal, setShowStoryModal] = useState(false)
   const sessions = useHistoryStore((s) => s.sessions)
   const report = useReportStore((s) => s.report)
   const setReport = useReportStore((s) => s.setReport)
@@ -138,8 +139,16 @@ export default function App() {
           </a>
         </div>
 
-        {/* Screen nav pills + action buttons */}
+        {/* Action buttons + screen nav */}
         <div className="flex items-center gap-3 flex-wrap">
+          {/* Design story */}
+          <button
+            onClick={() => setShowStoryModal(true)}
+            className="text-xs px-3 py-1.5 rounded-full border border-accent-purple/40 text-accent-purple hover:bg-accent-purple/10 transition-all flex items-center gap-1.5"
+          >
+            ✦ 設計動機
+          </button>
+
           <button
             onClick={() => {
               useHistoryStore.setState({ sessions: MOCK_SESSIONS })
@@ -229,16 +238,20 @@ export default function App() {
         </div>
       </div>
 
-      {/* Main content: design story | phone | annotation panel */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* Desktop notice */}
+      <div className="flex-shrink-0 border-b border-accent-amber/20 bg-accent-amber/5 px-8 py-2 flex items-center justify-center gap-2">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" className="text-accent-amber flex-shrink-0">
+          <rect x="2" y="3" width="20" height="14" rx="2" />
+          <line x1="8" y1="21" x2="16" y2="21" />
+          <line x1="12" y1="17" x2="12" y2="21" />
+        </svg>
+        <p className="text-xs text-accent-amber">
+          此原型網頁建議於電腦瀏覽器操作，以獲得最佳互動體驗
+        </p>
+      </div>
 
-        {/* Left: design story panel */}
-        <div
-          className="bg-bg-surface flex flex-col flex-shrink-0 border-r border-divider"
-          style={{ width: 340 }}
-        >
-          <DesignStoryPanel />
-        </div>
+      {/* Main content: phone + annotation panel */}
+      <div className="flex-1 flex overflow-hidden">
 
         {/* Phone area */}
         <div className="flex-1 flex items-start justify-center px-10 pt-6 pb-8 overflow-auto">
@@ -268,6 +281,7 @@ export default function App() {
         </div>
       </div>
 
+      <DesignStoryModal isOpen={showStoryModal} onClose={() => setShowStoryModal(false)} />
       <DemoOverlay />
     </div>
   )
