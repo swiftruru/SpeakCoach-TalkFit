@@ -265,6 +265,7 @@ export default function App() {
             ))}
           </div>
           <div
+            style={{ transform: 'scale(0.85)', transformOrigin: 'top center', marginBottom: '-122px' }}
             onMouseOver={handlePhoneMouseOver}
             onMouseOut={handlePhoneMouseOut}
           >
