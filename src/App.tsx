@@ -113,7 +113,7 @@ export default function App() {
             }}
             className="text-xs px-3 py-1.5 rounded-full border border-accent-amber/40 text-accent-amber hover:bg-accent-amber/10 transition-all"
           >
-            ✦ 載入示範資料
+            ✦ Mock 資料
           </button>
           <button
             onClick={startDemo}
@@ -123,7 +123,7 @@ export default function App() {
             <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor">
               <polygon points="5,3 19,12 5,21" />
             </svg>
-            開始示範
+            Live Demo
           </button>
           <div className="relative">
             <button
