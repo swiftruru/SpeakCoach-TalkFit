@@ -131,8 +131,8 @@ export default function App() {
         `}</style>
       )}
 
-      {/* Top bar */}
-      <div className="flex-shrink-0 border-b border-divider px-8 py-3.5 flex items-center justify-between">
+      {/* Top bar — three-column: logo | nav (center) | tools */}
+      <div className="flex-shrink-0 border-b border-divider px-8 py-3.5 grid grid-cols-3 items-center">
         <div className="flex items-center gap-3">
           <img src="/app-icon.png" alt="TalkFit" className="w-20 h-20 rounded-2xl object-cover flex-shrink-0 shadow-sm" />
           <div>
@@ -153,8 +153,25 @@ export default function App() {
           </a>
         </div>
 
+        {/* Screen nav — centered */}
+        <div className="flex items-center justify-center gap-1">
+          {SCREEN_NAV.map(({ id, label }) => (
+            <button
+              key={id}
+              onClick={() => setScreen(id)}
+              className={`relative text-xs px-3.5 py-1.5 rounded-full transition-all ${
+                screen === id
+                  ? 'bg-bg-card border border-accent-blue/40 text-accent-blue-light'
+                  : 'text-text-muted hover:text-text-secondary border border-transparent'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         {/* Action buttons */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 justify-end">
           {/* Design story */}
           <button
             onClick={() => setShowStoryModal(true)}
@@ -241,30 +258,6 @@ export default function App() {
             )}
           </button>
         </div>
-      </div>
-
-      {/* Screen navigation bar */}
-      <div className="flex-shrink-0 border-b border-divider bg-bg-surface px-8 flex items-center gap-1">
-        {SCREEN_NAV.map(({ id, label }) => (
-          <button
-            key={id}
-            onClick={() => setScreen(id)}
-            className={`relative text-sm px-4 py-2.5 transition-all ${
-              screen === id
-                ? 'text-accent-blue-light font-medium'
-                : 'text-text-muted hover:text-text-secondary'
-            }`}
-          >
-            {label}
-            {screen === id && (
-              <motion.div
-                layoutId="screen-nav-indicator"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-blue-light rounded-full"
-                transition={{ type: 'spring', stiffness: 500, damping: 40 }}
-              />
-            )}
-          </button>
-        ))}
       </div>
 
       {/* Main content: phone + annotation panel */}
