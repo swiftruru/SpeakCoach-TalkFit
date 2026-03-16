@@ -11,6 +11,9 @@ import { ReportScreen } from './screens/ReportScreen'
 import { HistoryScreen } from './screens/HistoryScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
 import { MicSelector } from './components/MicSelector'
+import { useDemoStore } from './demo/demoStore'
+import { useLiveDemo } from './demo/useLiveDemo'
+import { DemoOverlay } from './demo/DemoOverlay'
 import type { Screen } from './types'
 import './index.css'
 
@@ -39,6 +42,8 @@ export default function App() {
   const sessions = useHistoryStore((s) => s.sessions)
   const report = useReportStore((s) => s.report)
   const setReport = useReportStore((s) => s.setReport)
+  const { startDemo, isDemoActive } = useDemoStore()
+  useLiveDemo()
 
   // Theme: light by default, persist in localStorage
   const [isDark, setIsDark] = useState(() => {
@@ -109,6 +114,16 @@ export default function App() {
             className="text-xs px-3 py-1.5 rounded-full border border-accent-amber/40 text-accent-amber hover:bg-accent-amber/10 transition-all"
           >
             ✦ 載入示範資料
+          </button>
+          <button
+            onClick={startDemo}
+            disabled={isDemoActive}
+            className="text-xs px-3 py-1.5 rounded-full border border-accent-blue/40 text-accent-blue-light hover:bg-accent-blue/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+          >
+            <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor">
+              <polygon points="5,3 19,12 5,21" />
+            </svg>
+            開始示範
           </button>
           <div className="relative">
             <button
@@ -210,6 +225,8 @@ export default function App() {
           />
         </div>
       </div>
+
+      <DemoOverlay />
     </div>
   )
 }

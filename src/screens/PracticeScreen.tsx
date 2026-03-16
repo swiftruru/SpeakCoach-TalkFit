@@ -10,6 +10,7 @@ import { useSpeechRate } from '../hooks/useSpeechRate'
 import { detectFillers, buildSessionSummary, formatDuration } from '../lib/speechAnalysis'
 import { wpmStatus, wpmColor, wpmLabel } from '../lib/grading'
 import { useAudioLevel } from '../hooks/useAudioLevel'
+import { useDemoStore } from '../demo/demoStore'
 import type { TranscriptSegment } from '../types'
 
 export function PracticeScreen() {
@@ -18,6 +19,7 @@ export function PracticeScreen() {
   const setReport = useReportStore((s) => s.setReport)
   const addHistory = useHistoryStore((s) => s.addSession)
   const settings = useSettingsStore()
+  const isDemoActive = useDemoStore((s) => s.isDemoActive)
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [interimText, setInterimText] = useState('')
@@ -97,14 +99,15 @@ export function PracticeScreen() {
     else stop()
   }, [session, start, stop])
 
-  // Auto-start on mount
+  // Auto-start on mount (skip during live demo — demo script controls state directly)
   useEffect(() => {
+    if (isDemoActive) return
     handleStart()
     return () => {
       stop()
       if (timerRef.current) clearInterval(timerRef.current)
     }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalFillers = Object.values(session.fillerCounts).reduce((s, v) => s + v, 0)
   const topFiller = Object.entries(session.fillerCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '—'

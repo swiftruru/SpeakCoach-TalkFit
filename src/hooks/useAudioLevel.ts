@@ -42,9 +42,6 @@ export function useAudioLevel(isActive: boolean, barCount = 20, deviceId = 'defa
 
     setup()
 
-    const data = new Uint8Array(barCount)
-    const step = 1
-
     function tick() {
       const t = (performance.now() - startTime) / 1000
 
