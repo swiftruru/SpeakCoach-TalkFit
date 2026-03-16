@@ -5,16 +5,17 @@ import { useReportStore } from './stores/reportStore'
 import { MOCK_SESSIONS } from './lib/mockData'
 import { PhoneFrame } from './components/shell/PhoneFrame'
 import { AnnotationPanel } from './annotation/AnnotationPanel'
+import { DesignStoryPanel } from './components/DesignStoryPanel'
 import { HomeScreen } from './screens/HomeScreen'
 import { PracticeScreen } from './screens/PracticeScreen'
 import { ReportScreen } from './screens/ReportScreen'
 import { HistoryScreen } from './screens/HistoryScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
 import { MicSelector } from './components/MicSelector'
-import { AboutSection } from './components/AboutSection'
 import { useDemoStore } from './demo/demoStore'
 import { useLiveDemo } from './demo/useLiveDemo'
 import { DemoOverlay } from './demo/DemoOverlay'
+import { DEMO_STEPS } from './demo/demoScript'
 import type { Screen } from './types'
 import './index.css'
 
@@ -43,7 +44,9 @@ export default function App() {
   const sessions = useHistoryStore((s) => s.sessions)
   const report = useReportStore((s) => s.report)
   const setReport = useReportStore((s) => s.setReport)
-  const { startDemo, isDemoActive } = useDemoStore()
+  const { startDemo, stopDemo, isDemoActive } = useDemoStore()
+  const currentStepIndex = useDemoStore((s) => s.currentStepIndex)
+  const goToStep = useDemoStore((s) => s.goToStep)
   useLiveDemo()
 
   // Theme: light by default, persist in localStorage
@@ -67,6 +70,24 @@ export default function App() {
       setReport(sessions[0])
     }
   }, [sessions, report, setReport])
+
+  // Keyboard shortcuts for Live Demo
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isDemoActive) return
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        e.preventDefault()
+        if (currentStepIndex < DEMO_STEPS.length - 1) goToStep(currentStepIndex + 1)
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        if (currentStepIndex > 0) goToStep(currentStepIndex - 1)
+      } else if (e.key === 'Escape') {
+        stopDemo()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isDemoActive, currentStepIndex, goToStep, stopDemo])
 
   const handlePhoneMouseOver = useCallback((e: React.MouseEvent) => {
     const target = e.target as HTMLElement
@@ -103,9 +124,21 @@ export default function App() {
             <h1 className="text-sm font-semibold text-text-primary leading-none">說來話長 TalkFit</h1>
             <p className="text-[10px] text-text-muted mt-0.5">React Prototype</p>
           </div>
+          {/* GitHub link */}
+          <a
+            href="https://github.com/swiftruru/SpeakCoach-TalkFit"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="View on GitHub"
+            className="ml-1 text-text-muted hover:text-text-secondary transition-colors"
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.605-3.369-1.342-3.369-1.342-.454-1.154-1.11-1.461-1.11-1.461-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" />
+            </svg>
+          </a>
         </div>
 
-        {/* Screen nav pills + demo button */}
+        {/* Screen nav pills + action buttons */}
         <div className="flex items-center gap-3 flex-wrap">
           <button
             onClick={() => {
@@ -126,20 +159,22 @@ export default function App() {
             </svg>
             Live Demo
           </button>
+
+          {/* Mic selector — icon only */}
           <div className="relative">
             <button
               onClick={() => setShowMicMenu((v) => !v)}
-              className={`text-xs px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 ${
+              title="設定收音裝置"
+              className={`w-8 h-8 rounded-full border transition-all flex items-center justify-center ${
                 showMicMenu
                   ? 'bg-bg-card border-accent-blue/40 text-accent-blue-light'
                   : 'border-divider text-text-secondary hover:text-text-primary'
               }`}
             >
-              <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
                 <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" />
               </svg>
-              設定收音裝置
             </button>
             {showMicMenu && (
               <div
@@ -151,14 +186,14 @@ export default function App() {
             )}
           </div>
 
-          {/* Theme toggle */}
+          {/* Theme toggle — icon only */}
           <button
             onClick={() => setIsDark((v) => !v)}
-            className="text-xs px-3 py-1.5 rounded-full border border-divider text-text-secondary hover:text-text-primary transition-all flex items-center gap-1.5"
             title={isDark ? '切換亮色模式' : '切換暗色模式'}
+            className="w-8 h-8 rounded-full border border-divider text-text-secondary hover:text-text-primary transition-all flex items-center justify-center"
           >
             {isDark ? (
-              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="5" />
                 <line x1="12" y1="1" x2="12" y2="3" />
                 <line x1="12" y1="21" x2="12" y2="23" />
@@ -170,14 +205,14 @@ export default function App() {
                 <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
               </svg>
             ) : (
-              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
               </svg>
             )}
-            {isDark ? '亮色' : '暗色'}
           </button>
 
           <div className="w-px h-4 bg-border-divider" />
+
           {SCREEN_NAV.map(({ id, label }) => (
             <button
               key={id}
@@ -194,13 +229,19 @@ export default function App() {
         </div>
       </div>
 
-
-      {/* Main content: phone + annotation panel */}
+      {/* Main content: design story | phone | annotation panel */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Phone area */}
+
+        {/* Left: design story panel */}
         <div
-          className="flex-1 flex items-center justify-center px-10 py-8 overflow-auto"
+          className="bg-bg-surface flex flex-col flex-shrink-0 border-r border-divider"
+          style={{ width: 280 }}
         >
+          <DesignStoryPanel />
+        </div>
+
+        {/* Phone area */}
+        <div className="flex-1 flex items-center justify-center px-10 py-8 overflow-auto">
           <div
             onMouseOver={handlePhoneMouseOver}
             onMouseOut={handlePhoneMouseOut}
@@ -226,8 +267,6 @@ export default function App() {
           />
         </div>
       </div>
-
-      <AboutSection />
 
       <DemoOverlay />
     </div>
