@@ -137,6 +137,23 @@ export default function App() {
             <h1 className="text-sm font-semibold text-text-primary leading-none">說來話長 TalkFit</h1>
             <p className="text-[10px] text-text-muted mt-0.5">React Prototype</p>
           </div>
+          {/* Desktop notice tooltip */}
+          <div className="relative group ml-1">
+            <div className="text-accent-amber/70 hover:text-accent-amber transition-colors cursor-default">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" />
+                <line x1="8" y1="21" x2="16" y2="21" />
+                <line x1="12" y1="17" x2="12" y2="21" />
+              </svg>
+            </div>
+            <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+              <div className="bg-bg-card border border-accent-amber/30 text-accent-amber text-[11px] px-2.5 py-1.5 rounded-lg shadow-lg whitespace-nowrap">
+                建議於電腦瀏覽器操作，以獲得最佳互動體驗
+              </div>
+              <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-bg-card border-l border-t border-accent-amber/30 rotate-45" />
+            </div>
+          </div>
+
           {/* GitHub link */}
           <a
             href="https://github.com/swiftruru/SpeakCoach-TalkFit"
@@ -254,17 +271,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* Desktop notice */}
-      <div className="flex-shrink-0 border-b border-accent-amber/20 bg-accent-amber/5 px-8 py-2 flex items-center justify-center gap-2">
-        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" className="text-accent-amber flex-shrink-0">
-          <rect x="2" y="3" width="20" height="14" rx="2" />
-          <line x1="8" y1="21" x2="16" y2="21" />
-          <line x1="12" y1="17" x2="12" y2="21" />
-        </svg>
-        <p className="text-xs text-accent-amber">
-          此原型網頁建議於電腦瀏覽器操作，以獲得最佳互動體驗
-        </p>
-      </div>
 
       {/* Main content: phone + annotation panel */}
       <div className="flex-1 flex overflow-hidden">
