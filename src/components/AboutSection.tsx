@@ -50,7 +50,7 @@ export function AboutSection() {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-accent-red flex-shrink-0" />
-                <p className="text-[11px] font-semibold text-text-muted uppercase tracking-widest">
+                <p className="text-xs font-bold text-text-secondary tracking-wide">
                   想解決的問題
                 </p>
               </div>
@@ -63,7 +63,7 @@ export function AboutSection() {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-accent-green flex-shrink-0" />
-                <p className="text-[11px] font-semibold text-text-muted uppercase tracking-widest">
+                <p className="text-xs font-bold text-text-secondary tracking-wide">
                   如何解決
                 </p>
               </div>
@@ -76,7 +76,7 @@ export function AboutSection() {
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <span className="w-1.5 h-1.5 rounded-full bg-accent-purple flex-shrink-0" />
-                <p className="text-[11px] font-semibold text-text-muted uppercase tracking-widest">
+                <p className="text-xs font-bold text-text-secondary tracking-wide">
                   特色亮點
                 </p>
               </div>
@@ -96,7 +96,7 @@ export function AboutSection() {
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <span className="w-1.5 h-1.5 rounded-full bg-accent-amber flex-shrink-0" />
-                <p className="text-[11px] font-semibold text-text-muted uppercase tracking-widest">
+                <p className="text-xs font-bold text-text-secondary tracking-wide">
                   偵測的贅字類型
                 </p>
               </div>
