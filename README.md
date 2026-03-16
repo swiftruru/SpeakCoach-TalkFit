@@ -17,10 +17,12 @@
 - **Customizable filler lists** — enable/disable individual words, add custom entries, organized by category
 - **Adjustable speed thresholds** — dual-handle slider for slow/fast boundaries (default 120–180 WPM)
 - **Microphone selector** — choose audio input device for waveform visualization
-- **Waveform visualization** — animated frequency bars during recording; graceful demo animation when mic is unavailable
+- **Waveform visualization** — animated frequency bars during recording; always-on sine-wave demo animation when mic is unavailable
 - **Light / Dark theme toggle** — Dracula-inspired dark palette, persisted to `localStorage`
 - **iPhone frame simulation** — rose-gold metallic border for mobile-first demo presentation
 - **Annotation side panel** — each screen has a linked documentation panel explaining product features
+- **One-click Live Demo** — automated 11-step walkthrough of the full app flow with a fixed bottom overlay showing step title and description in sync; supports manual prev/next navigation and stop at any time
+- **Design Story section** — scrollable below the demo area; two-card layout covering the app concept (problem, solution, highlights, filler categories) and Hackathon participation motivation
 
 ---
 
@@ -39,7 +41,7 @@
 ## Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
+|-------|------------|
 | Framework | React 19 + TypeScript + Vite |
 | Styling | Tailwind CSS with CSS variable dual-theme |
 | State | Zustand (5 stores, `localStorage` persistence) |
@@ -59,9 +61,14 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-### Load Demo Data
+### Top Bar Buttons
 
-Click the **✦ 載入示範資料** button in the top bar to populate all screens with sample session data — no microphone required.
+| Button | Action |
+|--------|--------|
+| ✦ Mock 資料 | Populate all screens with sample session data — no microphone required |
+| ▶ Live Demo | Start the automated 11-step classroom demo |
+| 設定收音裝置 | Select microphone input device |
+| 亮色 / 暗色 | Toggle light / dark theme |
 
 ---
 
@@ -72,16 +79,18 @@ src/
 ├── screens/          # HomeScreen, PracticeScreen, ReportScreen, HistoryScreen, SettingsScreen
 ├── components/
 │   ├── shell/        # PhoneFrame, StatusBar, TabBar
-│   └── MicSelector
+│   ├── MicSelector
+│   └── AboutSection  # Design Story section (app concept + motivation)
+├── demo/             # demoStore, demoScript, useLiveDemo, DemoOverlay
 ├── hooks/            # useSpeechRecognition, useSpeechRate, useAudioLevel, useMicrophoneDevices
 ├── stores/           # navigationStore, sessionStore, historyStore, reportStore, settingsStore
 ├── lib/              # speechAnalysis, grading, fillerWords, mockData
 ├── annotation/       # AnnotationPanel + per-screen annotation data
 └── types/            # Shared TypeScript interfaces
 public/
-├── whisperWorker.js  # Whisper inference Web Worker (ES module, Vite-unprocessed)
+├── whisperWorker.js     # Whisper inference Web Worker (ES module, Vite-unprocessed)
 ├── transformers.min.js  # @xenova/transformers bundled locally
-└── app-icon.png      # App icon
+└── app-icon.png         # App icon
 ```
 
 ---
@@ -89,5 +98,5 @@ public/
 ## Notes
 
 - First load downloads the Whisper base model (~75 MB) and caches it in IndexedDB; subsequent loads are near-instant.
-- The waveform always animates during recording — a sine-wave demo runs as a fallback if microphone access is unavailable.
+- The waveform always animates during recording — a multi-frequency sine-wave demo runs continuously and blends with real audio input when available.
 - All session data is stored in `localStorage` and never leaves the device.
