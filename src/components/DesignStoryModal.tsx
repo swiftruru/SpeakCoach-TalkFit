@@ -172,6 +172,16 @@ export function DesignStoryModal({ isOpen, onClose }: Props) {
 
               </div>
             </div>
+
+            {/* Modal footer */}
+            <div className="flex-shrink-0 border-t border-divider px-8 py-3 flex items-center justify-between">
+              <p className="text-[11px] text-text-muted">說來話長 TalkFit · Design Story</p>
+              <div className="flex items-center gap-2">
+                <div className="w-px h-3 bg-divider" />
+                <span className="text-xs font-medium text-text-secondary">潘昱如</span>
+                <span className="text-[11px] text-text-muted tracking-wide">PAN, YU-RU</span>
+              </div>
+            </div>
           </motion.div>
         </motion.div>
       )}
