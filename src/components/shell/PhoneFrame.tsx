@@ -14,7 +14,7 @@ interface PhoneFrameProps {
 const SIDE_BTN = {
   position: 'absolute' as const,
   width: 5,
-  background: 'linear-gradient(180deg, #e8c4ba 0%, #c4856e 50%, #e8c4ba 100%)',
+  background: '#c4856e',
 }
 
 // Rose gold metallic gradient — warm muted pink-bronze like Apple's finish
