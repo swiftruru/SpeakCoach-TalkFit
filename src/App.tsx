@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useNavigationStore } from './stores/navigationStore'
 import { useHistoryStore } from './stores/historyStore'
@@ -98,9 +98,21 @@ function shouldShowLaunchOverlay() {
   return !hasDeepLink && !prefersReducedMotion
 }
 
+interface HoverConnector {
+  d: string
+  arrowHeadD: string
+  arrowHighlight: { x: number; y: number }
+  start: { x: number; y: number }
+  end: { x: number; y: number }
+}
+
+type HoverSource = 'phone' | 'annotation'
+
 export default function App() {
   const { screen, setScreen, requestScreen } = useNavigationStore()
   const [hoveredAnnotationId, setHoveredAnnotationId] = useState<string | null>(null)
+  const [hoverConnector, setHoverConnector] = useState<HoverConnector | null>(null)
+  const [hoverSource, setHoverSource] = useState<HoverSource | null>(null)
   const [showStoryModal, setShowStoryModal] = useState(false)
   const [showDesktopNotice, setShowDesktopNotice] = useState(true)
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
@@ -110,6 +122,7 @@ export default function App() {
   const [showMobileAnnotations, setShowMobileAnnotations] = useState(
     () => new URLSearchParams(window.location.search).get('panel') === 'open'
   )
+  const desktopStageRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const handler = () => setIsMobile(window.innerWidth < 768)
@@ -166,6 +179,157 @@ export default function App() {
     el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }, [hoveredAnnotationId])
 
+  const updateHoverConnector = useCallback(() => {
+    if (!hoveredAnnotationId || isMobile) {
+      setHoverConnector(null)
+      return
+    }
+
+    const stage = desktopStageRef.current
+    if (!stage) {
+      setHoverConnector(null)
+      return
+    }
+
+    const phoneTarget = stage.querySelector(
+      `[data-annotation-id="${hoveredAnnotationId}"]`
+    ) as HTMLElement | null
+    const annotationCard = stage.querySelector(
+      `[data-annotation-card-for="${hoveredAnnotationId}"]`
+    ) as HTMLElement | null
+
+    if (!phoneTarget || !annotationCard) {
+      setHoverConnector(null)
+      return
+    }
+
+    const stageRect = stage.getBoundingClientRect()
+    const targetRect = phoneTarget.getBoundingClientRect()
+    const cardRect = annotationCard.getBoundingClientRect()
+
+    const phonePoint = {
+      x: targetRect.right - stageRect.left + 18,
+      y: targetRect.top - stageRect.top + targetRect.height / 2,
+    }
+    const annotationPoint = {
+      x: cardRect.left - stageRect.left - 22,
+      y: cardRect.top - stageRect.top + Math.min(42, cardRect.height / 2),
+    }
+    const start = hoverSource === 'annotation' ? annotationPoint : phonePoint
+    const end = hoverSource === 'annotation' ? phonePoint : annotationPoint
+    const direction = end.x >= start.x ? 1 : -1
+    const horizontalGap = Math.max(56, Math.abs(end.x - start.x) * 0.32)
+    const c1 = {
+      x: start.x + horizontalGap * direction,
+      y: start.y,
+    }
+    const c2 = {
+      x: end.x - horizontalGap * direction,
+      y: end.y,
+    }
+    const d = [
+      `M ${start.x} ${start.y}`,
+      `C ${c1.x} ${c1.y},`,
+      `${c2.x} ${c2.y},`,
+      `${end.x} ${end.y}`,
+    ].join(' ')
+    const tangent = {
+      x: end.x - c2.x,
+      y: end.y - c2.y,
+    }
+    const tangentLength = Math.hypot(tangent.x, tangent.y) || 1
+    const unit = {
+      x: tangent.x / tangentLength,
+      y: tangent.y / tangentLength,
+    }
+    const perpendicular = {
+      x: -unit.y,
+      y: unit.x,
+    }
+    const arrowLength = 16
+    const arrowWidth = 12
+    const arrowBase = {
+      x: end.x - unit.x * arrowLength,
+      y: end.y - unit.y * arrowLength,
+    }
+    const upper = {
+      x: arrowBase.x + perpendicular.x * (arrowWidth / 2),
+      y: arrowBase.y + perpendicular.y * (arrowWidth / 2),
+    }
+    const lower = {
+      x: arrowBase.x - perpendicular.x * (arrowWidth / 2),
+      y: arrowBase.y - perpendicular.y * (arrowWidth / 2),
+    }
+    const upperControl = {
+      x: end.x - unit.x * 3 + perpendicular.x * 2.5,
+      y: end.y - unit.y * 3 + perpendicular.y * 2.5,
+    }
+    const lowerControl = {
+      x: end.x - unit.x * 3 - perpendicular.x * 2.5,
+      y: end.y - unit.y * 3 - perpendicular.y * 2.5,
+    }
+    const arrowHeadD = [
+      `M ${upper.x} ${upper.y}`,
+      `Q ${upperControl.x} ${upperControl.y} ${end.x} ${end.y}`,
+      `Q ${lowerControl.x} ${lowerControl.y} ${lower.x} ${lower.y}`,
+      `Q ${arrowBase.x} ${arrowBase.y} ${upper.x} ${upper.y}`,
+      'Z',
+    ].join(' ')
+    const arrowHighlight = {
+      x: end.x - unit.x * 7,
+      y: end.y - unit.y * 7,
+    }
+
+    setHoverConnector({ d, arrowHeadD, arrowHighlight, start, end })
+  }, [hoverSource, hoveredAnnotationId, isMobile])
+
+  useEffect(() => {
+    let frame = 0
+
+    if (!hoveredAnnotationId || isMobile) {
+      frame = window.requestAnimationFrame(() => {
+        setHoverConnector(null)
+      })
+      return () => window.cancelAnimationFrame(frame)
+    }
+
+    frame = window.requestAnimationFrame(() => {
+      updateHoverConnector()
+    })
+
+    const handleReposition = () => {
+      window.cancelAnimationFrame(frame)
+      frame = window.requestAnimationFrame(() => {
+        updateHoverConnector()
+      })
+    }
+    const stage = desktopStageRef.current
+    const phoneTarget = stage?.querySelector(
+      `[data-annotation-id="${hoveredAnnotationId}"]`
+    ) as HTMLElement | null
+    const annotationCard = stage?.querySelector(
+      `[data-annotation-card-for="${hoveredAnnotationId}"]`
+    ) as HTMLElement | null
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateHoverConnector()
+    })
+
+    if (stage) resizeObserver.observe(stage)
+    if (phoneTarget) resizeObserver.observe(phoneTarget)
+    if (annotationCard) resizeObserver.observe(annotationCard)
+
+    window.addEventListener('resize', handleReposition)
+    window.addEventListener('scroll', handleReposition, true)
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+      resizeObserver.disconnect()
+      window.removeEventListener('resize', handleReposition)
+      window.removeEventListener('scroll', handleReposition, true)
+    }
+  }, [hoveredAnnotationId, isMobile, screen, updateHoverConnector])
+
   useEffect(() => {
     const url = new URL(window.location.href)
 
@@ -201,18 +365,21 @@ export default function App() {
     const annotated = target.closest('[data-annotation-id]') as HTMLElement | null
     const id = annotated?.dataset?.annotationId ?? null
     setHoveredAnnotationId(id)
+    setHoverSource(id ? 'phone' : null)
   }, [])
 
   const handlePhoneMouseOut = useCallback((e: React.MouseEvent) => {
     const related = e.relatedTarget as HTMLElement | null
-    if (!related?.closest?.('[data-annotation-id]')) {
+    if (!related?.closest?.('[data-annotation-id]') && !related?.closest?.('[data-annotation-card-for]')) {
       setHoveredAnnotationId(null)
+      setHoverSource(null)
     }
   }, [])
 
   const handleResetPrototype = useCallback(() => {
     resetPrototypeState()
     setHoveredAnnotationId(null)
+    setHoverSource(null)
     setShowMobileAnnotations(false)
     showPhoneNotification({
       title: '原型已重置',
@@ -267,9 +434,11 @@ export default function App() {
       {hoveredAnnotationId && (
         <style>{`
           [data-annotation-id="${hoveredAnnotationId}"] {
-            outline: 2px solid rgba(59,130,246,0.55);
-            border-radius: 8px;
-            box-shadow: 0 0 14px rgba(59,130,246,0.3);
+            border-radius: 12px;
+            box-shadow:
+              inset 0 0 0 2px rgba(251,191,36,0.72),
+              inset 0 0 0 6px rgba(255,247,237,0.56),
+              0 14px 30px rgba(249,115,22,0.14);
           }
         `}</style>
       )}
@@ -393,7 +562,74 @@ export default function App() {
       </div>
 
       {/* Main content: phone + annotation panel */}
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+      <div ref={desktopStageRef} className="relative flex-1 flex flex-col md:flex-row overflow-hidden">
+        <AnimatePresence>
+          {hoverConnector && (
+            <motion.div
+              className="pointer-events-none absolute inset-0 z-10 hidden md:block"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.16 }}
+            >
+              <svg className="h-full w-full overflow-visible">
+                <defs>
+                  <linearGradient id="annotation-arrow-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="rgba(251, 191, 36, 0.95)" />
+                    <stop offset="100%" stopColor="rgba(249, 115, 22, 0.95)" />
+                  </linearGradient>
+                  <filter id="annotation-arrow-glow" x="-30%" y="-30%" width="160%" height="160%">
+                    <feDropShadow dx="0" dy="0" stdDeviation="3.5" floodColor="rgba(249, 115, 22, 0.22)" />
+                  </filter>
+                </defs>
+                <motion.path
+                  d={hoverConnector.d}
+                  fill="none"
+                  stroke="url(#annotation-arrow-gradient)"
+                  strokeWidth="2.75"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  filter="url(#annotation-arrow-glow)"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 0.24, ease: 'easeOut' }}
+                />
+                <motion.path
+                  d={hoverConnector.arrowHeadD}
+                  fill="rgba(255, 237, 213, 0.98)"
+                  stroke="rgba(249, 115, 22, 0.9)"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  filter="url(#annotation-arrow-glow)"
+                  initial={{ opacity: 0, pathLength: 0 }}
+                  animate={{ opacity: 1, pathLength: 1 }}
+                  transition={{ duration: 0.18, delay: 0.08, ease: 'easeOut' }}
+                />
+                <circle
+                  cx={hoverConnector.arrowHighlight.x}
+                  cy={hoverConnector.arrowHighlight.y}
+                  r="2.2"
+                  fill="rgba(255, 255, 255, 0.82)"
+                />
+                <circle
+                  cx={hoverConnector.start.x}
+                  cy={hoverConnector.start.y}
+                  r="10"
+                  fill="rgba(251, 191, 36, 0.12)"
+                />
+                <circle
+                  cx={hoverConnector.start.x}
+                  cy={hoverConnector.start.y}
+                  r="5"
+                  fill="rgba(255, 247, 237, 0.96)"
+                  stroke="rgba(245, 158, 11, 0.88)"
+                  strokeWidth="2"
+                />
+              </svg>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Phone area */}
         <div className="flex-1 overflow-auto px-4 pt-6 pb-8 md:px-8 md:pb-8">
@@ -431,7 +667,10 @@ export default function App() {
           <AnnotationPanel
             screen={screen}
             hoveredId={hoveredAnnotationId}
-            onHoverItem={setHoveredAnnotationId}
+            onHoverItem={(id) => {
+              setHoveredAnnotationId(id)
+              setHoverSource(id ? 'annotation' : null)
+            }}
             onNavigate={requestScreen}
           />
         </div>
@@ -497,7 +736,10 @@ export default function App() {
                 <AnnotationPanel
                   screen={screen}
                   hoveredId={hoveredAnnotationId}
-                  onHoverItem={setHoveredAnnotationId}
+                  onHoverItem={(id) => {
+                    setHoveredAnnotationId(id)
+                    setHoverSource(id ? 'annotation' : null)
+                  }}
                   onNavigate={(s) => { requestScreen(s); setShowMobileAnnotations(false) }}
                 />
               </div>

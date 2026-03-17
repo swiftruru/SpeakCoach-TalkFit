@@ -79,16 +79,17 @@ export function AnnotationPanel({ screen, hoveredId, onHoverItem, onNavigate }: 
             <div
               key={item.id}
               ref={(el) => { itemRefs.current[item.targetId] = el }}
+              data-annotation-card-for={item.targetId}
               onMouseEnter={() => onHoverItem(item.targetId)}
               onMouseLeave={() => onHoverItem(null)}
-              className={`rounded-xl p-3.5 border cursor-default transition-all duration-200 ${
+              className={`rounded-xl p-3.5 border cursor-pointer transition-all duration-200 ${
                 isHighlighted
-                  ? 'bg-accent-blue/10 border-accent-blue/40 shadow-sm'
+                  ? 'bg-amber-50 border-amber-200 shadow-[0_12px_28px_rgba(249,115,22,0.12)] dark:bg-amber-500/10 dark:border-amber-400/30'
                   : 'bg-bg-card border-divider'
               }`}
             >
               <div className="flex items-start justify-between gap-2 mb-1.5">
-                <span className={`text-sm font-medium ${isHighlighted ? 'text-accent-blue-light' : 'text-text-primary'}`}>
+                <span className={`text-sm font-medium ${isHighlighted ? 'text-amber-800 dark:text-amber-200' : 'text-text-primary'}`}>
                   {item.title}
                 </span>
                 <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0 ${TYPE_BADGE[item.type].cls}`}>
