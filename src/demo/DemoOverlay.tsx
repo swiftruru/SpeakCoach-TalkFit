@@ -60,10 +60,10 @@ export function DemoOverlay() {
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.25 }}
             >
-              <p className="text-[13px] font-semibold text-white leading-tight truncate">
+              <p className="text-sm font-semibold text-white leading-tight truncate">
                 {step?.title}
               </p>
-              <p className="text-[12px] text-white/55 leading-snug mt-0.5 line-clamp-2">
+              <p className="text-sm text-white/70 leading-snug mt-0.5 line-clamp-2">
                 {step?.description}
               </p>
             </motion.div>
