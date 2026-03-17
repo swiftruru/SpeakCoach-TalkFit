@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { StatusBar } from './StatusBar'
 import { TabBar } from './TabBar'
 import { PhoneNotificationBanner } from './PhoneNotificationBanner'
+import { useDragScroll } from '../../hooks/useDragScroll'
 import type { Screen } from '../../types'
 
 interface PhoneFrameProps {
@@ -22,6 +23,7 @@ const ROSE_GOLD = `linear-gradient(
 )`
 
 export function PhoneFrame({ screen, children }: PhoneFrameProps) {
+  const drag = useDragScroll()
   const outerR = 48  // outer frame radius
   const ringW = 4    // rose gold ring thickness
   const innerR = outerR - ringW  // black body radius = 44
@@ -77,7 +79,15 @@ export function PhoneFrame({ screen, children }: PhoneFrameProps) {
                 <StatusBar />
                 <PhoneNotificationBanner />
 
-                <div className="flex-1 overflow-hidden relative">
+                <div
+                  ref={drag.wrapperRef}
+                  className="flex-1 overflow-hidden relative"
+                  style={{ cursor: 'grab' }}
+                  onMouseDown={drag.onMouseDown}
+                  onMouseMove={drag.onMouseMove}
+                  onMouseUp={drag.onMouseUp}
+                  onMouseLeave={drag.onMouseLeave}
+                >
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={screen}
