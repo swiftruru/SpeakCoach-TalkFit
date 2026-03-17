@@ -8,10 +8,21 @@ export type FillerCategory =
   | 'closer'            // 習慣性結尾: 你懂我意思嗎、對不對、是不是、對
   | 'custom'
 
+export type PracticePresetId =
+  | 'interview-intro'
+  | 'project-presentation'
+  | 'demo-pitch'
+  | 'custom'
+
 export interface FillerWord {
   word: string
   category: FillerCategory
   enabled: boolean
+}
+
+export interface SpeedRange {
+  low: number
+  high: number
 }
 
 export interface TranscriptSegment {

@@ -1,5 +1,15 @@
 # 說來話長 TalkFit
 
+> Live site: [https://talkfit.swift.moe/](https://talkfit.swift.moe/)
+
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-talkfit.swift.moe-0ea5e9?style=flat-square)](https://talkfit.swift.moe/)
+[![GitHub](https://img.shields.io/badge/GitHub-swiftruru%2FSpeakCoach--TalkFit-181717?style=flat-square&logo=github)](https://github.com/swiftruru/SpeakCoach-TalkFit)
+[![React](https://img.shields.io/badge/React-19-20232a?style=flat-square&logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-8-646cff?style=flat-square&logo=vite)](https://vite.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-06b6d4?style=flat-square&logo=tailwindcss)](https://tailwindcss.com/)
+[![Zustand](https://img.shields.io/badge/Zustand-State%20Store-7c5cff?style=flat-square)](https://zustand-demo.pmnd.rs/)
+
 <img src="public/app-icon.png" alt="TalkFit App Icon" width="96" />
 
 > Interactive React prototype for an iOS speech coaching app — helping users speak more fluently by detecting filler words and monitoring speech rate in real time.
@@ -15,6 +25,7 @@
 - **Session report & grading** — fluency score A+ ~ D based on filler frequency and speed consistency
 - **Session history & trend charts** — area chart tracking improvement across sessions
 - **Customizable filler lists** — enable/disable individual words, add custom entries, organized by category
+- **Scenario presets** — one-tap `面試自介` / `專題簡報` / `Demo Pitch` presets that sync speaking-speed ranges with the most relevant filler-word categories
 - **Adjustable speed thresholds** — dual-handle slider for slow/fast boundaries (default 120–180 WPM)
 - **Microphone selector** — choose audio input device for waveform visualization
 - **Waveform visualization** — animated frequency bars during recording; always-on sine-wave demo animation when mic is unavailable
@@ -34,7 +45,7 @@
 | 練習中 Practice | Live recording with WPM gauge, waveform, real-time transcript |
 | 分析報告 Report | Post-session scores, filler ranking, speed curve, annotated transcript |
 | 紀錄 History | Cumulative stats, trend chart, session list |
-| 設定 Settings | Detection toggles, filler word editor, speed range, language, feedback options |
+| 設定 Settings | Detection toggles, scenario presets, filler word editor, speed range, language, feedback options |
 
 ---
 
@@ -84,7 +95,7 @@ src/
 ├── demo/             # demoStore, demoScript, sampleReplayData, useLiveDemo, DemoOverlay
 ├── hooks/            # useSpeechRecognition, useSpeechRate, useAudioLevel, useMicrophoneDevices
 ├── stores/           # navigationStore, sessionStore, historyStore, reportStore, settingsStore
-├── lib/              # speechAnalysis, grading, fillerWords, mockData
+├── lib/              # speechAnalysis, grading, fillerWords, practicePresets, mockData
 ├── annotation/       # AnnotationPanel + per-screen annotation data
 └── types/            # Shared TypeScript interfaces
 public/
@@ -100,4 +111,5 @@ public/
 - First load downloads the Whisper base model (~75 MB) and caches it in IndexedDB; subsequent loads are near-instant.
 - The waveform always animates during recording — a multi-frequency sine-wave demo runs continuously and blends with real audio input when available.
 - The guided demo does not require microphone permission; it replays a scripted sample session to show the core product value in about 20 seconds before continuing the walkthrough.
+- Practice presets keep custom filler words intact; once users manually tweak speed thresholds or filler toggles, the active preset automatically falls back to `custom`.
 - All session data is stored in `localStorage` and never leaves the device.

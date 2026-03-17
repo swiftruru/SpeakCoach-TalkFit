@@ -9,6 +9,13 @@ export const settingsAnnotations: AnnotationItem[] = [
     type: 'feature',
   },
   {
+    id: 'settings-practice-presets',
+    targetId: 'settings-practice-presets',
+    title: '練習情境 Preset',
+    description: '一鍵套用不同練習情境的語速區間與預設贅字類型。若之後手動調整語速或贅字清單，系統會自動切換為「自訂」設定。',
+    type: 'feature',
+  },
+  {
     id: 'filler-chip-editor',
     targetId: 'filler-chip-editor',
     title: '贅字清單',

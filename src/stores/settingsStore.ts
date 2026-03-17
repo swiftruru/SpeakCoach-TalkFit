@@ -1,11 +1,17 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { FillerWord } from '../types'
+import type { FillerWord, PracticePresetId, SpeedRange } from '../types'
 import { DEFAULT_FILLER_WORDS } from '../lib/fillerWords'
+import {
+  applyPresetToFillerWords,
+  DEFAULT_PRACTICE_PRESET_ID,
+  PRACTICE_PRESETS,
+} from '../lib/practicePresets'
 
 interface SettingsState {
+  preset: PracticePresetId
   fillerWords: FillerWord[]
-  speedRange: { low: number; high: number }
+  speedRange: SpeedRange
   fillerDetectionEnabled: boolean
   speedMonitoringEnabled: boolean
   repeatConnectorEnabled: boolean
@@ -18,7 +24,8 @@ interface SettingsState {
   toggleFillerWord: (word: string) => void
   addFillerWord: (word: string) => void
   removeFillerWord: (word: string) => void
-  setSpeedRange: (range: { low: number; high: number }) => void
+  setSpeedRange: (range: SpeedRange) => void
+  applyPreset: (presetId: Exclude<PracticePresetId, 'custom'>) => void
   setFillerDetectionEnabled: (v: boolean) => void
   setSpeedMonitoringEnabled: (v: boolean) => void
   setRepeatConnectorEnabled: (v: boolean) => void
@@ -31,8 +38,9 @@ interface SettingsState {
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set, get) => ({
-      fillerWords: DEFAULT_FILLER_WORDS,
-      speedRange: { low: 120, high: 180 },
+      preset: DEFAULT_PRACTICE_PRESET_ID,
+      fillerWords: applyPresetToFillerWords(DEFAULT_FILLER_WORDS, DEFAULT_PRACTICE_PRESET_ID),
+      speedRange: { ...PRACTICE_PRESETS[DEFAULT_PRACTICE_PRESET_ID].speedRange },
       fillerDetectionEnabled: true,
       speedMonitoringEnabled: true,
       repeatConnectorEnabled: true,
@@ -41,10 +49,11 @@ export const useSettingsStore = create<SettingsState>()(
       language: 'zh-TW',
       micDeviceId: 'default',
 
-      setFillerWords: (words) => set({ fillerWords: words }),
+      setFillerWords: (words) => set({ fillerWords: words, preset: 'custom' }),
 
       toggleFillerWord: (word) =>
         set({
+          preset: 'custom',
           fillerWords: get().fillerWords.map((fw) =>
             fw.word === word ? { ...fw, enabled: !fw.enabled } : fw
           ),
@@ -54,14 +63,24 @@ export const useSettingsStore = create<SettingsState>()(
         const trimmed = word.trim()
         if (!trimmed || get().fillerWords.some((fw) => fw.word === trimmed)) return
         set({
+          preset: 'custom',
           fillerWords: [...get().fillerWords, { word: trimmed, category: 'custom', enabled: true }],
         })
       },
 
       removeFillerWord: (word) =>
-        set({ fillerWords: get().fillerWords.filter((fw) => fw.word !== word) }),
+        set({
+          preset: 'custom',
+          fillerWords: get().fillerWords.filter((fw) => fw.word !== word),
+        }),
 
-      setSpeedRange: (range) => set({ speedRange: range }),
+      setSpeedRange: (range) => set({ speedRange: range, preset: 'custom' }),
+      applyPreset: (presetId) =>
+        set({
+          preset: presetId,
+          speedRange: { ...PRACTICE_PRESETS[presetId].speedRange },
+          fillerWords: applyPresetToFillerWords(get().fillerWords, presetId),
+        }),
       setFillerDetectionEnabled: (v) => set({ fillerDetectionEnabled: v }),
       setSpeedMonitoringEnabled: (v) => set({ speedMonitoringEnabled: v }),
       setRepeatConnectorEnabled: (v) => set({ repeatConnectorEnabled: v }),

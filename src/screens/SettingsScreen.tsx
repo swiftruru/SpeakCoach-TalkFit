@@ -2,6 +2,11 @@ import { useState } from 'react'
 import { useSettingsStore } from '../stores/settingsStore'
 import { useHistoryStore } from '../stores/historyStore'
 import { CATEGORY_COLORS, DEFAULT_FILLER_WORDS } from '../lib/fillerWords'
+import {
+  getPresetCategoryLabels,
+  PRACTICE_PRESET_LIST,
+  type PracticePresetDefinition,
+} from '../lib/practicePresets'
 import type { FillerWord } from '../types'
 
 const LANGUAGES = [
@@ -59,6 +64,50 @@ export function SettingsScreen() {
             value={settings.repeatConnectorEnabled}
             onChange={settings.setRepeatConnectorEnabled}
           />
+        </div>
+      </section>
+
+      {/* Practice presets */}
+      <section data-annotation-id="settings-practice-presets">
+        <SectionTitle>練習情境</SectionTitle>
+        <div className="mx-4 bg-white rounded-2xl shadow-sm p-4">
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div>
+              <p className="text-sm font-semibold text-gray-800">一鍵套用情境設定</p>
+              <p className="text-[11px] text-gray-400 mt-1 leading-relaxed">
+                會同步調整語速區間與預設贅字類型。若你後續手動調整語速或贅字清單，系統會自動切換為自訂設定。
+              </p>
+            </div>
+            <span
+              className={`text-[10px] font-semibold px-2 py-1 rounded-full flex-shrink-0 ${
+                settings.preset === 'custom'
+                  ? 'bg-amber-50 text-amber-700'
+                  : 'bg-blue-50 text-blue-700'
+              }`}
+            >
+              {settings.preset === 'custom' ? '自訂中' : '已套用'}
+            </span>
+          </div>
+
+          <div className="space-y-2.5">
+            {PRACTICE_PRESET_LIST.map((preset) => (
+              <PresetCard
+                key={preset.id}
+                preset={preset}
+                isActive={settings.preset === preset.id}
+                onClick={() => settings.applyPreset(preset.id)}
+              />
+            ))}
+          </div>
+
+          {settings.preset === 'custom' && (
+            <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
+              <p className="text-[11px] font-semibold text-amber-800">目前使用自訂設定</p>
+              <p className="text-[11px] text-amber-700 mt-0.5 leading-relaxed">
+                重新點選任一情境卡片，即可快速回到對應的語速與贅字偵測組合。
+              </p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -330,5 +379,65 @@ function SpeedRangeSlider({
         <span className="text-red-500">⬤ 偏快</span>
       </div>
     </div>
+  )
+}
+
+function PresetCard({
+  preset,
+  isActive,
+  onClick,
+}: {
+  preset: PracticePresetDefinition
+  isActive: boolean
+  onClick: () => void
+}) {
+  const categoryLabels = getPresetCategoryLabels(preset.enabledCategories)
+
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full rounded-2xl border p-3 text-left transition-all ${
+        isActive
+          ? 'border-accent-blue bg-blue-50/70 shadow-sm'
+          : 'border-gray-200 bg-gray-50 hover:border-blue-200 hover:bg-blue-50/40'
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-gray-800">{preset.label}</p>
+          <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">{preset.description}</p>
+        </div>
+        <span
+          className={`text-[10px] font-semibold px-2 py-1 rounded-full flex-shrink-0 ${
+            isActive
+              ? 'bg-blue-100 text-blue-700'
+              : 'bg-white text-gray-400 border border-gray-200'
+          }`}
+        >
+          {isActive ? '目前使用' : '套用'}
+        </span>
+      </div>
+
+      <div className="mt-3 flex items-center gap-2 flex-wrap">
+        <span className="text-[11px] font-medium text-gray-700">
+          語速 {preset.speedRange.low}–{preset.speedRange.high} 字/分
+        </span>
+      </div>
+
+      <div className="mt-2.5 flex flex-wrap gap-1.5">
+        {categoryLabels.map((label) => (
+          <span
+            key={label}
+            className={`text-[10px] px-2 py-1 rounded-full ${
+              isActive
+                ? 'bg-white text-blue-700 border border-blue-100'
+                : 'bg-white text-gray-500 border border-gray-200'
+            }`}
+          >
+            {label}
+          </span>
+        ))}
+      </div>
+    </button>
   )
 }
