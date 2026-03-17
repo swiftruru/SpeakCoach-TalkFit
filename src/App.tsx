@@ -14,6 +14,7 @@ import { ReportScreen } from './screens/ReportScreen'
 import { HistoryScreen } from './screens/HistoryScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
 import { MicSelector } from './components/MicSelector'
+import { QRPopover } from './components/QRPopover'
 import { useDemoStore } from './demo/demoStore'
 import { useLiveDemo } from './demo/useLiveDemo'
 import { DemoOverlay } from './demo/DemoOverlay'
@@ -36,6 +37,7 @@ export default function App() {
   const { screen, setScreen } = useNavigationStore()
   const [hoveredAnnotationId, setHoveredAnnotationId] = useState<string | null>(null)
   const [showMicMenu, setShowMicMenu] = useState(false)
+  const [showQR, setShowQR] = useState(false)
   const [showStoryModal, setShowStoryModal] = useState(false)
   const [showDesktopNotice, setShowDesktopNotice] = useState(true)
   const sessions = useHistoryStore((s) => s.sessions)
@@ -182,6 +184,33 @@ export default function App() {
           </button>
 
           <div className="w-px h-4 bg-border-divider" />
+
+          {/* QR Code */}
+          <div className="relative">
+            <button
+              onClick={() => setShowQR((v) => !v)}
+              title="掃描 QR Code 在手機上開啟"
+              className={`w-8 h-8 rounded-full border transition-all flex items-center justify-center ${
+                showQR
+                  ? 'bg-bg-card border-accent-blue/40 text-accent-blue-light'
+                  : 'border-divider text-text-secondary hover:text-text-primary'
+              }`}
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="7" height="7" rx="1" />
+                <rect x="14" y="3" width="7" height="7" rx="1" />
+                <rect x="3" y="14" width="7" height="7" rx="1" />
+                <rect x="14" y="14" width="3" height="3" />
+                <rect x="18" y="14" width="3" height="3" />
+                <rect x="14" y="18" width="3" height="3" />
+                <rect x="18" y="18" width="3" height="3" />
+                <rect x="5" y="5" width="3" height="3" fill="currentColor" stroke="none" />
+                <rect x="16" y="5" width="3" height="3" fill="currentColor" stroke="none" />
+                <rect x="5" y="16" width="3" height="3" fill="currentColor" stroke="none" />
+              </svg>
+            </button>
+            {showQR && <QRPopover onClose={() => setShowQR(false)} />}
+          </div>
 
           {/* Mic selector — icon only */}
           <div className="relative">
