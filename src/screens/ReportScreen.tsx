@@ -100,6 +100,21 @@ export function ReportScreen() {
 
     const color = markerTone(marker.kind)
     const isActive = marker.id === scopedActiveMarkerId
+    const isInteractive = marker.kind !== 'speed-normal'
+
+    if (!isInteractive) {
+      return (
+        <circle
+          cx={cx}
+          cy={cy}
+          r={2.5}
+          fill="#93c5fd"
+          fillOpacity={0.45}
+          stroke="#fff"
+          strokeWidth={1}
+        />
+      )
+    }
 
     return (
       <g
@@ -272,7 +287,7 @@ export function ReportScreen() {
         >
           <h3 className="text-sm font-semibold text-gray-700 mb-1">語速曲線</h3>
           <p className="text-[10px] text-gray-400 mb-2">
-            藍線為語速，灰色區域為建議範圍（{speedRange.low}–{speedRange.high} 字/分），點擊點位可定位逐字稿
+            藍線為語速，灰色區域為建議範圍（{speedRange.low}–{speedRange.high} 字/分），僅凸顯偏快或偏慢點位供定位
           </p>
           <ResponsiveContainer width="100%" height={120}>
             <LineChart data={report.speedHistory} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
