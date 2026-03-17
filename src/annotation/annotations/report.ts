@@ -40,7 +40,7 @@ export const reportAnnotations: AnnotationItem[] = [
     id: 'annotated-transcript',
     targetId: 'annotated-transcript',
     title: '逐字稿標記',
-    description: '完整逐字稿，贅字以紅色背景高亮，語速過快的片段加橘色底線，方便事後覆盤確認問題所在。',
+    description: '完整逐字稿，贅字以紅色背景高亮，語速過快的片段加橘色底線。點選問題後可直接定位，並從提示卡上的「重練這段」立即回到練習頁。',
     type: 'feature',
   },
   {

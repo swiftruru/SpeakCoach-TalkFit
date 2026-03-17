@@ -1,94 +1,63 @@
-import { useEffect, useRef, useCallback, useMemo, useState } from 'react'
+import { useEffect, useRef, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigationStore } from '../stores/navigationStore'
 import { useSessionStore } from '../stores/sessionStore'
 import { useReportStore } from '../stores/reportStore'
 import { useHistoryStore } from '../stores/historyStore'
 import { useSettingsStore } from '../stores/settingsStore'
-import { useSpeechRecognition } from '../hooks/useSpeechRecognition'
-import { useSpeechRate } from '../hooks/useSpeechRate'
-import { detectFillers, buildSessionSummary, formatDuration } from '../lib/speechAnalysis'
+import { useRetryPracticeStore } from '../stores/retryPracticeStore'
+import { buildSessionSummary, formatDuration } from '../lib/speechAnalysis'
 import { PRACTICE_GOALS, evaluatePracticeGoal } from '../lib/practiceGoals'
 import { wpmStatus, wpmColor, wpmLabel } from '../lib/grading'
 import { useAudioLevel } from '../hooks/useAudioLevel'
 import { useDemoStore } from '../demo/demoStore'
-import type { TranscriptSegment } from '../types'
+import type { Screen, TranscriptSegment } from '../types'
+
+const SCREEN_LABELS: Record<Screen, string> = {
+  home: '首頁',
+  practice: '練習',
+  report: '報告',
+  history: '紀錄',
+  settings: '設定',
+}
 
 export function PracticeScreen() {
   const setScreen = useNavigationStore((s) => s.setScreen)
+  const requestScreen = useNavigationStore((s) => s.requestScreen)
+  const pendingScreen = useNavigationStore((s) => s.pendingScreen)
+  const isRecordingExitConfirmOpen = useNavigationStore((s) => s.isRecordingExitConfirmOpen)
+  const confirmRecordingExit = useNavigationStore((s) => s.confirmRecordingExit)
+  const cancelRecordingExit = useNavigationStore((s) => s.cancelRecordingExit)
   const session = useSessionStore()
   const setReport = useReportStore((s) => s.setReport)
   const addHistory = useHistoryStore((s) => s.addSession)
   const settings = useSettingsStore()
+  const retryTarget = useRetryPracticeStore((s) => s.target)
+  const clearRetryPractice = useRetryPracticeStore((s) => s.clearRetryPractice)
   const isDemoActive = useDemoStore((s) => s.isDemoActive)
   const stopDemo = useDemoStore((s) => s.stopDemo)
   const practiceGoalId = settings.practiceGoalId
   const practiceSpeedRange = settings.speedRange
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const [interimText, setInterimText] = useState('')
-  const [micError, setMicError] = useState<string | null>(null)
-  const { addText, reset: resetRate } = useSpeechRate(10)
-
-  const handleResult = useCallback((text: string, isFinal: boolean) => {
-    if (!isFinal) {
-      setInterimText(text)
-      const { wpm } = addText(text)
-      session.updateCurrentWpm(wpm)
-      return
-    }
-
-    setInterimText('')
-    const { wpm } = addText(text)
-    session.updateCurrentWpm(wpm)
-
-    const { isFiller, fillerWord } = detectFillers(text, settings.fillerWords)
-    const status = wpmStatus(wpm, settings.speedRange.low, settings.speedRange.high)
-
-    const segment: TranscriptSegment = {
-      text,
-      isFiller,
-      fillerWord,
-      timestamp: session.elapsedSeconds,
-      isSpeedFast: status === 'fast',
-      isSpeedSlow: status === 'slow',
-    }
-    session.addSegment(segment)
-
-    if (isFiller && fillerWord) {
-      session.flashFiller(fillerWord)
-    }
-
-    // Record speed point every final result
-    session.addSpeedPoint({ time: session.elapsedSeconds, wpm })
-  }, [settings.fillerWords, settings.speedRange, session, addText])
-
-  const { start, stop, modelState } = useSpeechRecognition({
-    language: settings.language,
-    enabled: !isDemoActive,
-    onResult: handleResult,
-    onError: (err) => setMicError(err),
-  })
 
   // Start recording
   const handleStart = useCallback(() => {
     session.reset()
-    resetRate()
     session.startRecording()
-    start()
 
     timerRef.current = setInterval(() => session.tick(), 1000)
-  }, [session, start, resetRate])
+  }, [session])
 
   // Stop and go to report
   const handleStop = useCallback(() => {
-    stop()
     session.stopRecording()
     if (timerRef.current) clearInterval(timerRef.current)
 
     const report = buildSessionSummary(
       Date.now().toString(),
-      '練習 ' + new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
+      retryTarget?.sessionTitle
+        ?? ('練習 ' + new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })),
       session.elapsedSeconds,
       session.transcript,
       session.speedHistory,
@@ -97,34 +66,41 @@ export function PracticeScreen() {
         speedRangeSnapshot: practiceSpeedRange,
       }
     )
+    clearRetryPractice()
     setReport(report)
     addHistory(report)
     setScreen('report')
-  }, [session, stop, setReport, addHistory, setScreen, practiceGoalId, practiceSpeedRange])
+  }, [
+    session,
+    setReport,
+    addHistory,
+    setScreen,
+    practiceGoalId,
+    practiceSpeedRange,
+    retryTarget,
+    clearRetryPractice,
+  ])
 
   const handlePause = useCallback(() => {
     session.pauseRecording()
-    if (session.isPaused) start()
-    else stop()
-  }, [session, start, stop])
+  }, [session])
 
-  // External demo/replay modes drive the screen state themselves, so stop any live mic loop first.
+  // External demo/replay modes drive the screen state themselves, so stop any live timer first.
   useEffect(() => {
     if (!isDemoActive) return
-    stop()
     if (timerRef.current) {
       clearInterval(timerRef.current)
       timerRef.current = null
     }
-  }, [isDemoActive, stop])
+  }, [isDemoActive])
 
   // External demo mode drives this screen itself, so only auto-start in normal use.
   useEffect(() => {
     if (isDemoActive) return
     handleStart()
     return () => {
-      stop()
       if (timerRef.current) clearInterval(timerRef.current)
+      clearRetryPractice()
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -152,10 +128,10 @@ export function PracticeScreen() {
 
   const WAVE_BARS = 20
   const isRecordingActive = session.isRecording && !session.isPaused
-  const audioLevels = useAudioLevel(isRecordingActive, WAVE_BARS, settings.micDeviceId, !isDemoActive)
+  const audioLevels = useAudioLevel(isRecordingActive, WAVE_BARS, settings.micDeviceId, false)
 
   return (
-    <div className="flex flex-col bg-gray-950 min-h-full text-white pb-4">
+    <div className="relative flex flex-col bg-gray-950 min-h-full text-white pb-4">
       {/* Header */}
       <div
         data-annotation-id="practice-badge"
@@ -165,12 +141,21 @@ export function PracticeScreen() {
           <div className="flex items-center gap-2">
             <span className={`w-2.5 h-2.5 rounded-full ${session.isRecording && !session.isPaused ? 'bg-red-500 animate-pulse-dot' : 'bg-gray-500'}`} />
             <span className="text-sm font-medium text-gray-300">
-              {session.isPaused ? '已暫停' : session.isRecording ? '錄音中' : '準備中'}
+              {session.isPaused
+                ? '已暫停'
+                : session.isRecording
+                  ? retryTarget ? '片段重練中' : '錄音中'
+                  : '準備中'}
             </span>
           </div>
           {isDemoActive && (
             <p className="text-[11px] text-accent-amber mt-1">
               示範模式中，無需麥克風
+            </p>
+          )}
+          {!isDemoActive && (
+            <p className="text-[11px] text-gray-500 mt-1">
+              原型模式中，不會真的收音
             </p>
           )}
         </div>
@@ -209,6 +194,30 @@ export function PracticeScreen() {
           {goalEvaluation.statusText}
         </p>
       </div>
+
+      {retryTarget && (
+        <div
+          data-annotation-id="retry-practice-banner"
+          className="mx-4 mb-4 rounded-2xl border border-accent-amber/30 bg-amber-500/10 px-3.5 py-3"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-amber-200/80">問題片段重練</p>
+              <p className="text-sm font-semibold text-white mt-1">{retryTarget.sessionTitle}</p>
+              <p className="text-[11px] text-amber-100/80 mt-1 leading-relaxed">
+                {retryTarget.prompt}
+              </p>
+            </div>
+            <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-white/10 text-amber-100 flex-shrink-0">
+              建議 {retryTarget.recommendedDurationSeconds} 秒
+            </span>
+          </div>
+          <div className="mt-2 rounded-xl bg-black/20 px-3 py-2">
+            <p className="text-[10px] text-amber-100/70 mb-1">原始片段</p>
+            <p className="text-[11px] text-gray-100 leading-relaxed">「{retryTarget.snippet}」</p>
+          </div>
+        </div>
+      )}
 
       {/* Live stats */}
       <div
@@ -261,11 +270,14 @@ export function PracticeScreen() {
           {session.transcript.map((seg, i) => (
             <TranscriptWord key={i} segment={seg} />
           ))}
-          {interimText && (
-            <span className="text-gray-500 italic">{interimText}</span>
-          )}
           {session.transcript.length === 0 && !session.isRecording && (
             <span className="text-gray-600">開始說話後，文字將會出現在這裡…</span>
+          )}
+          {session.transcript.length === 0 && session.isRecording && retryTarget && (
+            <span className="text-gray-500">請重新講一次這段，先專注修正目標片段…</span>
+          )}
+          {session.transcript.length === 0 && session.isRecording && !retryTarget && (
+            <span className="text-gray-500">這是 App 原型頁面，這裡不會真的辨識麥克風輸入。</span>
           )}
         </p>
       </div>
@@ -310,7 +322,7 @@ export function PracticeScreen() {
               stopDemo()
               return
             }
-            setScreen('home')
+            requestScreen('home')
           }}
           className="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-300 hover:bg-gray-700 transition-colors"
         >
@@ -320,21 +332,51 @@ export function PracticeScreen() {
         </motion.button>
       </div>
 
-      {!isDemoActive && modelState.status === 'loading' && (
-        <p className="text-center text-xs text-gray-500 mt-3">
-          載入語音模型 {'progress' in modelState ? modelState.progress : 0}%…
-        </p>
-      )}
-      {!isDemoActive && modelState.status === 'error' && (
-        <p className="text-center text-xs text-red-400 mt-2 px-4">
-          語音模型載入失敗
-        </p>
-      )}
-      {micError && (
-        <p className="text-center text-xs text-red-400 mt-2 px-4">
-          麥克風錯誤：{micError}
-        </p>
-      )}
+      <AnimatePresence>
+        {isRecordingExitConfirmOpen && (
+          <>
+            <motion.div
+              className="absolute inset-0 z-40 bg-black/45 backdrop-blur-[2px]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              onClick={cancelRecordingExit}
+            />
+            <motion.div
+              className="absolute inset-0 z-50 flex items-center justify-center px-5"
+              initial={{ opacity: 0, scale: 0.96, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 8 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+            >
+              <div className="w-full max-w-[280px] overflow-hidden rounded-[22px] bg-white/95 text-center text-gray-900 shadow-2xl shadow-black/30">
+                <div className="px-5 pt-5 pb-4">
+                  <p className="text-[17px] font-semibold tracking-[-0.01em]">停止錄製？</p>
+                  <p className="mt-2 text-[13px] leading-5 text-gray-500">
+                    你正在錄音中。若要前往「{pendingScreen ? SCREEN_LABELS[pendingScreen] : '其他頁面'}」，
+                    這次練習會立即停止，且不會產生報告。
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 border-t border-gray-200">
+                  <button
+                    onClick={cancelRecordingExit}
+                    className="py-3.5 text-[17px] font-medium text-accent-blue border-r border-gray-200"
+                  >
+                    取消
+                  </button>
+                  <button
+                    onClick={confirmRecordingExit}
+                    className="py-3.5 text-[17px] font-semibold text-red-500"
+                  >
+                    停止並離開
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

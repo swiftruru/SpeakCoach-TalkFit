@@ -13,7 +13,6 @@ import { PracticeScreen } from './screens/PracticeScreen'
 import { ReportScreen } from './screens/ReportScreen'
 import { HistoryScreen } from './screens/HistoryScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
-import { MicSelector } from './components/MicSelector'
 import { useDemoStore } from './demo/demoStore'
 import { useLiveDemo } from './demo/useLiveDemo'
 import { DemoOverlay } from './demo/DemoOverlay'
@@ -84,9 +83,8 @@ const MOBILE_NAV = [
 ]
 
 export default function App() {
-  const { screen, setScreen } = useNavigationStore()
+  const { screen, requestScreen } = useNavigationStore()
   const [hoveredAnnotationId, setHoveredAnnotationId] = useState<string | null>(null)
-  const [showMicMenu, setShowMicMenu] = useState(false)
   const [showStoryModal, setShowStoryModal] = useState(false)
   const [showDesktopNotice, setShowDesktopNotice] = useState(true)
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
@@ -251,33 +249,6 @@ export default function App() {
           </button>
 
           <div className="hidden md:block w-px h-4 bg-border-divider" />
-
-          {/* Mic selector — desktop only */}
-          <div className="relative hidden md:block">
-            <button
-              onClick={() => setShowMicMenu((v) => !v)}
-              title="設定收音裝置"
-              className={`w-8 h-8 rounded-full border transition-all flex items-center justify-center ${
-                showMicMenu
-                  ? 'bg-bg-card border-accent-blue/40 text-accent-blue-light'
-                  : 'border-divider text-text-secondary hover:text-text-primary'
-              }`}
-            >
-              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" />
-              </svg>
-            </button>
-            {showMicMenu && (
-              <div
-                className="absolute right-0 top-full mt-2 z-50 bg-bg-card border border-divider rounded-xl shadow-xl py-2 min-w-[260px]"
-                onMouseLeave={() => setShowMicMenu(false)}
-              >
-                <MicSelector onClose={() => setShowMicMenu(false)} />
-              </div>
-            )}
-          </div>
-
           {/* Theme toggle */}
           <button
             onClick={() => setIsDark((v) => !v)}
@@ -337,7 +308,7 @@ export default function App() {
             screen={screen}
             hoveredId={hoveredAnnotationId}
             onHoverItem={setHoveredAnnotationId}
-            onNavigate={setScreen}
+            onNavigate={requestScreen}
           />
         </div>
       </div>
@@ -347,7 +318,7 @@ export default function App() {
         {MOBILE_NAV.map(({ id, label, icon }) => (
           <button
             key={id}
-            onClick={() => { setScreen(id); setShowMobileAnnotations(false) }}
+            onClick={() => { requestScreen(id); setShowMobileAnnotations(false) }}
             className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-[10px] transition-all ${
               screen === id && !showMobileAnnotations ? 'text-accent-blue-light' : 'text-text-muted'
             }`}
@@ -403,7 +374,7 @@ export default function App() {
                   screen={screen}
                   hoveredId={hoveredAnnotationId}
                   onHoverItem={setHoveredAnnotationId}
-                  onNavigate={(s) => { setScreen(s); setShowMobileAnnotations(false) }}
+                  onNavigate={(s) => { requestScreen(s); setShowMobileAnnotations(false) }}
                 />
               </div>
             </motion.div>

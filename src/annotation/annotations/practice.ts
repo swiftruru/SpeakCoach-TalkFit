@@ -2,6 +2,13 @@ import type { AnnotationItem } from '../types'
 
 export const practiceAnnotations: AnnotationItem[] = [
   {
+    id: 'retry-practice-banner',
+    targetId: 'retry-practice-banner',
+    title: '片段重練提示',
+    description: '從報告頁指定問題片段後，這裡會顯示原始片段與重練提示，讓使用者不用重新找上下文，就能直接針對最需要修正的一小段再練一次。',
+    type: 'feature',
+  },
+  {
     id: 'practice-badge',
     targetId: 'practice-badge',
     title: '錄音中指示燈',

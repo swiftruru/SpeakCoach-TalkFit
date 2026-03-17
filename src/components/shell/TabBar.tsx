@@ -24,7 +24,7 @@ const SettingsIcon = ({ active }: { active: boolean }) => (
 )
 
 export function TabBar() {
-  const { screen, setScreen } = useNavigationStore()
+  const { screen, requestScreen } = useNavigationStore()
 
   return (
     <div className="flex items-center justify-around px-2 pt-2 pb-6 bg-white/90 backdrop-blur-sm border-t border-gray-200 flex-shrink-0">
@@ -32,21 +32,21 @@ export function TabBar() {
         id="home"
         label="首頁"
         active={screen === 'home'}
-        onClick={() => setScreen('home')}
+        onClick={() => requestScreen('home')}
         icon={<HomeIcon active={screen === 'home'} />}
       />
       <TabItem
         id="history"
         label="紀錄"
         active={screen === 'history'}
-        onClick={() => setScreen('history')}
+        onClick={() => requestScreen('history')}
         icon={<HistoryIcon active={screen === 'history'} />}
       />
       <TabItem
         id="settings"
         label="設定"
         active={screen === 'settings'}
-        onClick={() => setScreen('settings')}
+        onClick={() => requestScreen('settings')}
         icon={<SettingsIcon active={screen === 'settings'} />}
       />
     </div>

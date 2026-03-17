@@ -60,6 +60,20 @@ export interface ReportIssueMarker {
   occurrenceCount?: number
 }
 
+export interface RetryPracticeTarget {
+  sourceReportId: string
+  sourceReportTitle: string
+  markerId: string
+  kind: Exclude<ReportIssueKind, 'speed-normal'>
+  label: string
+  timestamp: number
+  segmentIndex: number
+  snippet: string
+  prompt: string
+  sessionTitle: string
+  recommendedDurationSeconds: number
+}
+
 export interface SessionSummary {
   id: string
   title: string

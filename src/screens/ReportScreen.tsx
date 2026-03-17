@@ -1,6 +1,7 @@
 import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigationStore } from '../stores/navigationStore'
 import { useReportStore } from '../stores/reportStore'
+import { useRetryPracticeStore } from '../stores/retryPracticeStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ReferenceLine,
@@ -10,6 +11,7 @@ import { formatDuration, formatDate } from '../lib/speechAnalysis'
 import { PRACTICE_GOALS, evaluatePracticeGoal } from '../lib/practiceGoals'
 import { buildReportCoachingTips } from '../lib/reportCoaching'
 import { buildFillerMarkers, buildSpeedMarkers, describeReportIssue } from '../lib/reportIssueMarkers'
+import { buildRetryPracticeTarget } from '../lib/retryPractice'
 import {
   buildReportShareCardData,
   buildReportShareFilename,
@@ -23,6 +25,7 @@ import type { ReportIssueMarker, TranscriptSegment } from '../types'
 export function ReportScreen() {
   const setScreen = useNavigationStore((s) => s.setScreen)
   const report = useReportStore((s) => s.report)
+  const startRetryPractice = useRetryPracticeStore((s) => s.startRetryPractice)
   const configuredSpeedRange = useSettingsStore((s) => s.speedRange)
   const currentPracticeGoalId = useSettingsStore((s) => s.practiceGoalId)
   const [activeMarkerId, setActiveMarkerId] = useState<string | null>(null)
@@ -116,6 +119,13 @@ export function ReportScreen() {
   const handleSpeedMarkerClick = useCallback((markerId: string) => {
     setActiveMarkerId(markerId)
   }, [])
+
+  const handleRetryPractice = useCallback(() => {
+    if (!report || !activeMarker || activeMarker.kind === 'speed-normal') return
+    const target = buildRetryPracticeTarget(report, activeMarker, speedRange)
+    startRetryPractice(target)
+    setScreen('practice')
+  }, [activeMarker, report, setScreen, speedRange, startRetryPractice])
 
   const renderSpeedDot = useCallback((props: unknown) => {
     const { cx, cy, index } = props as { cx?: number; cy?: number; index?: number }
@@ -454,13 +464,22 @@ export function ReportScreen() {
                   {describeReportIssue(activeMarker)}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setActiveMarkerId(null)}
-                className="text-[11px] font-medium opacity-80 hover:opacity-100"
-              >
-                清除
-              </button>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={handleRetryPractice}
+                  className="rounded-full bg-white/85 px-2.5 py-1 text-[11px] font-semibold text-gray-700 hover:bg-white"
+                >
+                  重練這段
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveMarkerId(null)}
+                  className="text-[11px] font-medium opacity-80 hover:opacity-100"
+                >
+                  清除
+                </button>
+              </div>
             </div>
           </div>
         )}
