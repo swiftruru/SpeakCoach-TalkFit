@@ -45,6 +45,15 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Phone tap ripple */
+  @keyframes phone-ripple {
+    from { transform: translate(-50%, -50%) scale(0);   opacity: 0.5; }
+    to   { transform: translate(-50%, -50%) scale(2.8); opacity: 0;   }
+  }
+  .phone-ripple {
+    animation: phone-ripple 0.5s ease-out forwards;
+  }
+
   /* Custom scrollbar for phone inner */
   .phone-scroll::-webkit-scrollbar {
     display: none;

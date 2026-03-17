@@ -89,6 +89,19 @@ export function PhoneFrame({ screen, children }: PhoneFrameProps) {
                   onMouseUp={drag.onMouseUp}
                   onMouseLeave={drag.onMouseLeave}
                 >
+                  {/* Ripples */}
+                  {drag.ripples.map((r) => (
+                    <div
+                      key={r.id}
+                      className="phone-ripple pointer-events-none absolute rounded-full"
+                      style={{
+                        width: 80, height: 80,
+                        left: r.x, top: r.y,
+                        background: 'rgba(255,255,255,0.35)',
+                      }}
+                    />
+                  ))}
+
                   {/* Custom touch-point cursor */}
                   {drag.cursor.visible && (
                     <div

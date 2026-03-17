@@ -1,14 +1,18 @@
 import { useRef, useCallback, useState } from 'react'
 
+interface Ripple { id: number; x: number; y: number }
+
 export function useDragScroll() {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const isDragging = useRef(false)
   const startY = useRef(0)
   const startScrollTop = useRef(0)
+  const rippleId = useRef(0)
 
   const [cursor, setCursor] = useState<{ x: number; y: number; visible: boolean; pressed: boolean }>({
     x: 0, y: 0, visible: false, pressed: false,
   })
+  const [ripples, setRipples] = useState<Ripple[]>([])
 
   const getScroller = () =>
     wrapperRef.current?.querySelector<HTMLElement>('.phone-scroll') ?? null
@@ -48,6 +52,14 @@ export function useDragScroll() {
     startScrollTop.current = scroller.scrollTop
     document.body.style.userSelect = 'none'
     setCursor((prev) => ({ ...prev, pressed: true }))
+
+    // Spawn ripple
+    const pos = getRelPos(e)
+    const id = ++rippleId.current
+    setRipples((prev) => [...prev, { id, x: pos.x, y: pos.y }])
+    setTimeout(() => {
+      setRipples((prev) => prev.filter((r) => r.id !== id))
+    }, 520)
   }, [])
 
   const onMouseUp = useCallback(() => {
@@ -62,5 +74,5 @@ export function useDragScroll() {
     setCursor((prev) => ({ ...prev, visible: false, pressed: false }))
   }, [])
 
-  return { wrapperRef, cursor, onMouseEnter, onMouseMove, onMouseDown, onMouseUp, onMouseLeave }
+  return { wrapperRef, cursor, ripples, onMouseEnter, onMouseMove, onMouseDown, onMouseUp, onMouseLeave }
 }
