@@ -8,7 +8,14 @@ import {
 } from 'recharts'
 import { formatDuration, formatDate } from '../lib/speechAnalysis'
 import { buildFillerMarkers, buildSpeedMarkers, describeReportIssue } from '../lib/reportIssueMarkers'
+import {
+  buildReportShareCardData,
+  buildReportShareFilename,
+  exportReportSharePng,
+  exportReportShareSvg,
+} from '../lib/reportShare'
 import { gradeColor, fillerCountColor } from '../lib/grading'
+import { ReportShareCard } from '../components/report/ReportShareCard'
 import type { ReportIssueMarker, TranscriptSegment } from '../types'
 
 export function ReportScreen() {
@@ -17,6 +24,9 @@ export function ReportScreen() {
   const speedRange = useSettingsStore((s) => s.speedRange)
   const [activeMarkerId, setActiveMarkerId] = useState<string | null>(null)
   const transcriptRefs = useRef<Array<HTMLSpanElement | null>>([])
+  const shareCardRef = useRef<SVGSVGElement | null>(null)
+  const [shareExporting, setShareExporting] = useState<'png' | 'svg' | null>(null)
+  const [shareError, setShareError] = useState<string | null>(null)
 
   const sortedFillers = useMemo(
     () => (report ? Object.entries(report.fillerCounts).sort((a, b) => b[1] - a[1]) : []),
@@ -27,6 +37,10 @@ export function ReportScreen() {
   const fillerMarkers = useMemo(() => (report ? buildFillerMarkers(report) : []), [report])
   const speedMarkers = useMemo(
     () => (report ? buildSpeedMarkers(report, speedRange) : []),
+    [report, speedRange]
+  )
+  const shareCardData = useMemo(
+    () => (report ? buildReportShareCardData(report, speedRange) : null),
     [report, speedRange]
   )
 
@@ -151,6 +165,26 @@ export function ReportScreen() {
       </g>
     )
   }, [handleSpeedMarkerClick, scopedActiveMarkerId, speedMarkersByPoint])
+
+  const handleExportShareCard = useCallback(async (format: 'png' | 'svg') => {
+    if (!report || !shareCardRef.current) return
+
+    setShareExporting(format)
+    setShareError(null)
+
+    try {
+      const filename = `${buildReportShareFilename(report)}.${format}`
+      if (format === 'png') {
+        await exportReportSharePng(shareCardRef.current, filename)
+      } else {
+        exportReportShareSvg(shareCardRef.current, filename)
+      }
+    } catch (error) {
+      setShareError(error instanceof Error ? error.message : '分享卡匯出失敗')
+    } finally {
+      setShareExporting(null)
+    }
+  }, [report])
 
   if (!report) {
     return (
@@ -367,24 +401,67 @@ export function ReportScreen() {
         </div>
       </div>
 
+      {/* Share card preview */}
+      {shareCardData && (
+        <div className="mx-4 mb-3 bg-white rounded-2xl p-4 shadow-sm">
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold text-gray-700">分享卡匯出</h3>
+            <p className="text-[10px] text-gray-400 mt-0.5">
+              專用版面會整理重點指標、Top 贅字與語速節奏，適合貼到作品集與 hackathon 成果頁
+            </p>
+          </div>
+          <div className="rounded-[28px] border border-gray-200 bg-slate-50 px-4 py-5">
+            <div className="mx-auto w-full max-w-[240px]">
+              <ReportShareCard
+                ref={shareCardRef}
+                data={shareCardData}
+                className="block w-full h-auto"
+              />
+            </div>
+          </div>
+          <p className="text-[10px] text-gray-400 mt-2">
+            `PNG` 適合直接分享；`SVG` 適合後續排版或再編修。
+          </p>
+        </div>
+      )}
+
       {/* Share/export */}
       <div
         data-annotation-id="report-share-row"
-        className="flex gap-2 mx-4"
+        className="grid grid-cols-2 gap-2 mx-4"
       >
         <button
           onClick={copyText}
-          className="flex-1 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 flex items-center justify-center gap-1.5 hover:bg-gray-50 transition-colors"
+          className="py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 flex items-center justify-center gap-1.5 hover:bg-gray-50 transition-colors"
         >
           <span>📋</span> 複製摘要
         </button>
         <button
           onClick={exportJSON}
-          className="flex-1 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 flex items-center justify-center gap-1.5 hover:bg-gray-50 transition-colors"
+          className="py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 flex items-center justify-center gap-1.5 hover:bg-gray-50 transition-colors"
         >
           <span>⬇</span> 匯出 JSON
         </button>
+        <button
+          onClick={() => void handleExportShareCard('png')}
+          disabled={!shareCardData || shareExporting !== null}
+          className="py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 flex items-center justify-center gap-1.5 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span>🖼</span> {shareExporting === 'png' ? '匯出中…' : '分享卡 PNG'}
+        </button>
+        <button
+          onClick={() => void handleExportShareCard('svg')}
+          disabled={!shareCardData || shareExporting !== null}
+          className="py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 flex items-center justify-center gap-1.5 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span>◇</span> {shareExporting === 'svg' ? '匯出中…' : '分享卡 SVG'}
+        </button>
       </div>
+      {shareError && (
+        <p className="mx-4 mt-2 text-[11px] text-red-500">
+          {shareError}
+        </p>
+      )}
     </div>
   )
 }
