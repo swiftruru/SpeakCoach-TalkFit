@@ -33,9 +33,10 @@ interface AnnotationPanelProps {
   screen: Screen
   hoveredId: string | null
   onHoverItem: (id: string | null) => void
+  onNavigate: (screen: Screen) => void
 }
 
-export function AnnotationPanel({ screen, hoveredId, onHoverItem }: AnnotationPanelProps) {
+export function AnnotationPanel({ screen, hoveredId, onHoverItem, onNavigate }: AnnotationPanelProps) {
   const annotations = SCREEN_ANNOTATIONS[screen] ?? []
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
@@ -49,20 +50,26 @@ export function AnnotationPanel({ screen, hoveredId, onHoverItem }: AnnotationPa
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Panel header */}
-      <div className="px-5 pt-5 pb-3 flex-shrink-0">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="w-2 h-2 rounded-full bg-accent-blue" />
-          <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
-            說明面板
-          </span>
+      {/* Panel header — tab nav */}
+      <div className="flex-shrink-0 px-3 pt-3 pb-0">
+        <div className="flex flex-wrap gap-0.5">
+          {(Object.entries(SCREEN_LABELS) as [Screen, string][]).map(([id, label]) => (
+            <button
+              key={id}
+              onClick={() => onNavigate(id)}
+              className={`text-xs px-3 py-1.5 rounded-lg transition-all ${
+                screen === id
+                  ? 'bg-accent-blue/10 text-accent-blue-light font-medium'
+                  : 'text-text-muted hover:text-text-secondary hover:bg-bg-card'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
-        <h2 className="text-lg font-semibold text-text-primary">
-          {SCREEN_LABELS[screen]}
-        </h2>
       </div>
 
-      <div className="w-full h-px bg-border-divider flex-shrink-0" />
+      <div className="w-full h-px bg-border-divider flex-shrink-0 mt-2" />
 
       {/* Annotation list */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2 phone-scroll">

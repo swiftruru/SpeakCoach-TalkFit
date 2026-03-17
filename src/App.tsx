@@ -21,13 +21,6 @@ import { DEMO_STEPS } from './demo/demoScript'
 import type { Screen } from './types'
 import './index.css'
 
-const SCREEN_NAV: { id: Screen; label: string }[] = [
-  { id: 'home', label: '首頁' },
-  { id: 'practice', label: '練習中' },
-  { id: 'report', label: '分析報告' },
-  { id: 'history', label: '紀錄' },
-  { id: 'settings', label: '設定' },
-]
 
 function ScreenContent({ screen }: { screen: Screen }) {
   switch (screen) {
@@ -247,23 +240,7 @@ export default function App() {
       <div className="flex-1 flex overflow-hidden">
 
         {/* Phone area */}
-        <div className="flex-1 flex flex-col items-center px-10 pt-5 pb-8 overflow-auto gap-3">
-          {/* Screen nav — sits directly above the phone */}
-          <div className="flex items-center gap-1 flex-shrink-0">
-            {SCREEN_NAV.map(({ id, label }) => (
-              <button
-                key={id}
-                onClick={() => setScreen(id)}
-                className={`text-xs px-3.5 py-1.5 rounded-full border transition-all ${
-                  screen === id
-                    ? 'bg-bg-card border-accent-blue/40 text-accent-blue-light'
-                    : 'border-divider text-text-muted hover:text-text-secondary'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+        <div className="flex-1 flex items-start justify-center px-10 pt-6 pb-8 overflow-auto">
           <div
             style={{ transform: 'scale(0.85)', transformOrigin: 'top center', marginBottom: '-122px' }}
             onMouseOver={handlePhoneMouseOver}
@@ -287,6 +264,7 @@ export default function App() {
             screen={screen}
             hoveredId={hoveredAnnotationId}
             onHoverItem={setHoveredAnnotationId}
+            onNavigate={setScreen}
           />
         </div>
       </div>
