@@ -14,9 +14,16 @@ export function useDragScroll() {
     wrapperRef.current?.querySelector<HTMLElement>('.phone-scroll') ?? null
 
   const getRelPos = (e: React.MouseEvent) => {
-    const rect = wrapperRef.current?.getBoundingClientRect()
-    if (!rect) return { x: 0, y: 0 }
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top }
+    const el = wrapperRef.current
+    if (!el) return { x: 0, y: 0 }
+    const rect = el.getBoundingClientRect()
+    // Compensate for any CSS transform scale applied to an ancestor
+    const scaleX = rect.width / el.offsetWidth
+    const scaleY = rect.height / el.offsetHeight
+    return {
+      x: (e.clientX - rect.left) / scaleX,
+      y: (e.clientY - rect.top) / scaleY,
+    }
   }
 
   const onMouseEnter = useCallback((e: React.MouseEvent) => {

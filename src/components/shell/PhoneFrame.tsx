@@ -94,8 +94,8 @@ export function PhoneFrame({ screen, children }: PhoneFrameProps) {
                     <div
                       className="pointer-events-none absolute z-50 rounded-full transition-[width,height,opacity] duration-100"
                       style={{
-                        width: drag.cursor.pressed ? 36 : 28,
-                        height: drag.cursor.pressed ? 36 : 28,
+                        width: drag.cursor.pressed ? 52 : 40,
+                        height: drag.cursor.pressed ? 52 : 40,
                         left: drag.cursor.x,
                         top: drag.cursor.y,
                         transform: 'translate(-50%, -50%)',
