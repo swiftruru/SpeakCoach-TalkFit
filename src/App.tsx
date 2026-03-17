@@ -5,6 +5,7 @@ import { useHistoryStore } from './stores/historyStore'
 import { useReportStore } from './stores/reportStore'
 import { usePhoneNotificationStore } from './stores/phoneNotificationStore'
 import { MOCK_SESSIONS } from './lib/mockData'
+import { AppLaunchOverlay } from './components/AppLaunchOverlay'
 import { PhoneFrame } from './components/shell/PhoneFrame'
 import { PrototypeNavigator } from './components/PrototypeNavigator'
 import { AnnotationPanel } from './annotation/AnnotationPanel'
@@ -89,12 +90,23 @@ function isScreen(value: string | null): value is Screen {
   return value !== null && SCREENS.includes(value as Screen)
 }
 
+function shouldShowLaunchOverlay() {
+  const params = new URLSearchParams(window.location.search)
+  const hasDeepLink = params.has('screen') || params.get('panel') === 'open'
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  return !hasDeepLink && !prefersReducedMotion
+}
+
 export default function App() {
   const { screen, setScreen, requestScreen } = useNavigationStore()
   const [hoveredAnnotationId, setHoveredAnnotationId] = useState<string | null>(null)
   const [showStoryModal, setShowStoryModal] = useState(false)
   const [showDesktopNotice, setShowDesktopNotice] = useState(true)
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
+  const [showLaunchOverlay, setShowLaunchOverlay] = useState(() => shouldShowLaunchOverlay())
+  const [pendingPhoneLaunch, setPendingPhoneLaunch] = useState(false)
+  const [showPhoneLaunch, setShowPhoneLaunch] = useState(false)
   const [showMobileAnnotations, setShowMobileAnnotations] = useState(
     () => new URLSearchParams(window.location.search).get('panel') === 'open'
   )
@@ -222,6 +234,32 @@ export default function App() {
       })
     }
   }, [showPhoneNotification])
+
+  const handleCompleteLaunch = useCallback(() => {
+    setShowLaunchOverlay(false)
+    setPendingPhoneLaunch(true)
+  }, [])
+
+  useEffect(() => {
+    if (!pendingPhoneLaunch) return
+
+    const timer = window.setTimeout(() => {
+      setShowPhoneLaunch(true)
+      setPendingPhoneLaunch(false)
+    }, 220)
+
+    return () => window.clearTimeout(timer)
+  }, [pendingPhoneLaunch])
+
+  useEffect(() => {
+    if (!showPhoneLaunch) return
+
+    const timer = window.setTimeout(() => {
+      setShowPhoneLaunch(false)
+    }, 1050)
+
+    return () => window.clearTimeout(timer)
+  }, [showPhoneLaunch])
 
   return (
     <div className="min-h-screen bg-bg-base flex flex-col font-sans">
@@ -354,25 +392,31 @@ export default function App() {
         </div>
       </div>
 
-      <PrototypeNavigator />
-
       {/* Main content: phone + annotation panel */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
 
         {/* Phone area */}
-        <div className="flex-1 flex items-start justify-center px-4 md:px-10 pt-6 pb-8 md:pb-8 overflow-auto">
-          <div
-            style={
-              isMobile
-                ? { transform: 'scale(0.9)', transformOrigin: 'top center', marginBottom: '-81px' }
-                : { transform: 'scale(0.85)', transformOrigin: 'top center', marginBottom: '-122px' }
-            }
-            onMouseOver={handlePhoneMouseOver}
-            onMouseOut={handlePhoneMouseOut}
-          >
-            <PhoneFrame screen={screen}>
-              <ScreenContent screen={screen} />
-            </PhoneFrame>
+        <div className="flex-1 overflow-auto px-4 pt-6 pb-8 md:px-8 md:pb-8">
+          <div className="flex items-start justify-center gap-5 xl:gap-7">
+            <div className="hidden lg:block w-[168px] flex-shrink-0">
+              <div className="sticky top-6">
+                <PrototypeNavigator />
+              </div>
+            </div>
+
+            <div
+              style={
+                isMobile
+                  ? { transform: 'scale(0.9)', transformOrigin: 'top center', marginBottom: '-81px' }
+                  : { transform: 'scale(0.85)', transformOrigin: 'top center', marginBottom: '-122px' }
+              }
+              onMouseOver={handlePhoneMouseOver}
+              onMouseOut={handlePhoneMouseOut}
+            >
+              <PhoneFrame screen={screen} isLaunching={showPhoneLaunch}>
+                <ScreenContent screen={screen} />
+              </PhoneFrame>
+            </div>
           </div>
         </div>
 
@@ -490,6 +534,12 @@ export default function App() {
               </svg>
             </button>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showLaunchOverlay && (
+          <AppLaunchOverlay onComplete={handleCompleteLaunch} />
         )}
       </AnimatePresence>
     </div>

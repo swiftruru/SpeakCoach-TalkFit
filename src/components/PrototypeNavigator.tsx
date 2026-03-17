@@ -25,62 +25,66 @@ export function PrototypeNavigator() {
     : ((chapterIndex + 1) / CHAPTERS.length) * 100
 
   return (
-    <div className="border-b border-divider bg-bg-surface/80 backdrop-blur-md">
-      <div className="px-4 md:px-8 py-3">
-        <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-text-muted">
-              <span>{isDemoActive ? '示範進度' : '章節導覽'}</span>
-              <span className="h-1 w-1 rounded-full bg-border-divider" />
-              <span>
-                {isDemoActive
-                  ? `${currentStepIndex + 1} / ${DEMO_STEPS.length}`
-                  : `${chapterIndex + 1} / ${CHAPTERS.length}`}
-              </span>
-            </div>
-            <p className="mt-1 text-sm font-semibold text-text-primary">
-              {isDemoActive ? currentStep.title : activeChapter.label}
-            </p>
-            <p className="mt-0.5 text-xs text-text-secondary">
-              {isDemoActive
-                ? currentStep.description
-                : activeChapter.summary}
-            </p>
-          </div>
-
-          <p className="text-[11px] text-text-muted md:text-right">
+    <div className="w-[168px] rounded-[26px] border border-divider bg-bg-surface/88 px-4 py-4 shadow-sm backdrop-blur-md">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
+            {isDemoActive ? '示範' : '導覽'}
+          </p>
+          <p className="mt-1 text-xl font-semibold text-text-primary">
             {isDemoActive
-              ? '示範進行中，可從頂部按鈕停止；流程結束後也會自動收起'
-              : '可直接切換章節，自由探索整個原型網站'}
+              ? `${currentStepIndex + 1} / ${DEMO_STEPS.length}`
+              : `${chapterIndex + 1} / ${CHAPTERS.length}`}
           </p>
         </div>
+        <span
+          className={`mt-0.5 h-2.5 w-2.5 rounded-full ${
+            isDemoActive ? 'bg-accent-amber' : 'bg-accent-blue'
+          }`}
+        />
+      </div>
 
-        <div className="mt-3 overflow-x-auto">
-          <div className="flex min-w-max gap-2">
-            {CHAPTERS.map((chapter, index) => {
-              const isActive = chapter.id === screen
-              const isPassed = index < chapterIndex
-              return (
-                <button
-                  key={chapter.id}
-                  onClick={() => requestScreen(chapter.id)}
-                  disabled={isDemoActive}
-                  className={`rounded-full border px-3 py-1.5 text-xs transition-all ${
-                    isActive
-                      ? 'border-accent-blue/45 bg-accent-blue/10 text-accent-blue-light'
-                      : isPassed
-                      ? 'border-divider bg-bg-card text-text-secondary'
-                      : 'border-divider text-text-muted hover:border-accent-blue/25 hover:text-text-primary'
-                  } ${isDemoActive ? 'cursor-not-allowed opacity-55' : ''}`}
-                >
-                  <span className="mr-1.5 text-[10px] opacity-70">{index + 1}.</span>
-                  {chapter.label}
-                </button>
-              )
-            })}
-          </div>
-        </div>
+      <div className="mt-4 flex flex-col gap-2">
+        {CHAPTERS.map((chapter, index) => {
+          const isActive = chapter.id === screen
+          const isPassed = index < chapterIndex
+          return (
+            <button
+              key={chapter.id}
+              onClick={() => requestScreen(chapter.id)}
+              disabled={isDemoActive}
+              className={`flex items-center gap-2.5 rounded-2xl px-3 py-2.5 text-left text-sm transition-all ${
+                isActive
+                  ? 'bg-accent-blue/10 text-accent-blue-light'
+                  : isPassed
+                  ? 'text-text-secondary'
+                  : 'text-text-muted hover:bg-bg-card hover:text-text-primary'
+              } ${isDemoActive ? 'cursor-not-allowed opacity-60' : ''}`}
+            >
+              <span
+                className={`h-2 w-2 rounded-full flex-shrink-0 ${
+                  isActive
+                    ? isDemoActive ? 'bg-accent-amber' : 'bg-accent-blue'
+                    : isPassed
+                    ? 'bg-text-muted/50'
+                    : 'bg-border-divider'
+                }`}
+              />
+              <span className="truncate">{chapter.label}</span>
+            </button>
+          )
+        })}
+      </div>
 
+      <div className="mt-4 h-px bg-border-divider" />
+
+      <div className="mt-3">
+        <p className="text-sm font-semibold leading-snug text-text-primary">
+          {isDemoActive ? currentStep.title : activeChapter.label}
+        </p>
+        <p className="mt-1.5 text-xs leading-relaxed text-text-secondary">
+          {isDemoActive ? currentStep.description : activeChapter.summary}
+        </p>
         <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-black/5 dark:bg-white/10">
           <div
             className={`h-full rounded-full transition-all duration-300 ${
