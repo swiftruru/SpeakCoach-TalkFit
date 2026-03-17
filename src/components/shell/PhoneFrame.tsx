@@ -81,8 +81,7 @@ export function PhoneFrame({ screen, children }: PhoneFrameProps) {
 
                 <div
                   ref={drag.wrapperRef}
-                  className="flex-1 overflow-hidden relative"
-                  style={{ cursor: 'none' }}
+                  className="flex-1 overflow-hidden relative phone-screen-area"
                   onMouseEnter={drag.onMouseEnter}
                   onMouseDown={drag.onMouseDown}
                   onMouseMove={drag.onMouseMove}

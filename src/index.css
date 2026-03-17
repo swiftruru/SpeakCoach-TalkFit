@@ -45,6 +45,12 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Hide system cursor inside phone screen — custom dot takes over */
+  .phone-screen-area,
+  .phone-screen-area * {
+    cursor: none !important;
+  }
+
   /* Phone tap ripple */
   @keyframes phone-ripple {
     from { transform: translate(-50%, -50%) scale(0);   opacity: 0.5; }
