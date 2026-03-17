@@ -65,7 +65,7 @@ export function DesignStoryPanel() {
               <p className="text-xs font-semibold text-text-muted uppercase tracking-wide">想解決的問題</p>
             </div>
             <p className="text-sm text-text-secondary leading-relaxed">
-              練演講或簡報的時候，最煩的就是那些自己聽不到的壞習慣。「然後」講了三十次、每句話結尾都加一個「對」、緊張的時候瘋狂「嗯嗯嗯」。這些東西朋友不好意思跟你說，自己錄音回聽又很折磨，大部分人的結局就是上台之後才發現又犯了。
+              練演講或簡報的時候，最頭疼的就是那些自己聽不到的壞習慣。「然後」講了三十次、每句話結尾都加一個「對」、緊張的時候瘋狂「嗯嗯嗯」。這些東西朋友不好意思跟你說，自己錄音回聽又很折磨，大部分人的結局就是上台之後才發現又犯了。
             </p>
           </div>
 
