@@ -41,6 +41,20 @@ export interface SpeedDataPoint {
 
 export type SpeedStatus = 'slow' | 'normal' | 'fast'
 
+export type ReportIssueKind = 'filler' | 'speed-fast' | 'speed-normal' | 'speed-slow'
+
+export interface ReportIssueMarker {
+  id: string
+  kind: ReportIssueKind
+  timestamp: number
+  label: string
+  segmentIndex: number
+  speedPointIndex?: number
+  fillerWord?: string
+  occurrenceIndex?: number
+  occurrenceCount?: number
+}
+
 export interface SessionSummary {
   id: string
   title: string
