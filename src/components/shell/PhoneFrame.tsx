@@ -82,12 +82,33 @@ export function PhoneFrame({ screen, children }: PhoneFrameProps) {
                 <div
                   ref={drag.wrapperRef}
                   className="flex-1 overflow-hidden relative"
-                  style={{ cursor: 'grab' }}
+                  style={{ cursor: 'none' }}
+                  onMouseEnter={drag.onMouseEnter}
                   onMouseDown={drag.onMouseDown}
                   onMouseMove={drag.onMouseMove}
                   onMouseUp={drag.onMouseUp}
                   onMouseLeave={drag.onMouseLeave}
                 >
+                  {/* Custom touch-point cursor */}
+                  {drag.cursor.visible && (
+                    <div
+                      className="pointer-events-none absolute z-50 rounded-full transition-[width,height,opacity] duration-100"
+                      style={{
+                        width: drag.cursor.pressed ? 36 : 28,
+                        height: drag.cursor.pressed ? 36 : 28,
+                        left: drag.cursor.x,
+                        top: drag.cursor.y,
+                        transform: 'translate(-50%, -50%)',
+                        background: drag.cursor.pressed
+                          ? 'rgba(255,255,255,0.28)'
+                          : 'rgba(255,255,255,0.18)',
+                        boxShadow: drag.cursor.pressed
+                          ? '0 0 0 1.5px rgba(255,255,255,0.45)'
+                          : '0 0 0 1px rgba(255,255,255,0.30)',
+                        backdropFilter: 'blur(1px)',
+                      }}
+                    />
+                  )}
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={screen}
