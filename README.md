@@ -153,7 +153,7 @@ npm install
 npm run dev
 ```
 
-啟動後打開 <http://localhost:5173>。
+啟動後請打開終端機顯示的本機網址。Vite 預設通常是 <http://localhost:5173>，但如果該連接埠已被占用，會自動改用其他埠號。
 
 ---
 
