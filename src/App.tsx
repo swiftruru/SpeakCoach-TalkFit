@@ -765,7 +765,7 @@ export default function App() {
               <line x1="12" y1="17" x2="12" y2="21" />
             </svg>
             <p className="text-xs text-text-secondary leading-relaxed flex-1">
-              此原型網頁建議於<span className="text-accent-amber font-medium">電腦瀏覽器</span>操作，以獲得最佳互動體驗
+              此原型網頁建議於<span className="text-accent-amber font-medium">電腦瀏覽器</span>操作，以確保畫面完整呈現，並獲得較佳的說明互動體驗
             </p>
             <button
               onClick={() => setShowDesktopNotice(false)}
