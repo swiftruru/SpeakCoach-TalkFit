@@ -100,11 +100,11 @@ export function PhoneFrame({ screen, children }: PhoneFrameProps) {
                         top: drag.cursor.y,
                         transform: 'translate(-50%, -50%)',
                         background: drag.cursor.pressed
-                          ? 'rgba(255,255,255,0.28)'
-                          : 'rgba(255,255,255,0.18)',
+                          ? 'rgba(255,255,255,0.75)'
+                          : 'rgba(255,255,255,0.55)',
                         boxShadow: drag.cursor.pressed
-                          ? '0 0 0 1.5px rgba(255,255,255,0.45)'
-                          : '0 0 0 1px rgba(255,255,255,0.30)',
+                          ? '0 0 0 2px rgba(255,255,255,0.9), 0 2px 8px rgba(0,0,0,0.25)'
+                          : '0 0 0 1.5px rgba(255,255,255,0.7), 0 2px 6px rgba(0,0,0,0.2)',
                         backdropFilter: 'blur(1px)',
                       }}
                     />
