@@ -176,7 +176,7 @@ export const DEMO_STEPS: DemoStep[] = [
   {
     title: '示範完成 ✓',
     description: '完整流程展示結束。你可以自由操作各項功能，或重新點擊「開始示範」再跑一次完整流程。',
-    durationMs: Infinity,
+    durationMs: 1800,
     onEnter: () => {
       useNavigationStore.getState().setScreen('home')
     },

@@ -6,6 +6,7 @@ import { useReportStore } from './stores/reportStore'
 import { usePhoneNotificationStore } from './stores/phoneNotificationStore'
 import { MOCK_SESSIONS } from './lib/mockData'
 import { PhoneFrame } from './components/shell/PhoneFrame'
+import { PrototypeNavigator } from './components/PrototypeNavigator'
 import { AnnotationPanel } from './annotation/AnnotationPanel'
 import { DesignStoryModal } from './components/DesignStoryModal'
 import { HomeScreen } from './screens/HomeScreen'
@@ -15,8 +16,8 @@ import { HistoryScreen } from './screens/HistoryScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
 import { useDemoStore } from './demo/demoStore'
 import { useLiveDemo } from './demo/useLiveDemo'
-import { DemoOverlay } from './demo/DemoOverlay'
 import { DEMO_STEPS } from './demo/demoScript'
+import { ensurePrototypeDataForScreen, resetPrototypeState } from './lib/prototypeState'
 import type { Screen } from './types'
 import './index.css'
 
@@ -82,13 +83,21 @@ const MOBILE_NAV = [
   },
 ]
 
+const SCREENS: Screen[] = ['home', 'practice', 'report', 'history', 'settings']
+
+function isScreen(value: string | null): value is Screen {
+  return value !== null && SCREENS.includes(value as Screen)
+}
+
 export default function App() {
-  const { screen, requestScreen } = useNavigationStore()
+  const { screen, setScreen, requestScreen } = useNavigationStore()
   const [hoveredAnnotationId, setHoveredAnnotationId] = useState<string | null>(null)
   const [showStoryModal, setShowStoryModal] = useState(false)
   const [showDesktopNotice, setShowDesktopNotice] = useState(true)
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
-  const [showMobileAnnotations, setShowMobileAnnotations] = useState(false)
+  const [showMobileAnnotations, setShowMobileAnnotations] = useState(
+    () => new URLSearchParams(window.location.search).get('panel') === 'open'
+  )
 
   useEffect(() => {
     const handler = () => setIsMobile(window.innerWidth < 768)
@@ -126,6 +135,15 @@ export default function App() {
     }
   }, [sessions, report, setReport])
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const screenParam = params.get('screen')
+    if (isScreen(screenParam)) {
+      ensurePrototypeDataForScreen(screenParam)
+      setScreen(screenParam)
+    }
+  }, [setScreen])
+
   // Scroll phone screen to show element when annotation panel item is hovered
   useEffect(() => {
     if (!hoveredAnnotationId) return
@@ -135,6 +153,18 @@ export default function App() {
     if (!el) return
     el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }, [hoveredAnnotationId])
+
+  useEffect(() => {
+    const url = new URL(window.location.href)
+
+    if (screen === 'home') url.searchParams.delete('screen')
+    else url.searchParams.set('screen', screen)
+
+    if (showMobileAnnotations) url.searchParams.set('panel', 'open')
+    else url.searchParams.delete('panel')
+
+    window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`)
+  }, [screen, showMobileAnnotations])
 
   // Keyboard shortcuts for Live Demo
   useEffect(() => {
@@ -167,6 +197,31 @@ export default function App() {
       setHoveredAnnotationId(null)
     }
   }, [])
+
+  const handleResetPrototype = useCallback(() => {
+    resetPrototypeState()
+    setHoveredAnnotationId(null)
+    setShowMobileAnnotations(false)
+    showPhoneNotification({
+      title: '原型已重置',
+      body: '已回到首頁，並清除所有練習資料與目前報告',
+    })
+  }, [showPhoneNotification])
+
+  const handleCopyCurrentViewLink = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      showPhoneNotification({
+        title: '已複製畫面連結',
+        body: '可以直接分享目前這個原型畫面的網址',
+      })
+    } catch {
+      showPhoneNotification({
+        title: '複製失敗',
+        body: '瀏覽器目前無法複製連結，請手動複製網址列',
+      })
+    }
+  }, [showPhoneNotification])
 
   return (
     <div className="min-h-screen bg-bg-base flex flex-col font-sans">
@@ -248,6 +303,29 @@ export default function App() {
             <span>{isDemoActive ? '停止示範' : '開始示範'}</span>
           </button>
 
+          <button
+            onClick={handleResetPrototype}
+            className="hidden md:flex text-xs px-3 py-1.5 rounded-full border border-divider text-text-secondary hover:text-text-primary hover:bg-bg-card transition-all items-center gap-1.5"
+          >
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="23 4 23 10 17 10" />
+              <polyline points="1 20 1 14 7 14" />
+              <path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10M1 14l5.36 4.36A9 9 0 0 0 20.49 15" />
+            </svg>
+            <span>重置原型</span>
+          </button>
+
+          <button
+            onClick={handleCopyCurrentViewLink}
+            className="hidden md:flex text-xs px-3 py-1.5 rounded-full border border-divider text-text-secondary hover:text-text-primary hover:bg-bg-card transition-all items-center gap-1.5"
+          >
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L10 4" />
+              <path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 1 0 7.07 7.07L14 20" />
+            </svg>
+            <span>畫面連結</span>
+          </button>
+
           <div className="hidden md:block w-px h-4 bg-border-divider" />
           {/* Theme toggle */}
           <button
@@ -275,6 +353,8 @@ export default function App() {
           </button>
         </div>
       </div>
+
+      <PrototypeNavigator />
 
       {/* Main content: phone + annotation panel */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
@@ -383,8 +463,6 @@ export default function App() {
       </AnimatePresence>
 
       <DesignStoryModal isOpen={showStoryModal} onClose={() => setShowStoryModal(false)} />
-      <DemoOverlay />
-
       {/* Desktop notice — floating card, bottom-right */}
       <AnimatePresence>
         {showDesktopNotice && (

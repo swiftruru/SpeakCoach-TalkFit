@@ -6,6 +6,7 @@ export function useLiveDemo() {
   const isDemoActive = useDemoStore((s) => s.isDemoActive)
   const currentStepIndex = useDemoStore((s) => s.currentStepIndex)
   const goToStep = useDemoStore((s) => s.goToStep)
+  const stopDemo = useDemoStore((s) => s.stopDemo)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -17,10 +18,14 @@ export function useLiveDemo() {
     // Execute this step's side effects
     step.onEnter()
 
-    // Schedule advance to next step (skip if infinite or last step)
+    // Schedule advance or auto-stop when the final step finishes.
     if (step.durationMs !== Infinity && currentStepIndex < DEMO_STEPS.length - 1) {
       timeoutRef.current = setTimeout(() => {
         goToStep(currentStepIndex + 1)
+      }, step.durationMs)
+    } else if (step.durationMs !== Infinity) {
+      timeoutRef.current = setTimeout(() => {
+        stopDemo()
       }, step.durationMs)
     }
 
