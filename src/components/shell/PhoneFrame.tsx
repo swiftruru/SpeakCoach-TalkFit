@@ -10,6 +10,13 @@ interface PhoneFrameProps {
   children: React.ReactNode
 }
 
+// Shared style for physical side buttons
+const SIDE_BTN = {
+  position: 'absolute' as const,
+  width: 5,
+  background: 'linear-gradient(180deg, #e8c4ba 0%, #c4856e 50%, #e8c4ba 100%)',
+}
+
 // Rose gold metallic gradient — warm muted pink-bronze like Apple's finish
 const ROSE_GOLD = `linear-gradient(
   155deg,
@@ -141,6 +148,15 @@ export function PhoneFrame({ screen, children }: PhoneFrameProps) {
           </div>
         </div>
       </div>
+      {/* Side buttons */}
+      {/* Left: silent switch */}
+      <div style={{ ...SIDE_BTN, left: -5, top: 150, height: 28, borderRadius: '3px 0 0 3px' }} />
+      {/* Left: volume up */}
+      <div style={{ ...SIDE_BTN, left: -5, top: 220, height: 52, borderRadius: '3px 0 0 3px' }} />
+      {/* Left: volume down */}
+      <div style={{ ...SIDE_BTN, left: -5, top: 292, height: 52, borderRadius: '3px 0 0 3px' }} />
+      {/* Right: power */}
+      <div style={{ ...SIDE_BTN, right: -5, top: 200, height: 72, borderRadius: '0 3px 3px 0' }} />
     </div>
   )
 }
