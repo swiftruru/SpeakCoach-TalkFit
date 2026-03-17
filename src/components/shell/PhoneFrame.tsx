@@ -106,18 +106,17 @@ export function PhoneFrame({ screen, children }: PhoneFrameProps) {
                     <div
                       className="pointer-events-none absolute z-50 rounded-full transition-[width,height,opacity] duration-100"
                       style={{
-                        width: drag.cursor.pressed ? 52 : 40,
-                        height: drag.cursor.pressed ? 52 : 40,
+                        width: drag.cursor.pressed ? 72 : 60,
+                        height: drag.cursor.pressed ? 72 : 60,
                         left: drag.cursor.x,
                         top: drag.cursor.y,
                         transform: 'translate(-50%, -50%)',
                         background: drag.cursor.pressed
-                          ? 'rgba(255,255,255,0.75)'
-                          : 'rgba(255,255,255,0.55)',
+                          ? 'rgba(255,255,255,0.82)'
+                          : 'rgba(255,255,255,0.65)',
                         boxShadow: drag.cursor.pressed
-                          ? '0 0 0 2px rgba(255,255,255,0.9), 0 2px 8px rgba(0,0,0,0.25)'
-                          : '0 0 0 1.5px rgba(255,255,255,0.7), 0 2px 6px rgba(0,0,0,0.2)',
-                        backdropFilter: 'blur(1px)',
+                          ? '0 0 0 3px rgba(255,255,255,1), 0 0 0 4px rgba(0,0,0,0.25), 0 4px 16px rgba(0,0,0,0.3)'
+                          : '0 0 0 2.5px rgba(255,255,255,0.95), 0 0 0 3.5px rgba(0,0,0,0.2), 0 3px 12px rgba(0,0,0,0.25)',
                       }}
                     />
                   )}
