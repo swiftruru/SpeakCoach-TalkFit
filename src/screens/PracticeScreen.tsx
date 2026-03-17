@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from 'react'
+import { useEffect, useRef, useCallback, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigationStore } from '../stores/navigationStore'
 import { useSessionStore } from '../stores/sessionStore'
@@ -8,6 +8,7 @@ import { useSettingsStore } from '../stores/settingsStore'
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition'
 import { useSpeechRate } from '../hooks/useSpeechRate'
 import { detectFillers, buildSessionSummary, formatDuration } from '../lib/speechAnalysis'
+import { PRACTICE_GOALS, evaluatePracticeGoal } from '../lib/practiceGoals'
 import { wpmStatus, wpmColor, wpmLabel } from '../lib/grading'
 import { useAudioLevel } from '../hooks/useAudioLevel'
 import { useDemoStore } from '../demo/demoStore'
@@ -21,6 +22,8 @@ export function PracticeScreen() {
   const settings = useSettingsStore()
   const isDemoActive = useDemoStore((s) => s.isDemoActive)
   const stopDemo = useDemoStore((s) => s.stopDemo)
+  const practiceGoalId = settings.practiceGoalId
+  const practiceSpeedRange = settings.speedRange
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [interimText, setInterimText] = useState('')
@@ -88,12 +91,16 @@ export function PracticeScreen() {
       '練習 ' + new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
       session.elapsedSeconds,
       session.transcript,
-      session.speedHistory
+      session.speedHistory,
+      {
+        practiceGoalId,
+        speedRangeSnapshot: practiceSpeedRange,
+      }
     )
     setReport(report)
     addHistory(report)
     setScreen('report')
-  }, [session, stop, setReport, addHistory, setScreen])
+  }, [session, stop, setReport, addHistory, setScreen, practiceGoalId, practiceSpeedRange])
 
   const handlePause = useCallback(() => {
     session.pauseRecording()
@@ -123,6 +130,25 @@ export function PracticeScreen() {
 
   const totalFillers = Object.values(session.fillerCounts).reduce((s, v) => s + v, 0)
   const topFiller = Object.entries(session.fillerCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '—'
+  const activePracticeGoal = PRACTICE_GOALS[settings.practiceGoalId]
+  const goalEvaluation = useMemo(
+    () => evaluatePracticeGoal({
+      durationSeconds: Math.max(session.elapsedSeconds, 1),
+      fillerCount: totalFillers,
+      fillerCounts: session.fillerCounts,
+      topFiller: topFiller === '—' ? null : topFiller,
+      speedHistory: session.speedHistory,
+    }, practiceGoalId, practiceSpeedRange),
+    [
+      session.elapsedSeconds,
+      session.fillerCounts,
+      session.speedHistory,
+      practiceGoalId,
+      practiceSpeedRange,
+      topFiller,
+      totalFillers,
+    ]
+  )
 
   const WAVE_BARS = 20
   const isRecordingActive = session.isRecording && !session.isPaused
@@ -157,9 +183,31 @@ export function PracticeScreen() {
       <div data-annotation-id="speed-gauge" className="flex justify-center py-4">
         <SpeedGauge
           wpm={session.currentWpm}
-          low={settings.speedRange.low}
-          high={settings.speedRange.high}
+          low={practiceSpeedRange.low}
+          high={practiceSpeedRange.high}
         />
+      </div>
+
+      <div className="mx-4 mb-4 rounded-2xl border border-white/10 bg-white/5 px-3.5 py-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[10px] uppercase tracking-[0.18em] text-gray-500">本次目標</p>
+            <p className="text-sm font-semibold text-white mt-1">{activePracticeGoal.label}</p>
+            <p className="text-[11px] text-gray-400 mt-1 leading-relaxed">
+              {activePracticeGoal.description}
+            </p>
+          </div>
+          <span className={`text-[10px] font-semibold px-2 py-1 rounded-full flex-shrink-0 ${
+            goalEvaluation.success
+              ? 'bg-emerald-500/20 text-emerald-300'
+              : 'bg-amber-500/15 text-amber-200'
+          }`}>
+            {goalEvaluation.progressLabel}
+          </span>
+        </div>
+        <p className="text-[11px] text-gray-300 mt-2">
+          {goalEvaluation.statusText}
+        </p>
       </div>
 
       {/* Live stats */}

@@ -7,6 +7,11 @@ import {
   PRACTICE_PRESET_LIST,
   type PracticePresetDefinition,
 } from '../lib/practicePresets'
+import {
+  PRACTICE_GOAL_LIST,
+  PRACTICE_GOALS,
+  type PracticeGoalDefinition,
+} from '../lib/practiceGoals'
 import type { FillerWord } from '../types'
 
 const LANGUAGES = [
@@ -108,6 +113,30 @@ export function SettingsScreen() {
               </p>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Practice goal */}
+      <section data-annotation-id="settings-practice-goal">
+        <SectionTitle>練習目標</SectionTitle>
+        <div className="mx-4 bg-white rounded-2xl shadow-sm p-4">
+          <div className="mb-3">
+            <p className="text-sm font-semibold text-gray-800">每次練習先選一個目標</p>
+            <p className="text-[11px] text-gray-400 mt-1 leading-relaxed">
+              練習中會持續顯示進度，結束後報告也會直接告訴你這次有沒有達標，以及下一輪最該先修的地方。
+            </p>
+          </div>
+
+          <div className="space-y-2.5">
+            {PRACTICE_GOAL_LIST.map((goal) => (
+              <GoalCard
+                key={goal.id}
+                goal={goal}
+                isActive={settings.practiceGoalId === goal.id}
+                onClick={() => settings.setPracticeGoalId(goal.id)}
+              />
+            ))}
+          </div>
         </div>
       </section>
 
@@ -438,6 +467,51 @@ function PresetCard({
           </span>
         ))}
       </div>
+    </button>
+  )
+}
+
+function GoalCard({
+  goal,
+  isActive,
+  onClick,
+}: {
+  goal: PracticeGoalDefinition
+  isActive: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full rounded-2xl border p-3 text-left transition-all ${
+        isActive
+          ? 'border-accent-green bg-emerald-50/80 shadow-sm'
+          : 'border-gray-200 bg-gray-50 hover:border-emerald-200 hover:bg-emerald-50/40'
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-gray-800">{goal.label}</p>
+          <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">{goal.description}</p>
+        </div>
+        <span
+          className={`text-[10px] font-semibold px-2 py-1 rounded-full flex-shrink-0 ${
+            isActive
+              ? 'bg-emerald-100 text-emerald-700'
+              : 'bg-white text-gray-400 border border-gray-200'
+          }`}
+        >
+          {isActive ? '本次目標' : '選擇'}
+        </span>
+      </div>
+
+      <p
+        className={`mt-2 text-[11px] ${
+          isActive ? 'text-emerald-700' : 'text-gray-400'
+        }`}
+      >
+        {PRACTICE_GOALS[goal.id].coachHint}
+      </p>
     </button>
   )
 }

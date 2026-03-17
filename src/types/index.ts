@@ -14,6 +14,11 @@ export type PracticePresetId =
   | 'demo-pitch'
   | 'custom'
 
+export type PracticeGoalId =
+  | 'reduce-fillers'
+  | 'steady-speed'
+  | 'cut-top-filler'
+
 export interface FillerWord {
   word: string
   category: FillerCategory
@@ -65,6 +70,8 @@ export interface SessionSummary {
   fillerCounts: Record<string, number>
   topFiller: string | null
   grade: string           // A, A-, B+, B, C+, C, ...
+  practiceGoalId?: PracticeGoalId
+  speedRangeSnapshot?: SpeedRange
   speedHistory: SpeedDataPoint[]
   transcript: TranscriptSegment[]
 }

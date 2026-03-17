@@ -7,6 +7,8 @@ import {
   ResponsiveContainer, CartesianGrid, ReferenceArea
 } from 'recharts'
 import { formatDuration, formatDate } from '../lib/speechAnalysis'
+import { PRACTICE_GOALS, evaluatePracticeGoal } from '../lib/practiceGoals'
+import { buildReportCoachingTips } from '../lib/reportCoaching'
 import { buildFillerMarkers, buildSpeedMarkers, describeReportIssue } from '../lib/reportIssueMarkers'
 import {
   buildReportShareCardData,
@@ -21,13 +23,17 @@ import type { ReportIssueMarker, TranscriptSegment } from '../types'
 export function ReportScreen() {
   const setScreen = useNavigationStore((s) => s.setScreen)
   const report = useReportStore((s) => s.report)
-  const speedRange = useSettingsStore((s) => s.speedRange)
+  const configuredSpeedRange = useSettingsStore((s) => s.speedRange)
+  const currentPracticeGoalId = useSettingsStore((s) => s.practiceGoalId)
   const [activeMarkerId, setActiveMarkerId] = useState<string | null>(null)
   const transcriptRefs = useRef<Array<HTMLSpanElement | null>>([])
   const shareCardRef = useRef<SVGSVGElement | null>(null)
   const [shareExporting, setShareExporting] = useState<'png' | 'svg' | null>(null)
   const [shareError, setShareError] = useState<string | null>(null)
 
+  const speedRange = report?.speedRangeSnapshot ?? configuredSpeedRange
+  const practiceGoalId = report?.practiceGoalId ?? currentPracticeGoalId
+  const activePracticeGoal = PRACTICE_GOALS[practiceGoalId]
   const sortedFillers = useMemo(
     () => (report ? Object.entries(report.fillerCounts).sort((a, b) => b[1] - a[1]) : []),
     [report]
@@ -42,6 +48,14 @@ export function ReportScreen() {
   const shareCardData = useMemo(
     () => (report ? buildReportShareCardData(report, speedRange) : null),
     [report, speedRange]
+  )
+  const goalEvaluation = useMemo(
+    () => (report ? evaluatePracticeGoal(report, practiceGoalId, speedRange) : null),
+    [practiceGoalId, report, speedRange]
+  )
+  const coachingTips = useMemo(
+    () => (report ? buildReportCoachingTips(report, speedRange, practiceGoalId) : []),
+    [practiceGoalId, report, speedRange]
   )
 
   const markerMap = useMemo(() => {
@@ -232,10 +246,44 @@ export function ReportScreen() {
         </p>
       </div>
 
+      {goalEvaluation && (
+        <div
+          data-annotation-id="report-goal-summary"
+          className="mx-4 mt-4 mb-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.18em] text-gray-400">本次練習目標</p>
+              <h3 className="text-sm font-semibold text-gray-800 mt-1">{activePracticeGoal.label}</h3>
+              <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">
+                {activePracticeGoal.description}
+              </p>
+            </div>
+            <span className={`text-[10px] font-semibold px-2 py-1 rounded-full flex-shrink-0 ${
+              goalEvaluation.success
+                ? 'bg-emerald-50 text-emerald-700'
+                : 'bg-amber-50 text-amber-700'
+            }`}>
+              {goalEvaluation.success ? '已達標' : '再練一次'}
+            </span>
+          </div>
+
+          <div className="mt-3 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2.5">
+            <p className="text-[11px] font-semibold text-gray-700">{goalEvaluation.progressLabel}</p>
+            <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">
+              {goalEvaluation.statusText}
+            </p>
+            <p className="text-[11px] text-accent-blue mt-1.5 leading-relaxed">
+              {goalEvaluation.nextAction}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Score cards */}
       <div
         data-annotation-id="report-score-section"
-        className="grid grid-cols-3 gap-2 px-4 mt-4 mb-3"
+        className="grid grid-cols-3 gap-2 px-4 mb-3"
       >
         <ScoreCard
           label="平均語速"
@@ -257,6 +305,38 @@ export function ReportScreen() {
           icon="✓"
         />
       </div>
+
+      {coachingTips.length > 0 && (
+        <div
+          data-annotation-id="report-coaching-next-steps"
+          className="mx-4 mb-3 bg-white rounded-2xl p-4 shadow-sm"
+        >
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold text-gray-700">下一輪先改這 3 件事</h3>
+            <p className="text-[10px] text-gray-400 mt-0.5">
+              先把注意力放在最有機會立刻進步的三件事，不要一次改太多。
+            </p>
+          </div>
+          <div className="space-y-2.5">
+            {coachingTips.map((tip, index) => (
+              <div
+                key={tip.id}
+                className={`rounded-xl border px-3 py-3 ${coachingTipClass(tip.tone)}`}
+              >
+                <div className="flex items-start gap-3">
+                  <span className="w-5 h-5 rounded-full bg-white/80 text-[10px] font-bold flex items-center justify-center flex-shrink-0">
+                    {index + 1}
+                  </span>
+                  <div>
+                    <p className="text-xs font-semibold">{tip.title}</p>
+                    <p className="text-[11px] mt-1 leading-relaxed opacity-90">{tip.detail}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Filler ranking */}
       {sortedFillers.length > 0 && (
@@ -478,6 +558,13 @@ function markerBannerClass(kind: ReportIssueMarker['kind']) {
   if (kind === 'speed-fast') return 'bg-amber-50 border-amber-100 text-amber-700'
   if (kind === 'speed-slow') return 'bg-purple-50 border-purple-100 text-purple-700'
   return 'bg-sky-50 border-sky-100 text-sky-700'
+}
+
+function coachingTipClass(tone: 'red' | 'amber' | 'blue' | 'green') {
+  if (tone === 'red') return 'border-red-100 bg-red-50 text-red-700'
+  if (tone === 'amber') return 'border-amber-100 bg-amber-50 text-amber-700'
+  if (tone === 'green') return 'border-emerald-100 bg-emerald-50 text-emerald-700'
+  return 'border-sky-100 bg-sky-50 text-sky-700'
 }
 
 function ScoreCard({ label, value, unit, color, icon }: {

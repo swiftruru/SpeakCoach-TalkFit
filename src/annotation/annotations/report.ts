@@ -2,11 +2,25 @@ import type { AnnotationItem } from '../types'
 
 export const reportAnnotations: AnnotationItem[] = [
   {
+    id: 'report-goal-summary',
+    targetId: 'report-goal-summary',
+    title: '練習目標結果',
+    description: '報告最上方直接回頭對照本次練習前設定的單一目標，告訴使用者是否達標，以及下一輪該怎麼修。這能把「練習前設定」和「練習後回顧」串成一個完整閉環。',
+    type: 'feature',
+  },
+  {
     id: 'report-score-section',
     targetId: 'report-score-section',
     title: '三項評分卡片',
     description: '本次練習的三個核心指標：平均語速（字／分）、贅字總數、流暢度評分（A+ ～ D）。綜合贅字頻率與語速表現自動評分。',
     type: 'feature',
+  },
+  {
+    id: 'report-coaching-next-steps',
+    targetId: 'report-coaching-next-steps',
+    title: '下一輪 3 件建議',
+    description: '不是只展示數據，而是把這次報告濃縮成三個最值得先改的行動建議，避免使用者一次想改太多反而失焦。',
+    type: 'design',
   },
   {
     id: 'filler-ranking',

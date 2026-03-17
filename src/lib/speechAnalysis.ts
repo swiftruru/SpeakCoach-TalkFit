@@ -1,4 +1,10 @@
-import type { TranscriptSegment, FillerWord, SpeedDataPoint } from '../types'
+import type {
+  TranscriptSegment,
+  FillerWord,
+  PracticeGoalId,
+  SpeedDataPoint,
+  SpeedRange,
+} from '../types'
 import { gradeSession } from './grading'
 
 export function detectFillers(
@@ -44,7 +50,11 @@ export function buildSessionSummary(
   title: string,
   durationSeconds: number,
   segments: TranscriptSegment[],
-  speedHistory: SpeedDataPoint[]
+  speedHistory: SpeedDataPoint[],
+  options?: {
+    practiceGoalId?: PracticeGoalId
+    speedRangeSnapshot?: SpeedRange
+  }
 ) {
   const fillerCounts = buildFillerCounts(segments)
   const fillerCount = Object.values(fillerCounts).reduce((s, v) => s + v, 0)
@@ -60,6 +70,8 @@ export function buildSessionSummary(
     fillerCounts,
     topFiller: topFiller(fillerCounts),
     grade,
+    practiceGoalId: options?.practiceGoalId,
+    speedRangeSnapshot: options?.speedRangeSnapshot,
     speedHistory,
     transcript: segments,
   }

@@ -16,6 +16,13 @@ export const settingsAnnotations: AnnotationItem[] = [
     type: 'feature',
   },
   {
+    id: 'settings-practice-goal',
+    targetId: 'settings-practice-goal',
+    title: '練習目標',
+    description: '每次練習可先指定一個本輪重點，例如少講贅字、穩住語速、抓掉口頭禪。練習中會持續顯示進度，報告頁也會用同一個目標回頭判斷是否達標。',
+    type: 'feature',
+  },
+  {
     id: 'filler-chip-editor',
     targetId: 'filler-chip-editor',
     title: '贅字清單',

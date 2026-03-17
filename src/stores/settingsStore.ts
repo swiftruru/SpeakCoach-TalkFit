@@ -1,15 +1,17 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { FillerWord, PracticePresetId, SpeedRange } from '../types'
+import type { FillerWord, PracticeGoalId, PracticePresetId, SpeedRange } from '../types'
 import { DEFAULT_FILLER_WORDS } from '../lib/fillerWords'
 import {
   applyPresetToFillerWords,
   DEFAULT_PRACTICE_PRESET_ID,
   PRACTICE_PRESETS,
 } from '../lib/practicePresets'
+import { DEFAULT_PRACTICE_GOAL_ID } from '../lib/practiceGoals'
 
 interface SettingsState {
   preset: PracticePresetId
+  practiceGoalId: PracticeGoalId
   fillerWords: FillerWord[]
   speedRange: SpeedRange
   fillerDetectionEnabled: boolean
@@ -26,6 +28,7 @@ interface SettingsState {
   removeFillerWord: (word: string) => void
   setSpeedRange: (range: SpeedRange) => void
   applyPreset: (presetId: Exclude<PracticePresetId, 'custom'>) => void
+  setPracticeGoalId: (goalId: PracticeGoalId) => void
   setFillerDetectionEnabled: (v: boolean) => void
   setSpeedMonitoringEnabled: (v: boolean) => void
   setRepeatConnectorEnabled: (v: boolean) => void
@@ -39,6 +42,7 @@ export const useSettingsStore = create<SettingsState>()(
   persist(
     (set, get) => ({
       preset: DEFAULT_PRACTICE_PRESET_ID,
+      practiceGoalId: DEFAULT_PRACTICE_GOAL_ID,
       fillerWords: applyPresetToFillerWords(DEFAULT_FILLER_WORDS, DEFAULT_PRACTICE_PRESET_ID),
       speedRange: { ...PRACTICE_PRESETS[DEFAULT_PRACTICE_PRESET_ID].speedRange },
       fillerDetectionEnabled: true,
@@ -81,6 +85,7 @@ export const useSettingsStore = create<SettingsState>()(
           speedRange: { ...PRACTICE_PRESETS[presetId].speedRange },
           fillerWords: applyPresetToFillerWords(get().fillerWords, presetId),
         }),
+      setPracticeGoalId: (goalId) => set({ practiceGoalId: goalId }),
       setFillerDetectionEnabled: (v) => set({ fillerDetectionEnabled: v }),
       setSpeedMonitoringEnabled: (v) => set({ speedMonitoringEnabled: v }),
       setRepeatConnectorEnabled: (v) => set({ repeatConnectorEnabled: v }),

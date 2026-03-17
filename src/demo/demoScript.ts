@@ -3,6 +3,7 @@ import { useHistoryStore } from '../stores/historyStore'
 import { useReportStore } from '../stores/reportStore'
 import { useNavigationStore } from '../stores/navigationStore'
 import { usePhoneNotificationStore } from '../stores/phoneNotificationStore'
+import { useSettingsStore } from '../stores/settingsStore'
 import { buildSessionSummary } from '../lib/speechAnalysis'
 import { MOCK_SESSIONS } from '../lib/mockData'
 import {
@@ -39,6 +40,7 @@ function startSampleReplay() {
   const setReport = useReportStore.getState().setReport
   const setScreen = useNavigationStore.getState().setScreen
   const showNotification = usePhoneNotificationStore.getState().show
+  const settings = useSettingsStore.getState()
 
   useHistoryStore.setState({ sessions: MOCK_SESSIONS })
   setReport(MOCK_SESSIONS[0])
@@ -87,7 +89,11 @@ function startSampleReplay() {
         SAMPLE_REPLAY_TITLE,
         SAMPLE_REPLAY_DURATION_SECONDS,
         liveSession.transcript,
-        liveSession.speedHistory
+        liveSession.speedHistory,
+        {
+          practiceGoalId: settings.practiceGoalId,
+          speedRangeSnapshot: settings.speedRange,
+        }
       )
 
       setReport(report)
@@ -118,7 +124,7 @@ function startSampleReplay() {
 export const DEMO_STEPS: DemoStep[] = [
   {
     title: '快速體驗回放',
-    description: '先用一段 20 秒 sample session 模擬真實使用流程，不開麥克風也能直接看到逐字稿、語速表與贅字警示。',
+    description: '先用一段 10 秒 sample session 模擬真實使用流程，不開麥克風也能直接看到逐字稿、語速表與贅字警示。',
     durationMs: SAMPLE_REPLAY_STEP_MS,
     onEnter: () => {
       startSampleReplay()
