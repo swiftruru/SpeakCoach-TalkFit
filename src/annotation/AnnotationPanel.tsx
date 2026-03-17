@@ -106,7 +106,7 @@ export function AnnotationPanel({ screen, hoveredId, onHoverItem, onNavigate }: 
       {/* Footer hint */}
       <div className="px-5 py-3 flex-shrink-0 border-t border-divider">
         <p className="text-[11px] text-text-muted">
-          說來話長 TalkFit · React Prototype
+          說來話長 TalkFit · Made with React
         </p>
       </div>
     </div>

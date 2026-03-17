@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 
-export function useAudioLevel(isActive: boolean, barCount = 20, deviceId = 'default') {
+export function useAudioLevel(
+  isActive: boolean,
+  barCount = 20,
+  deviceId = 'default',
+  allowMicrophone = true
+) {
   const [levels, setLevels] = useState<number[]>(() => new Array(barCount).fill(0))
   const rafRef = useRef<number | null>(null)
   const contextRef = useRef<AudioContext | null>(null)
@@ -8,16 +13,14 @@ export function useAudioLevel(isActive: boolean, barCount = 20, deviceId = 'defa
   const streamRef = useRef<MediaStream | null>(null)
 
   useEffect(() => {
-    if (!isActive) {
-      setLevels(new Array(barCount).fill(0))
-      return
-    }
+    if (!isActive) return
 
     let cancelled = false
     const startTime = performance.now()
 
     // Try to get real audio; demo animation always runs regardless
     async function setup() {
+      if (!allowMicrophone) return
       try {
         const audioConstraint = deviceId && deviceId !== 'default'
           ? { deviceId: { exact: deviceId } }
@@ -85,7 +88,7 @@ export function useAudioLevel(isActive: boolean, barCount = 20, deviceId = 'defa
       analyserRef.current = null
       streamRef.current = null
     }
-  }, [isActive, barCount, deviceId])
+  }, [isActive, barCount, deviceId, allowMicrophone])
 
-  return levels
+  return isActive ? levels : new Array(barCount).fill(0)
 }

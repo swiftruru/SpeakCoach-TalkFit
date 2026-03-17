@@ -21,7 +21,7 @@
 - **Light / Dark theme toggle** — Dracula-inspired dark palette, persisted to `localStorage`
 - **iPhone frame simulation** — rose-gold metallic border for mobile-first demo presentation
 - **Annotation side panel** — each screen has a linked documentation panel explaining product features
-- **One-click Live Demo** — automated 11-step walkthrough of the full app flow with a fixed bottom overlay showing step title and description in sync; supports manual prev/next navigation and stop at any time
+- **One-click guided demo** — a single `開始示範` button launches a microphone-free sample replay first, then automatically continues into report / home / history / settings walkthrough with synced bottom overlay controls
 - **Design Story section** — scrollable below the demo area; two-card layout covering the app concept (problem, solution, highlights, filler categories) and Hackathon participation motivation
 
 ---
@@ -66,7 +66,7 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 | Button | Action |
 |--------|--------|
 | ✦ Mock 資料 | Populate all screens with sample session data — no microphone required |
-| ▶ Live Demo | Start the automated 11-step classroom demo |
+| ▶ 開始示範 | Start the guided demo: sample replay first, then auto-tour the key screens |
 | 設定收音裝置 | Select microphone input device |
 | 亮色 / 暗色 | Toggle light / dark theme |
 
@@ -81,7 +81,7 @@ src/
 │   ├── shell/        # PhoneFrame, StatusBar, TabBar
 │   ├── MicSelector
 │   └── AboutSection  # Design Story section (app concept + motivation)
-├── demo/             # demoStore, demoScript, useLiveDemo, DemoOverlay
+├── demo/             # demoStore, demoScript, sampleReplayData, useLiveDemo, DemoOverlay
 ├── hooks/            # useSpeechRecognition, useSpeechRate, useAudioLevel, useMicrophoneDevices
 ├── stores/           # navigationStore, sessionStore, historyStore, reportStore, settingsStore
 ├── lib/              # speechAnalysis, grading, fillerWords, mockData
@@ -99,4 +99,5 @@ public/
 
 - First load downloads the Whisper base model (~75 MB) and caches it in IndexedDB; subsequent loads are near-instant.
 - The waveform always animates during recording — a multi-frequency sine-wave demo runs continuously and blends with real audio input when available.
+- The guided demo does not require microphone permission; it replays a scripted sample session to show the core product value in about 20 seconds before continuing the walkthrough.
 - All session data is stored in `localStorage` and never leaves the device.

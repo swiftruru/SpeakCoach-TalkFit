@@ -3,6 +3,7 @@ import { useSettingsStore } from '../stores/settingsStore'
 
 interface UseSpeechRecognitionOptions {
   language?: string
+  enabled?: boolean
   onResult: (text: string, isFinal: boolean) => void
   onError?: (error: string) => void
 }
@@ -23,6 +24,7 @@ function resampleTo16k(buf: Float32Array, fromRate: number): Float32Array {
 
 export function useSpeechRecognition({
   language = 'zh-TW',
+  enabled = true,
   onResult,
   onError,
 }: UseSpeechRecognitionOptions) {
@@ -39,14 +41,40 @@ export function useSpeechRecognition({
   const onResultRef = useRef(onResult)
   const onErrorRef = useRef(onError)
   const languageRef = useRef(language)
-  onResultRef.current = onResult
-  onErrorRef.current = onError
-  languageRef.current = language
 
   const [modelState, setModelState] = useState<ModelStatus>({ status: 'idle' })
-  const [isListening, setIsListening] = useState(false)
 
   useEffect(() => {
+    onResultRef.current = onResult
+  }, [onResult])
+
+  useEffect(() => {
+    onErrorRef.current = onError
+  }, [onError])
+
+  useEffect(() => {
+    languageRef.current = language
+  }, [language])
+
+  const teardown = useCallback(() => {
+    shouldRunRef.current = false
+    if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null }
+    if (processorRef.current) { processorRef.current.disconnect(); processorRef.current = null }
+    if (contextRef.current) { contextRef.current.close(); contextRef.current = null }
+    if (streamRef.current) { streamRef.current.getTracks().forEach((t) => t.stop()); streamRef.current = null }
+    bufferRef.current = []
+  }, [])
+
+  useEffect(() => {
+    if (!enabled) {
+      teardown()
+      if (workerRef.current) {
+        workerRef.current.terminate()
+        workerRef.current = null
+      }
+      return
+    }
+
     const worker = new Worker('/whisperWorker.js', { type: 'module' })
 
     worker.onmessage = (e) => {
@@ -77,19 +105,14 @@ export function useSpeechRecognition({
       worker.terminate()
       workerRef.current = null
     }
-  }, [])
+  }, [enabled, teardown])
 
   const stop = useCallback(() => {
-    shouldRunRef.current = false
-    if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null }
-    if (processorRef.current) { processorRef.current.disconnect(); processorRef.current = null }
-    if (contextRef.current) { contextRef.current.close(); contextRef.current = null }
-    if (streamRef.current) { streamRef.current.getTracks().forEach((t) => t.stop()); streamRef.current = null }
-    bufferRef.current = []
-    setIsListening(false)
-  }, [])
+    teardown()
+  }, [teardown])
 
   const start = useCallback(async () => {
+    if (!enabled) return
     if (shouldRunRef.current) return
     shouldRunRef.current = true
 
@@ -146,12 +169,17 @@ export function useSpeechRecognition({
         )
       }, 3000)
 
-      setIsListening(true)
     } catch (err) {
       shouldRunRef.current = false
       onErrorRef.current?.(String(err))
     }
-  }, [micDeviceId])
+  }, [enabled, micDeviceId])
 
-  return { isSupported: true, isListening, modelState, start, stop }
+  return {
+    isSupported: true,
+    isListening: false,
+    modelState: enabled ? modelState : ({ status: 'idle' } as const),
+    start,
+    stop,
+  }
 }

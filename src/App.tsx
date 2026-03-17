@@ -189,7 +189,7 @@ export default function App() {
           <img src="/app-icon.png" alt="TalkFit" className="w-10 h-10 md:w-20 md:h-20 rounded-2xl object-cover flex-shrink-0 shadow-sm" />
           <div>
             <h1 className="text-sm font-semibold text-text-primary leading-none">說來話長 TalkFit</h1>
-            <p className="hidden md:block text-[10px] text-text-muted mt-0.5">React Prototype</p>
+            <p className="hidden md:block text-[10px] text-text-muted mt-0.5">Made with React</p>
           </div>
           {/* GitHub link — desktop only */}
           <a
@@ -231,14 +231,23 @@ export default function App() {
           </button>
 
           <button
-            onClick={startDemo}
-            disabled={isDemoActive}
-            className="text-xs px-3 py-1.5 rounded-full border border-accent-blue/40 text-accent-blue-light hover:bg-accent-blue/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+            onClick={() => {
+              if (isDemoActive) {
+                stopDemo()
+                return
+              }
+              startDemo()
+            }}
+            className={`text-xs px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 ${
+              isDemoActive
+                ? 'border-accent-amber/40 text-accent-amber bg-accent-amber/10'
+                : 'border-accent-blue/40 text-accent-blue-light hover:bg-accent-blue/10'
+            }`}
           >
             <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor">
-              <polygon points="5,3 19,12 5,21" />
+              {isDemoActive ? <rect x="6" y="6" width="12" height="12" rx="2" /> : <polygon points="5,3 19,12 5,21" />}
             </svg>
-            <span className="hidden md:inline">Live </span>Demo
+            <span>{isDemoActive ? '停止示範' : '開始示範'}</span>
           </button>
 
           <div className="hidden md:block w-px h-4 bg-border-divider" />

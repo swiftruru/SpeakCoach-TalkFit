@@ -20,6 +20,7 @@ export function PracticeScreen() {
   const addHistory = useHistoryStore((s) => s.addSession)
   const settings = useSettingsStore()
   const isDemoActive = useDemoStore((s) => s.isDemoActive)
+  const stopDemo = useDemoStore((s) => s.stopDemo)
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [interimText, setInterimText] = useState('')
@@ -59,8 +60,9 @@ export function PracticeScreen() {
     session.addSpeedPoint({ time: session.elapsedSeconds, wpm })
   }, [settings.fillerWords, settings.speedRange, session, addText])
 
-  const { isListening: _isListening, start, stop, modelState } = useSpeechRecognition({
+  const { start, stop, modelState } = useSpeechRecognition({
     language: settings.language,
+    enabled: !isDemoActive,
     onResult: handleResult,
     onError: (err) => setMicError(err),
   })
@@ -99,7 +101,17 @@ export function PracticeScreen() {
     else stop()
   }, [session, start, stop])
 
-  // Auto-start on mount (skip during live demo — demo script controls state directly)
+  // External demo/replay modes drive the screen state themselves, so stop any live mic loop first.
+  useEffect(() => {
+    if (!isDemoActive) return
+    stop()
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+      timerRef.current = null
+    }
+  }, [isDemoActive, stop])
+
+  // External demo mode drives this screen itself, so only auto-start in normal use.
   useEffect(() => {
     if (isDemoActive) return
     handleStart()
@@ -114,7 +126,7 @@ export function PracticeScreen() {
 
   const WAVE_BARS = 20
   const isRecordingActive = session.isRecording && !session.isPaused
-  const audioLevels = useAudioLevel(isRecordingActive, WAVE_BARS, settings.micDeviceId)
+  const audioLevels = useAudioLevel(isRecordingActive, WAVE_BARS, settings.micDeviceId, !isDemoActive)
 
   return (
     <div className="flex flex-col bg-gray-950 min-h-full text-white pb-4">
@@ -123,11 +135,18 @@ export function PracticeScreen() {
         data-annotation-id="practice-badge"
         className="flex items-center justify-between px-5 pt-4 pb-2"
       >
-        <div className="flex items-center gap-2">
-          <span className={`w-2.5 h-2.5 rounded-full ${session.isRecording && !session.isPaused ? 'bg-red-500 animate-pulse-dot' : 'bg-gray-500'}`} />
-          <span className="text-sm font-medium text-gray-300">
-            {session.isPaused ? '已暫停' : session.isRecording ? '錄音中' : '準備中'}
-          </span>
+        <div>
+          <div className="flex items-center gap-2">
+            <span className={`w-2.5 h-2.5 rounded-full ${session.isRecording && !session.isPaused ? 'bg-red-500 animate-pulse-dot' : 'bg-gray-500'}`} />
+            <span className="text-sm font-medium text-gray-300">
+              {session.isPaused ? '已暫停' : session.isRecording ? '錄音中' : '準備中'}
+            </span>
+          </div>
+          {isDemoActive && (
+            <p className="text-[11px] text-accent-amber mt-1">
+              示範模式中，無需麥克風
+            </p>
+          )}
         </div>
         <span className="text-2xl font-mono font-bold text-white tabular-nums">
           {formatDuration(session.elapsedSeconds)}
@@ -211,7 +230,8 @@ export function PracticeScreen() {
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={handlePause}
-          className="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-300 hover:bg-gray-700 transition-colors"
+          disabled={isDemoActive}
+          className="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-300 hover:bg-gray-700 transition-colors disabled:opacity-35 disabled:cursor-not-allowed"
         >
           {session.isPaused ? (
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
@@ -227,7 +247,7 @@ export function PracticeScreen() {
 
         <motion.button
           whileTap={{ scale: 0.92 }}
-          onClick={handleStop}
+          onClick={isDemoActive ? stopDemo : handleStop}
           className="w-16 h-16 rounded-full bg-accent-red flex items-center justify-center shadow-lg shadow-red-900"
         >
           <svg viewBox="0 0 24 24" width="22" height="22" fill="white">
@@ -237,7 +257,13 @@ export function PracticeScreen() {
 
         <motion.button
           whileTap={{ scale: 0.9 }}
-          onClick={() => setScreen('home')}
+          onClick={() => {
+            if (isDemoActive) {
+              stopDemo()
+              return
+            }
+            setScreen('home')
+          }}
           className="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-300 hover:bg-gray-700 transition-colors"
         >
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
@@ -246,12 +272,12 @@ export function PracticeScreen() {
         </motion.button>
       </div>
 
-      {modelState.status === 'loading' && (
+      {!isDemoActive && modelState.status === 'loading' && (
         <p className="text-center text-xs text-gray-500 mt-3">
           載入語音模型 {'progress' in modelState ? modelState.progress : 0}%…
         </p>
       )}
-      {modelState.status === 'error' && (
+      {!isDemoActive && modelState.status === 'error' && (
         <p className="text-center text-xs text-red-400 mt-2 px-4">
           語音模型載入失敗
         </p>

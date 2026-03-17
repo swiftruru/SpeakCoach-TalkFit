@@ -26,6 +26,7 @@ export function useLiveDemo() {
 
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
+      step.onExit?.()
     }
   }, [isDemoActive, currentStepIndex]) // eslint-disable-line react-hooks/exhaustive-deps
 }
