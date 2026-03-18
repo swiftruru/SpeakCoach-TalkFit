@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useState } from 'react'
 import type { AnnotationItem } from './types'
 import type { Screen } from '../types'
 import { homeAnnotations } from './annotations/home'
@@ -29,6 +29,8 @@ const TYPE_BADGE: Record<AnnotationItem['type'], { label: string; cls: string }>
   tech: { label: '技術', cls: 'bg-amber-50 text-amber-600' },
 }
 
+const ANNOTATIONS_PER_PAGE = 4
+
 interface AnnotationPanelProps {
   screen: Screen
   activeId: string | null
@@ -50,17 +52,27 @@ export function AnnotationPanel({
   onClearPin,
   onNavigate,
 }: AnnotationPanelProps) {
-  const annotations = SCREEN_ANNOTATIONS[screen] ?? []
-  const itemRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const annotations = SCREEN_ANNOTATIONS[screen]
+  const [manualPageIndexByScreen, setManualPageIndexByScreen] = useState<Record<Screen, number>>({
+    home: 0,
+    practice: 0,
+    report: 0,
+    history: 0,
+    settings: 0,
+  })
   const pinnedItem = annotations.find((item) => item.targetId === pinnedId)
-
-  // Auto-scroll to hovered item when phone element is hovered
-  useEffect(() => {
-    if (activeId) {
-      const el = itemRefs.current[activeId]
-      el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-    }
-  }, [activeId])
+  const totalPages = Math.max(1, Math.ceil(annotations.length / ANNOTATIONS_PER_PAGE))
+  const activeItemIndex = activeId
+    ? annotations.findIndex((item) => item.targetId === activeId)
+    : -1
+  const activePageIndex =
+    activeItemIndex >= 0 ? Math.floor(activeItemIndex / ANNOTATIONS_PER_PAGE) : null
+  const manualPageIndex = manualPageIndexByScreen[screen] ?? 0
+  const pageIndex = activePageIndex ?? Math.min(manualPageIndex, totalPages - 1)
+  const pagedAnnotations = annotations.slice(
+    pageIndex * ANNOTATIONS_PER_PAGE,
+    (pageIndex + 1) * ANNOTATIONS_PER_PAGE
+  )
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -112,13 +124,53 @@ export function AnnotationPanel({
 
       {/* Annotation list */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2 phone-scroll">
-        {annotations.map((item) => {
+        {totalPages > 1 && (
+          <div className="mb-3 flex items-center justify-between rounded-2xl border border-divider bg-bg-card px-3 py-2">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-text-muted">
+                說明分頁
+              </p>
+              <p className="mt-0.5 text-xs text-text-secondary">
+                第 {pageIndex + 1} / {totalPages} 頁
+              </p>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => setManualPageIndexByScreen((current) => ({
+                  ...current,
+                  [screen]: Math.max(0, manualPageIndex - 1),
+                }))}
+                disabled={pageIndex === 0 || activePageIndex !== null}
+                className="rounded-full border border-divider px-2.5 py-1 text-[11px] text-text-secondary transition-all hover:bg-bg-surface disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                上一頁
+              </button>
+              <button
+                onClick={() => setManualPageIndexByScreen((current) => ({
+                  ...current,
+                  [screen]: Math.min(totalPages - 1, manualPageIndex + 1),
+                }))}
+                disabled={pageIndex >= totalPages - 1 || activePageIndex !== null}
+                className="rounded-full border border-divider px-2.5 py-1 text-[11px] text-text-secondary transition-all hover:bg-bg-surface disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                下一頁
+              </button>
+            </div>
+          </div>
+        )}
+
+        {activePageIndex !== null && totalPages > 1 && (
+          <div className="mb-3 rounded-2xl border border-amber-200/70 bg-amber-50/70 px-3 py-2 text-[11px] leading-relaxed text-amber-800 dark:border-amber-400/20 dark:bg-amber-500/10 dark:text-amber-100/90">
+            目前聚焦的功能位於第 {pageIndex + 1} 頁，面板已自動切換到對應說明。
+          </div>
+        )}
+
+        {pagedAnnotations.map((item) => {
           const isHighlighted = activeId === item.targetId
           const isPinned = pinnedId === item.targetId
           return (
             <div
               key={item.id}
-              ref={(el) => { itemRefs.current[item.targetId] = el }}
               data-annotation-card-for={item.targetId}
               onMouseEnter={() => onHoverItem(item.targetId)}
               onMouseLeave={() => onHoverItem(null)}

@@ -159,6 +159,7 @@ export default function App() {
   const [showCommandPalette, setShowCommandPalette] = useState(false)
   const [showCaptureModal, setShowCaptureModal] = useState(false)
   const [showShortcutsModal, setShowShortcutsModal] = useState(false)
+  const [openDesktopMenu, setOpenDesktopMenu] = useState<'showcase' | 'system' | null>(null)
   const [isExportingCapture, setIsExportingCapture] = useState(false)
   const [showDesktopNotice, setShowDesktopNotice] = useState(() => isMobileBrowserDevice())
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
@@ -278,15 +279,39 @@ export default function App() {
     }
   }, [pinAnnotationGuide, setScreen])
 
-  // Scroll phone screen to show element when annotation panel item is hovered
+  // When the annotation side drives focus, move the phone viewport so the target
+  // lands in a readable position instead of just barely entering view.
   useEffect(() => {
     if (!activeAnnotationId) return
-    const el = document.querySelector(
+
+    const phoneStage = phoneStageRef.current
+    const scroller = phoneStage?.querySelector('.phone-scroll') as HTMLElement | null
+    const el = phoneStage?.querySelector(
       `[data-annotation-id="${activeAnnotationId}"]`
     ) as HTMLElement | null
-    if (!el) return
-    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-  }, [activeAnnotationId])
+
+    if (!scroller || !el) return
+    if (activeHoverSource === 'phone') return
+
+    const scrollerRect = scroller.getBoundingClientRect()
+    const targetRect = el.getBoundingClientRect()
+    const scaleY = scrollerRect.height / Math.max(scroller.clientHeight, 1)
+    const relativeTop = scroller.scrollTop + (targetRect.top - scrollerRect.top) / scaleY
+    const targetHeight = targetRect.height / scaleY
+    const preferredTopGap = Math.min(120, Math.max(28, scroller.clientHeight * 0.22))
+    const availableHeight = scroller.clientHeight - preferredTopGap - 24
+
+    const nextTop = targetHeight > availableHeight
+      ? relativeTop - 20
+      : relativeTop - preferredTopGap
+
+    const maxScrollTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight)
+
+    scroller.scrollTo({
+      top: Math.max(0, Math.min(nextTop, maxScrollTop)),
+      behavior: 'smooth',
+    })
+  }, [activeAnnotationId, activeHoverSource])
 
   const updateNavigatorOffset = useCallback(() => {
     if (isMobile || !activeAnnotationId) {
@@ -1117,13 +1142,6 @@ export default function App() {
             ✦ 設計動機
           </button>
 
-          <button
-            onClick={() => setShowCommandPalette(true)}
-            className="hidden md:flex text-xs px-3 py-1.5 rounded-full border border-divider text-text-secondary hover:text-text-primary hover:bg-bg-card transition-all items-center gap-1.5"
-          >
-            ⌘K 快速操作
-          </button>
-
           {/* Mock data — desktop only */}
           <button
             onClick={handleLoadMockData}
@@ -1132,33 +1150,88 @@ export default function App() {
             ✦ Mock 資料
           </button>
 
-          <button
-            onClick={handleToggleAnnotationPanel}
-            className="hidden md:flex text-xs px-3 py-1.5 rounded-full border border-divider text-text-secondary hover:text-text-primary hover:bg-bg-card transition-all items-center gap-1.5"
+          <div
+            className="relative hidden md:block"
+            onMouseEnter={() => setOpenDesktopMenu('showcase')}
+            onMouseLeave={() => setOpenDesktopMenu((current) => (current === 'showcase' ? null : current))}
           >
-            <span>{isDesktopAnnotationsVisible ? '收合說明' : '展開說明'}</span>
-          </button>
+            <button
+              onClick={() => setOpenDesktopMenu((current) => (current === 'showcase' ? null : 'showcase'))}
+              className={`text-xs px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 ${
+                openDesktopMenu === 'showcase'
+                  ? 'border-accent-blue/35 bg-accent-blue/10 text-accent-blue-light'
+                  : 'border-divider text-text-secondary hover:text-text-primary hover:bg-bg-card'
+              }`}
+            >
+              <span>展示工具</span>
+              <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
 
-          <button
-            onClick={() => setShowCaptureModal(true)}
-            className="hidden md:flex text-xs px-3 py-1.5 rounded-full border border-divider text-text-secondary hover:text-text-primary hover:bg-bg-card transition-all items-center gap-1.5"
-          >
-            <span>輸出畫面</span>
-          </button>
-
-          <button
-            onClick={handleTogglePresentationMode}
-            className="hidden md:flex text-xs px-3 py-1.5 rounded-full border border-accent-blue/35 text-accent-blue-light hover:bg-accent-blue/10 transition-all items-center gap-1.5"
-          >
-            <span>{isPresentationMode ? '結束簡報' : '簡報模式'}</span>
-          </button>
-
-          <button
-            onClick={() => { void handleToggleFullscreen() }}
-            className="hidden md:flex text-xs px-3 py-1.5 rounded-full border border-divider text-text-secondary hover:text-text-primary hover:bg-bg-card transition-all items-center gap-1.5"
-          >
-            <span>{isFullscreen ? '退出全螢幕' : '全螢幕'}</span>
-          </button>
+            <AnimatePresence>
+              {openDesktopMenu === 'showcase' && (
+                <motion.div
+                  className="absolute right-0 top-[calc(100%+10px)] z-30 w-56 rounded-2xl border border-divider bg-bg-surface/96 p-2 shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-md"
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.16 }}
+                >
+                  <button
+                    onClick={() => {
+                      setShowCommandPalette(true)
+                      setOpenDesktopMenu(null)
+                    }}
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
+                  >
+                    <span>⌘K 快速操作</span>
+                    <span className="text-[11px] text-text-muted">捷徑</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleToggleAnnotationPanel()
+                      setOpenDesktopMenu(null)
+                    }}
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
+                  >
+                    <span>{isDesktopAnnotationsVisible ? '收合說明' : '展開說明'}</span>
+                    <span className="text-[11px] text-text-muted">面板</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowCaptureModal(true)
+                      setOpenDesktopMenu(null)
+                    }}
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
+                  >
+                    <span>輸出畫面</span>
+                    <span className="text-[11px] text-text-muted">PNG</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleTogglePresentationMode()
+                      setOpenDesktopMenu(null)
+                    }}
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
+                  >
+                    <span>{isPresentationMode ? '結束簡報' : '簡報模式'}</span>
+                    <span className="text-[11px] text-text-muted">展示</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      void handleToggleFullscreen()
+                      setOpenDesktopMenu(null)
+                    }}
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
+                  >
+                    <span>{isFullscreen ? '退出全螢幕' : '全螢幕'}</span>
+                    <span className="text-[11px] text-text-muted">視圖</span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           <button
             onClick={() => {
@@ -1180,54 +1253,68 @@ export default function App() {
             <span>{isDemoActive ? '停止示範' : '開始示範'}</span>
           </button>
 
-          <button
-            onClick={handleResetPrototype}
-            className="hidden md:flex text-xs px-3 py-1.5 rounded-full border border-divider text-text-secondary hover:text-text-primary hover:bg-bg-card transition-all items-center gap-1.5"
+          <div
+            className="relative hidden md:block"
+            onMouseEnter={() => setOpenDesktopMenu('system')}
+            onMouseLeave={() => setOpenDesktopMenu((current) => (current === 'system' ? null : current))}
           >
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="23 4 23 10 17 10" />
-              <polyline points="1 20 1 14 7 14" />
-              <path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10M1 14l5.36 4.36A9 9 0 0 0 20.49 15" />
-            </svg>
-            <span>重置原型</span>
-          </button>
-
-          <button
-            onClick={handleCopyCurrentViewLink}
-            className="hidden md:flex text-xs px-3 py-1.5 rounded-full border border-divider text-text-secondary hover:text-text-primary hover:bg-bg-card transition-all items-center gap-1.5"
-          >
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L10 4" />
-              <path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 1 0 7.07 7.07L14 20" />
-            </svg>
-            <span>畫面連結</span>
-          </button>
-
-          <div className="hidden md:block w-px h-4 bg-border-divider" />
-          {/* Theme toggle */}
-          <button
-            onClick={() => setIsDark((v) => !v)}
-            title={isDark ? '切換亮色模式' : '切換暗色模式'}
-            className="w-8 h-8 rounded-full border border-divider text-text-secondary hover:text-text-primary transition-all flex items-center justify-center"
-          >
-            {isDark ? (
-              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="5" />
-                <line x1="12" y1="1" x2="12" y2="3" />
-                <line x1="12" y1="21" x2="12" y2="23" />
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                <line x1="1" y1="12" x2="3" y2="12" />
-                <line x1="21" y1="12" x2="23" y2="12" />
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            <button
+              onClick={() => setOpenDesktopMenu((current) => (current === 'system' ? null : 'system'))}
+              className={`text-xs px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 ${
+                openDesktopMenu === 'system'
+                  ? 'border-divider bg-bg-card text-text-primary'
+                  : 'border-divider text-text-secondary hover:text-text-primary hover:bg-bg-card'
+              }`}
+            >
+              <span>更多</span>
+              <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="6 9 12 15 18 9" />
               </svg>
-            ) : (
-              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-              </svg>
-            )}
-          </button>
+            </button>
+
+            <AnimatePresence>
+              {openDesktopMenu === 'system' && (
+                <motion.div
+                  className="absolute right-0 top-[calc(100%+10px)] z-30 w-56 rounded-2xl border border-divider bg-bg-surface/96 p-2 shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-md"
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.16 }}
+                >
+                  <button
+                    onClick={() => {
+                      handleResetPrototype()
+                      setOpenDesktopMenu(null)
+                    }}
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
+                  >
+                    <span>重置原型</span>
+                    <span className="text-[11px] text-text-muted">清除資料</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      void handleCopyCurrentViewLink()
+                      setOpenDesktopMenu(null)
+                    }}
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
+                  >
+                    <span>畫面連結</span>
+                    <span className="text-[11px] text-text-muted">分享</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsDark((v) => !v)
+                      setOpenDesktopMenu(null)
+                    }}
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
+                  >
+                    <span>{isDark ? '切換亮色模式' : '切換暗色模式'}</span>
+                    <span className="text-[11px] text-text-muted">主題</span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
           </motion.div>
         )}
