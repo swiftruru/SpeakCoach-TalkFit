@@ -746,7 +746,8 @@ export default function App() {
         title: 'PNG 已下載',
         body: '已輸出目前網站畫面，可直接放入 README 或作品集。',
       })
-    } catch {
+    } catch (error) {
+      console.error('Failed to export PNG capture', error)
       showPhoneNotification({
         title: '輸出失敗',
         body: '瀏覽器目前無法完成匯出，建議改用桌機最新版瀏覽器。',

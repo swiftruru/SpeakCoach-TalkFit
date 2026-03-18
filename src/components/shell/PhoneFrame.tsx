@@ -81,8 +81,8 @@ export function PhoneFrame({ screen, isLaunching = false, children }: PhoneFrame
 
               {/* Inner screen */}
               <div
-                className="w-full h-full bg-phone-inner relative"
-                style={{ clipPath: `inset(0 round ${outerR - ringW - 12}px)` }}
+                className="w-full h-full bg-phone-inner relative overflow-hidden"
+                style={{ borderRadius: outerR - ringW - 12 }}
               >
                 <motion.div
                   className="w-full h-full flex flex-col"

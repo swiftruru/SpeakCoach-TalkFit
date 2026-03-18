@@ -177,6 +177,7 @@ flowchart LR
 | 狀態管理 | Zustand（含 `localStorage` 持久化） |
 | 動畫 | Framer Motion |
 | 圖表 | Recharts |
+| 畫面輸出 | html2canvas + DOM Capture Helper |
 | 原型互動 | Mock Data + Sample Replay Script + Session/Report Store |
 | 視覺回饋 | Scripted Waveform + SVG Share Card Export |
 
@@ -254,7 +255,7 @@ docs/
 - `簡報模式` 會收起頂部工具列，改用右上角精簡 HUD 操作，讓展示畫面更乾淨
 - 桌面版 Spotlight 現在預設跟著 hover / demo 自動啟用，不需要額外切換按鈕
 - `全螢幕` 會呼叫瀏覽器 `Fullscreen API`，適合投影或 demo 場景
-- `輸出畫面` 支援下載 PNG，並提供作品集展示版、乾淨展示版與純手機版三種輸出
+- `輸出畫面` 支援下載 PNG，並提供作品集展示版、乾淨展示版與純手機版三種輸出；目前以 `html2canvas` 搭配 DOM capture helper 處理網站畫面匯出
 - 桌面版的註解導引採用暖橘色 hover 連線；模擬器與說明卡之間會雙向同步高亮，方便評審快速對照
 - 說明卡支援固定 / 解除固定，適合在 demo 時停留在單一功能區塊做講解
 - 左側浮動導覽的說明卡會隨目前聚焦的模擬器區塊上下移動，避免在報告頁下半部或分享卡區塊脫離視線
