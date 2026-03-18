@@ -109,6 +109,7 @@ export function PhoneFrame({ screen, isLaunching = false, children }: PhoneFrame
                     {drag.ripples.map((r) => (
                       <div
                         key={r.id}
+                        data-capture-ignore
                         className="phone-ripple pointer-events-none absolute rounded-full"
                         style={{
                           width: 80, height: 80,
@@ -121,6 +122,7 @@ export function PhoneFrame({ screen, isLaunching = false, children }: PhoneFrame
                     {/* Custom touch-point cursor */}
                     {drag.cursor.visible && (
                       <div
+                        data-capture-ignore
                         className="pointer-events-none absolute z-50 rounded-full transition-[width,height,opacity] duration-100"
                         style={{
                           width: drag.cursor.pressed ? 58 : 48,

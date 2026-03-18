@@ -33,6 +33,7 @@ interface AnnotationPanelProps {
   screen: Screen
   activeId: string | null
   pinnedId: string | null
+  isSpotlightMode?: boolean
   onHoverItem: (id: string | null) => void
   onTogglePin: (id: string) => void
   onClearPin: () => void
@@ -43,6 +44,7 @@ export function AnnotationPanel({
   screen,
   activeId,
   pinnedId,
+  isSpotlightMode = false,
   onHoverItem,
   onTogglePin,
   onClearPin,
@@ -63,7 +65,7 @@ export function AnnotationPanel({
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Panel header — tab nav */}
-      <div className="flex-shrink-0 px-3 pt-3 pb-0">
+      <div className={`flex-shrink-0 px-3 pt-3 pb-0 transition-opacity ${isSpotlightMode && activeId ? 'opacity-55' : ''}`}>
         <div className="flex flex-wrap gap-0.5">
           {(Object.entries(SCREEN_LABELS) as [Screen, string][]).map(([id, label]) => (
             <button
@@ -84,7 +86,11 @@ export function AnnotationPanel({
       <div className="w-full h-px bg-border-divider flex-shrink-0 mt-2" />
 
       {pinnedItem && (
-        <div className="mx-4 mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2.5 dark:border-amber-400/30 dark:bg-amber-500/10">
+        <div
+          className={`mx-4 mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2.5 transition-opacity dark:border-amber-400/30 dark:bg-amber-500/10 ${
+            isSpotlightMode && activeId && !pinnedId ? 'opacity-55' : ''
+          }`}
+        >
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-[11px] font-semibold tracking-[0.14em] text-amber-700 uppercase dark:text-amber-200">
@@ -121,7 +127,7 @@ export function AnnotationPanel({
                 isHighlighted
                   ? 'bg-amber-50 border-amber-200 shadow-[0_12px_28px_rgba(249,115,22,0.12)] dark:bg-amber-500/10 dark:border-amber-400/30'
                   : 'bg-bg-card border-divider'
-              }`}
+              } ${isSpotlightMode && activeId && !isHighlighted && !isPinned ? 'opacity-40 scale-[0.985]' : ''}`}
             >
               <div className="flex items-start justify-between gap-2 mb-1.5">
                 <span className={`text-sm font-medium ${isHighlighted ? 'text-amber-800 dark:text-amber-200' : 'text-text-primary'}`}>
@@ -156,7 +162,7 @@ export function AnnotationPanel({
       </div>
 
       {/* Footer hint */}
-      <div className="px-5 py-3 flex-shrink-0 border-t border-divider">
+      <div className={`px-5 py-3 flex-shrink-0 border-t border-divider transition-opacity ${isSpotlightMode && activeId ? 'opacity-45' : ''}`}>
         <p className="text-[11px] text-text-muted">
           說來話長 TalkFit · Made with React
         </p>

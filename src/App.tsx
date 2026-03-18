@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useNavigationStore } from './stores/navigationStore'
 import { useHistoryStore } from './stores/historyStore'
@@ -11,6 +11,8 @@ import { PrototypeNavigator } from './components/PrototypeNavigator'
 import { AnnotationPanel } from './annotation/AnnotationPanel'
 import { DesignStoryModal } from './components/DesignStoryModal'
 import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal'
+import { CommandPaletteModal } from './components/CommandPaletteModal'
+import { CaptureExportModal } from './components/CaptureExportModal'
 import { HomeScreen } from './screens/HomeScreen'
 import { PracticeScreen } from './screens/PracticeScreen'
 import { ReportScreen } from './screens/ReportScreen'
@@ -20,6 +22,7 @@ import { useDemoStore } from './demo/demoStore'
 import { useLiveDemo } from './demo/useLiveDemo'
 import { getDemoSteps } from './demo/demoScript'
 import { ensurePrototypeDataForScreen, resetPrototypeState } from './lib/prototypeState'
+import { downloadElementAsPng } from './lib/domCapture'
 import { useAnnotationGuideStore } from './stores/annotationGuideStore'
 import type { Screen } from './types'
 import './index.css'
@@ -130,21 +133,40 @@ interface HoverConnector {
   end: { x: number; y: number }
 }
 
+interface SpotlightRect {
+  x: number
+  y: number
+  width: number
+  height: number
+  radius: number
+}
+
+interface SpotlightGeometry {
+  phoneRect: SpotlightRect
+  annotationRect?: SpotlightRect
+}
+
 type HoverSource = 'phone' | 'annotation' | 'demo'
 
 export default function App() {
   const { screen, setScreen, requestScreen } = useNavigationStore()
   const [hoveredAnnotationId, setHoveredAnnotationId] = useState<string | null>(null)
   const [hoverConnector, setHoverConnector] = useState<HoverConnector | null>(null)
+  const [spotlightGeometry, setSpotlightGeometry] = useState<SpotlightGeometry | null>(null)
   const [hoverSource, setHoverSource] = useState<HoverSource | null>(null)
   const [navigatorOffsetY, setNavigatorOffsetY] = useState(0)
   const [showStoryModal, setShowStoryModal] = useState(false)
+  const [showCommandPalette, setShowCommandPalette] = useState(false)
+  const [showCaptureModal, setShowCaptureModal] = useState(false)
   const [showShortcutsModal, setShowShortcutsModal] = useState(false)
+  const [isExportingCapture, setIsExportingCapture] = useState(false)
   const [showDesktopNotice, setShowDesktopNotice] = useState(() => isMobileBrowserDevice())
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
   const [isPresentationMode, setIsPresentationMode] = useState(
     () => new URLSearchParams(window.location.search).get('view') === 'present'
   )
+  const [isFullscreen, setIsFullscreen] = useState(() => Boolean(document.fullscreenElement))
+  const [capturePreset, setCapturePreset] = useState<'showcase' | 'presentation' | 'phone'>('showcase')
   const [isDesktopAnnotationsVisible, setIsDesktopAnnotationsVisible] = useState(
     () => new URLSearchParams(window.location.search).get('panel') !== 'closed'
   )
@@ -154,10 +176,12 @@ export default function App() {
   const [showMobileAnnotations, setShowMobileAnnotations] = useState(
     () => new URLSearchParams(window.location.search).get('panel') === 'open'
   )
+  const appRootRef = useRef<HTMLDivElement | null>(null)
   const desktopStageRef = useRef<HTMLDivElement | null>(null)
   const navigatorStickyRef = useRef<HTMLDivElement | null>(null)
   const navigatorInnerRef = useRef<HTMLDivElement | null>(null)
   const phoneStageRef = useRef<HTMLDivElement | null>(null)
+  const phoneExportRef = useRef<HTMLDivElement | null>(null)
   const hasAppliedInitialUrlState = useRef(false)
 
   useEffect(() => {
@@ -167,6 +191,15 @@ export default function App() {
     }
     window.addEventListener('resize', handler)
     return () => window.removeEventListener('resize', handler)
+  }, [])
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement))
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
   }, [])
   const sessions = useHistoryStore((s) => s.sessions)
   const report = useReportStore((s) => s.report)
@@ -185,6 +218,7 @@ export default function App() {
   const activeAnnotationId = pinnedAnnotationId ?? hoveredAnnotationId
   const activeHoverSource = pinnedAnnotationId ? (pinnedAnnotationSource ?? 'demo') : hoverSource
   const currentDemoSteps = getDemoSteps(demoMode)
+  const isSpotlightActive = !isMobile && Boolean(activeAnnotationId)
 
   // Theme: light by default, persist in localStorage
   const [isDark, setIsDark] = useState(() => {
@@ -289,14 +323,16 @@ export default function App() {
   }, [activeAnnotationId, isMobile])
 
   const updateHoverConnector = useCallback(() => {
-    if (!activeAnnotationId || isMobile || !isDesktopAnnotationsVisible) {
+    if (!activeAnnotationId || isMobile) {
       setHoverConnector(null)
+      setSpotlightGeometry(null)
       return
     }
 
     const stage = desktopStageRef.current
     if (!stage) {
       setHoverConnector(null)
+      setSpotlightGeometry(null)
       return
     }
 
@@ -307,22 +343,48 @@ export default function App() {
       `[data-annotation-card-for="${activeAnnotationId}"]`
     ) as HTMLElement | null
 
-    if (!phoneTarget || !annotationCard) {
+    if (!phoneTarget) {
       setHoverConnector(null)
+      setSpotlightGeometry(null)
       return
     }
 
     const stageRect = stage.getBoundingClientRect()
     const targetRect = phoneTarget.getBoundingClientRect()
-    const cardRect = annotationCard.getBoundingClientRect()
+    const cardRect = annotationCard ? annotationCard.getBoundingClientRect() : null
+
+    setSpotlightGeometry({
+      phoneRect: {
+        x: targetRect.left - stageRect.left - 14,
+        y: targetRect.top - stageRect.top - 12,
+        width: targetRect.width + 28,
+        height: targetRect.height + 24,
+        radius: 18,
+      },
+      annotationRect: cardRect
+        ? {
+            x: cardRect.left - stageRect.left - 12,
+            y: cardRect.top - stageRect.top - 10,
+            width: cardRect.width + 24,
+            height: cardRect.height + 20,
+            radius: 20,
+          }
+        : undefined,
+    })
+
+    if (!annotationCard || !cardRect || !isDesktopAnnotationsVisible) {
+      setHoverConnector(null)
+      return
+    }
 
     const phonePoint = {
       x: targetRect.right - stageRect.left + 18,
       y: targetRect.top - stageRect.top + targetRect.height / 2,
     }
+    const annotationRect = cardRect
     const annotationPoint = {
-      x: cardRect.left - stageRect.left - 22,
-      y: cardRect.top - stageRect.top + Math.min(42, cardRect.height / 2),
+      x: annotationRect.left - stageRect.left - 22,
+      y: annotationRect.top - stageRect.top + Math.min(42, annotationRect.height / 2),
     }
     const start = activeHoverSource === 'annotation' ? annotationPoint : phonePoint
     const end = activeHoverSource === 'annotation' ? phonePoint : annotationPoint
@@ -486,6 +548,7 @@ export default function App() {
       clearAnnotationGuide()
       setHoverSource(null)
       setNavigatorOffsetY(0)
+      setSpotlightGeometry(null)
     })
 
     return () => window.cancelAnimationFrame(frame)
@@ -553,6 +616,32 @@ export default function App() {
     setIsPresentationMode((current) => !current)
   }, [])
 
+  const handleToggleFullscreen = useCallback(async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen()
+        return
+      }
+
+      const target = appRootRef.current ?? document.documentElement
+      await target.requestFullscreen()
+    } catch {
+      showPhoneNotification({
+        title: '無法進入全螢幕',
+        body: '目前瀏覽器或裝置不支援 Fullscreen API。',
+      })
+    }
+  }, [showPhoneNotification])
+
+  const handleLoadMockData = useCallback(() => {
+    useHistoryStore.setState({ sessions: MOCK_SESSIONS })
+    setReport(MOCK_SESSIONS[0])
+    showPhoneNotification({
+      title: 'App 已新增 Mock 資料',
+      body: '練習紀錄、分析報告已載入，可直接瀏覽各頁面',
+    })
+  }, [setReport, showPhoneNotification])
+
   const handlePhoneMouseOver = useCallback((e: React.MouseEvent) => {
     if (pinnedAnnotationId || !isDesktopAnnotationsVisible) return
     const target = e.target as HTMLElement
@@ -576,6 +665,8 @@ export default function App() {
     setHoveredAnnotationId(null)
     clearAnnotationGuide()
     setHoverSource(null)
+    setShowCommandPalette(false)
+    setShowCaptureModal(false)
     setShowMobileAnnotations(false)
     setIsDesktopAnnotationsVisible(true)
     setIsPresentationMode(false)
@@ -602,6 +693,211 @@ export default function App() {
     }
   }, [showPhoneNotification])
 
+  const handleExportCapture = useCallback(async () => {
+    const desktopStage = desktopStageRef.current
+    const phoneOnly = phoneExportRef.current
+
+    const target =
+      capturePreset === 'phone'
+        ? phoneOnly
+        : desktopStage
+
+    if (!target) {
+      showPhoneNotification({
+        title: '無法輸出畫面',
+        body: '目前找不到可匯出的展示區塊。',
+      })
+      return
+    }
+
+    setIsExportingCapture(true)
+
+    try {
+      await downloadElementAsPng(target, {
+        fileName: `talkfit-${capturePreset}-${new Date().toISOString().slice(0, 10)}.png`,
+        background: '#f8fafc',
+        padding: capturePreset === 'phone' ? 28 : 24,
+        scale: capturePreset === 'phone' ? 2.4 : 2,
+        beforeSerialize: (clone) => {
+          clone.querySelectorAll<HTMLElement>('[data-capture-role="navigator"]').forEach((node) => {
+            if (capturePreset === 'presentation') {
+              node.remove()
+            }
+          })
+
+          clone.querySelectorAll<HTMLElement>('[data-capture-role="annotation-divider"]').forEach((node) => {
+            if (capturePreset === 'presentation' && clone.querySelector('[data-capture-role="annotation-panel"]')) {
+              node.style.display = 'none'
+            }
+          })
+
+          clone.querySelectorAll<HTMLElement>('[data-capture-role="annotation-panel"]').forEach((node) => {
+            if (capturePreset === 'phone') {
+              node.remove()
+            }
+          })
+
+          clone.querySelectorAll<HTMLElement>('[data-capture-role="spotlight-overlay"], [data-capture-role="hover-connector"]').forEach((node) => node.remove())
+        },
+      })
+
+      setShowCaptureModal(false)
+      showPhoneNotification({
+        title: 'PNG 已下載',
+        body: '已輸出目前網站畫面，可直接放入 README 或作品集。',
+      })
+    } catch {
+      showPhoneNotification({
+        title: '輸出失敗',
+        body: '瀏覽器目前無法完成匯出，建議改用桌機最新版瀏覽器。',
+      })
+    } finally {
+      setIsExportingCapture(false)
+    }
+  }, [capturePreset, showPhoneNotification])
+
+  const commandPaletteActions = useMemo(() => {
+    const screenActions: Array<{
+      id: Screen
+      title: string
+      description: string
+      keywords: string[]
+    }> = [
+      { id: 'home', title: '前往首頁', description: '查看首頁總覽、提醒與本週數據。', keywords: ['首頁', 'home', 'dashboard'] },
+      { id: 'practice', title: '前往練習頁', description: '切到練習中的儀表板與逐字稿頁面。', keywords: ['練習', 'practice', '錄音'] },
+      { id: 'report', title: '前往分析報告', description: '查看報告總覽、問題跳轉與分享卡。', keywords: ['報告', 'report', '分享卡'] },
+      { id: 'history', title: '前往歷史紀錄', description: '瀏覽歷史趨勢與練習列表。', keywords: ['紀錄', 'history', '趨勢'] },
+      { id: 'settings', title: '前往設定頁', description: '調整 preset、練習目標與偵測規則。', keywords: ['設定', 'settings', 'preset'] },
+    ]
+
+    return [
+      ...screenActions.map((action) => ({
+        id: `screen-${action.id}`,
+        title: action.title,
+        description: action.description,
+        section: '畫面跳轉',
+        keywords: action.keywords,
+        onSelect: () => {
+          ensurePrototypeDataForScreen(action.id)
+          requestScreen(action.id)
+        },
+      })),
+      {
+        id: 'toggle-demo',
+        title: isDemoActive ? '停止完整示範' : '開始完整示範',
+        description: isDemoActive ? '停止目前正在播放的完整 App Demo。' : '直接播放完整 App Demo 流程。' ,
+        section: '展示控制',
+        shortcut: 'D',
+        keywords: ['demo', '示範', '導覽'],
+        onSelect: handleToggleDemo,
+      },
+      {
+        id: 'toggle-presentation',
+        title: isPresentationMode ? '結束簡報模式' : '進入簡報模式',
+        description: '切換成更乾淨的展示版面，隱藏頂部工具列。',
+        section: '展示控制',
+        shortcut: 'P',
+        keywords: ['簡報', 'presentation', 'hud'],
+        onSelect: handleTogglePresentationMode,
+      },
+      {
+        id: 'toggle-fullscreen',
+        title: isFullscreen ? '退出全螢幕' : '進入全螢幕',
+        description: '使用瀏覽器 Fullscreen API 進行真正全螢幕展示。',
+        section: '展示控制',
+        shortcut: 'F',
+        keywords: ['fullscreen', '全螢幕', 'full screen'],
+        onSelect: () => { void handleToggleFullscreen() },
+      },
+      {
+        id: 'toggle-annotations',
+        title: isDesktopAnnotationsVisible || showMobileAnnotations ? '收合說明面板' : '展開說明面板',
+        description: '切換右側說明面板，方便純展示或講解。',
+        section: '展示控制',
+        shortcut: 'A',
+        keywords: ['說明', 'annotation', 'panel'],
+        onSelect: handleToggleAnnotationPanel,
+      },
+      {
+        id: 'load-mock',
+        title: '載入 Mock 資料',
+        description: '快速補齊首頁、報告與歷史頁的展示資料。',
+        section: '資料與工具',
+        keywords: ['mock', '資料', 'seed'],
+        onSelect: handleLoadMockData,
+      },
+      {
+        id: 'open-capture-export',
+        title: '截圖 / 乾淨輸出',
+        description: '開啟 PNG 匯出面板，輸出作品集展示版、乾淨展示版或純手機版。',
+        section: '資料與工具',
+        shortcut: 'E',
+        keywords: ['截圖', '輸出', 'capture', 'export', 'png'],
+        onSelect: () => setShowCaptureModal(true),
+      },
+      {
+        id: 'copy-link',
+        title: '複製目前畫面連結',
+        description: '將目前畫面、主題與展示狀態複製成 permalink。',
+        section: '資料與工具',
+        shortcut: 'L',
+        keywords: ['連結', 'url', 'permalink'],
+        onSelect: () => { void handleCopyCurrentViewLink() },
+      },
+      {
+        id: 'toggle-theme',
+        title: isDark ? '切換為亮色主題' : '切換為暗色主題',
+        description: '切換目前網站的展示主題。',
+        section: '資料與工具',
+        shortcut: 'T',
+        keywords: ['theme', 'dark', 'light', '主題'],
+        onSelect: () => setIsDark((current) => !current),
+      },
+      {
+        id: 'open-design-story',
+        title: '開啟設計動機 / 關於',
+        description: '查看產品概念、作者資訊與技術細節。',
+        section: '資料與工具',
+        shortcut: 'S',
+        keywords: ['設計動機', '關於', 'about'],
+        onSelect: () => setShowStoryModal(true),
+      },
+      {
+        id: 'open-shortcuts',
+        title: '查看快捷鍵說明',
+        description: '開啟網站快捷鍵清單。',
+        section: '資料與工具',
+        shortcut: '?',
+        keywords: ['快捷鍵', 'keyboard', 'shortcut'],
+        onSelect: () => setShowShortcutsModal(true),
+      },
+      {
+        id: 'reset-prototype',
+        title: '重置原型',
+        description: '清除目前資料與展示狀態，回到乾淨首頁。',
+        section: '資料與工具',
+        shortcut: 'R',
+        keywords: ['reset', '重置', '清除'],
+        onSelect: handleResetPrototype,
+      },
+    ]
+  }, [
+    handleCopyCurrentViewLink,
+    handleToggleFullscreen,
+    handleLoadMockData,
+    handleResetPrototype,
+    handleToggleAnnotationPanel,
+    handleToggleDemo,
+    handleTogglePresentationMode,
+    isDark,
+    isDemoActive,
+    isDesktopAnnotationsVisible,
+    isFullscreen,
+    isPresentationMode,
+    requestScreen,
+    showMobileAnnotations,
+  ])
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -613,9 +909,32 @@ export default function App() {
 
       if (isTyping) return
 
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setShowShortcutsModal(false)
+        setShowCommandPalette((current) => !current)
+        return
+      }
+
       if ((e.key === '?' || (e.key === '/' && e.shiftKey)) && !e.metaKey && !e.ctrlKey) {
         e.preventDefault()
         setShowShortcutsModal((current) => !current)
+        return
+      }
+
+      if (showCommandPalette) {
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          setShowCommandPalette(false)
+        }
+        return
+      }
+
+      if (showCaptureModal) {
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          setShowCaptureModal(false)
+        }
         return
       }
 
@@ -648,6 +967,18 @@ export default function App() {
       if (!showStoryModal && e.key.toLowerCase() === 'p') {
         e.preventDefault()
         handleTogglePresentationMode()
+        return
+      }
+
+      if (!showStoryModal && e.key.toLowerCase() === 'f') {
+        e.preventDefault()
+        void handleToggleFullscreen()
+        return
+      }
+
+      if (!showStoryModal && e.key.toLowerCase() === 'e') {
+        e.preventDefault()
+        setShowCaptureModal(true)
         return
       }
 
@@ -694,8 +1025,11 @@ export default function App() {
     handleResetPrototype,
     handleToggleAnnotationPanel,
     handleToggleDemo,
+    handleToggleFullscreen,
     handleTogglePresentationMode,
     isDemoActive,
+    showCommandPalette,
+    showCaptureModal,
     showShortcutsModal,
     showStoryModal,
     stopDemo,
@@ -728,16 +1062,16 @@ export default function App() {
   }, [showPhoneLaunch])
 
   return (
-    <div className="min-h-screen bg-bg-base flex flex-col font-sans">
+    <div ref={appRootRef} className="min-h-screen bg-bg-base flex flex-col font-sans">
       {/* Highlight style injection */}
-      {activeAnnotationId && (
+      {activeAnnotationId && isMobile && (
         <style>{`
           [data-annotation-id="${activeAnnotationId}"] {
             border-radius: 12px;
             box-shadow:
-              inset 0 0 0 2px rgba(251,191,36,0.72),
-              inset 0 0 0 6px rgba(255,247,237,0.56),
-              0 14px 30px rgba(249,115,22,0.14);
+              inset 0 0 0 2px rgba(251,191,36,0.78),
+              0 10px 22px rgba(249,115,22,0.16);
+            transition: box-shadow 180ms ease;
           }
         `}</style>
       )}
@@ -783,22 +1117,15 @@ export default function App() {
           </button>
 
           <button
-            onClick={() => setShowShortcutsModal(true)}
+            onClick={() => setShowCommandPalette(true)}
             className="hidden md:flex text-xs px-3 py-1.5 rounded-full border border-divider text-text-secondary hover:text-text-primary hover:bg-bg-card transition-all items-center gap-1.5"
           >
-            ⌘ 快捷鍵
+            ⌘K 快速操作
           </button>
 
           {/* Mock data — desktop only */}
           <button
-            onClick={() => {
-              useHistoryStore.setState({ sessions: MOCK_SESSIONS })
-              setReport(MOCK_SESSIONS[0])
-              showPhoneNotification({
-                title: 'App 已新增 Mock 資料',
-                body: '練習紀錄、分析報告已載入，可直接瀏覽各頁面',
-              })
-            }}
+            onClick={handleLoadMockData}
             className="hidden md:block text-xs px-3 py-1.5 rounded-full border border-accent-amber/40 text-accent-amber hover:bg-accent-amber/10 transition-all"
           >
             ✦ Mock 資料
@@ -812,10 +1139,24 @@ export default function App() {
           </button>
 
           <button
+            onClick={() => setShowCaptureModal(true)}
+            className="hidden md:flex text-xs px-3 py-1.5 rounded-full border border-divider text-text-secondary hover:text-text-primary hover:bg-bg-card transition-all items-center gap-1.5"
+          >
+            <span>輸出畫面</span>
+          </button>
+
+          <button
             onClick={handleTogglePresentationMode}
             className="hidden md:flex text-xs px-3 py-1.5 rounded-full border border-accent-blue/35 text-accent-blue-light hover:bg-accent-blue/10 transition-all items-center gap-1.5"
           >
             <span>{isPresentationMode ? '結束簡報' : '簡報模式'}</span>
+          </button>
+
+          <button
+            onClick={() => { void handleToggleFullscreen() }}
+            className="hidden md:flex text-xs px-3 py-1.5 rounded-full border border-divider text-text-secondary hover:text-text-primary hover:bg-bg-card transition-all items-center gap-1.5"
+          >
+            <span>{isFullscreen ? '退出全螢幕' : '全螢幕'}</span>
           </button>
 
           <button
@@ -913,10 +1254,22 @@ export default function App() {
               {isDesktopAnnotationsVisible ? '收合說明' : '展開說明'}
             </button>
             <button
-              onClick={() => setShowShortcutsModal(true)}
+              onClick={() => setShowCaptureModal(true)}
               className="rounded-full border border-divider px-3 py-1.5 text-xs text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
             >
-              快捷鍵
+              輸出畫面
+            </button>
+            <button
+              onClick={() => { void handleToggleFullscreen() }}
+              className="rounded-full border border-divider px-3 py-1.5 text-xs text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
+            >
+              {isFullscreen ? '退出全螢幕' : '全螢幕'}
+            </button>
+            <button
+              onClick={() => setShowCommandPalette(true)}
+              className="rounded-full border border-divider px-3 py-1.5 text-xs text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
+            >
+              快速操作
             </button>
           </motion.div>
         )}
@@ -924,9 +1277,81 @@ export default function App() {
 
       {/* Main content: phone + annotation panel */}
       <div ref={desktopStageRef} className="relative flex-1 flex flex-col md:flex-row overflow-hidden">
+        <AnimatePresence initial={false}>
+          {isSpotlightActive && spotlightGeometry && (
+            <motion.div
+              data-capture-ignore
+              data-capture-role="spotlight-overlay"
+              className="pointer-events-none absolute inset-0 z-[4] hidden md:block"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+            >
+              <svg className="h-full w-full">
+                <defs>
+                  <mask id="spotlight-mask">
+                    <rect width="100%" height="100%" fill="white" />
+                    <rect
+                      x={spotlightGeometry.phoneRect.x}
+                      y={spotlightGeometry.phoneRect.y}
+                      width={spotlightGeometry.phoneRect.width}
+                      height={spotlightGeometry.phoneRect.height}
+                      rx={spotlightGeometry.phoneRect.radius}
+                      fill="black"
+                    />
+                    {spotlightGeometry.annotationRect ? (
+                      <rect
+                        x={spotlightGeometry.annotationRect.x}
+                        y={spotlightGeometry.annotationRect.y}
+                        width={spotlightGeometry.annotationRect.width}
+                        height={spotlightGeometry.annotationRect.height}
+                        rx={spotlightGeometry.annotationRect.radius}
+                        fill="black"
+                      />
+                    ) : null}
+                  </mask>
+                  <filter id="spotlight-shadow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="12" stdDeviation="18" floodColor="rgba(15,23,42,0.12)" />
+                  </filter>
+                </defs>
+
+                <rect width="100%" height="100%" fill="rgba(15,23,42,0.18)" mask="url(#spotlight-mask)" />
+
+                <rect
+                  x={spotlightGeometry.phoneRect.x}
+                  y={spotlightGeometry.phoneRect.y}
+                  width={spotlightGeometry.phoneRect.width}
+                  height={spotlightGeometry.phoneRect.height}
+                  rx={spotlightGeometry.phoneRect.radius}
+                  fill="none"
+                  stroke="rgba(251,191,36,0.7)"
+                  strokeWidth="2"
+                  filter="url(#spotlight-shadow)"
+                />
+                {spotlightGeometry.annotationRect ? (
+                  <rect
+                    x={spotlightGeometry.annotationRect.x}
+                    y={spotlightGeometry.annotationRect.y}
+                    width={spotlightGeometry.annotationRect.width}
+                    height={spotlightGeometry.annotationRect.height}
+                    rx={spotlightGeometry.annotationRect.radius}
+                    fill="none"
+                    stroke="rgba(249,115,22,0.55)"
+                    strokeWidth="2"
+                    filter="url(#spotlight-shadow)"
+                  />
+                ) : null}
+              </svg>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <AnimatePresence>
           {hoverConnector && (
             <motion.div
+              data-capture-ignore
+              data-capture-role="hover-connector"
               className="pointer-events-none absolute inset-0 z-10 hidden md:block"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -999,14 +1424,14 @@ export default function App() {
           }`}
         >
           <div className={`flex items-start justify-center ${isPresentationMode ? 'gap-4 xl:gap-5' : 'gap-5 xl:gap-7'}`}>
-            <div className="hidden lg:block w-[344px] flex-shrink-0">
+            <div data-capture-role="navigator" className="hidden lg:block w-[344px] flex-shrink-0">
               <div ref={navigatorStickyRef} className="sticky top-6">
                 <div
                   ref={navigatorInnerRef}
                   className="transition-transform duration-300 ease-out will-change-transform"
                   style={{ transform: `translateY(${navigatorOffsetY}px)` }}
                 >
-                  <PrototypeNavigator />
+                  <PrototypeNavigator isSpotlightMode={isSpotlightActive} />
                 </div>
               </div>
             </div>
@@ -1025,22 +1450,25 @@ export default function App() {
               onMouseOver={handlePhoneMouseOver}
               onMouseOut={handlePhoneMouseOut}
             >
-              <PhoneFrame screen={screen} isLaunching={showPhoneLaunch}>
-                <ScreenContent screen={screen} />
-              </PhoneFrame>
+              <div ref={phoneExportRef} data-capture-role="phone-stage">
+                <PhoneFrame screen={screen} isLaunching={showPhoneLaunch}>
+                  <ScreenContent screen={screen} />
+                </PhoneFrame>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Vertical divider — desktop only */}
         {isDesktopAnnotationsVisible && (
-          <div className="hidden md:block w-px bg-border-divider flex-shrink-0 self-stretch" />
+          <div data-capture-role="annotation-divider" className="hidden md:block w-px bg-border-divider flex-shrink-0 self-stretch" />
         )}
 
         {/* Annotation panel — desktop only */}
         <AnimatePresence initial={false}>
           {isDesktopAnnotationsVisible && (
             <motion.div
+              data-capture-role="annotation-panel"
               className="hidden md:flex bg-bg-surface overflow-hidden flex-col flex-shrink-0"
               style={{ width: isPresentationMode ? 360 : 340 }}
               initial={{ opacity: 0, x: 18 }}
@@ -1052,6 +1480,7 @@ export default function App() {
                 screen={screen}
                 activeId={activeAnnotationId}
                 pinnedId={pinnedAnnotationId}
+                isSpotlightMode={isSpotlightActive}
                 onHoverItem={(id) => {
                   if (pinnedAnnotationId) return
                   setHoveredAnnotationId(id)
@@ -1137,12 +1566,13 @@ export default function App() {
               </div>
               <div className="flex-1 overflow-hidden">
                 <AnnotationPanel
-                  screen={screen}
-                  activeId={activeAnnotationId}
-                  pinnedId={pinnedAnnotationId}
-                  onHoverItem={(id) => {
-                    if (pinnedAnnotationId) return
-                    setHoveredAnnotationId(id)
+                screen={screen}
+                activeId={activeAnnotationId}
+                pinnedId={pinnedAnnotationId}
+                isSpotlightMode={isSpotlightActive}
+                onHoverItem={(id) => {
+                  if (pinnedAnnotationId) return
+                  setHoveredAnnotationId(id)
                     setHoverSource(id ? 'annotation' : null)
                   }}
                   onTogglePin={(id) => {
@@ -1169,6 +1599,19 @@ export default function App() {
       </AnimatePresence>
 
       <DesignStoryModal isOpen={showStoryModal} onClose={() => setShowStoryModal(false)} />
+      <CommandPaletteModal
+        isOpen={showCommandPalette}
+        actions={commandPaletteActions}
+        onClose={() => setShowCommandPalette(false)}
+      />
+      <CaptureExportModal
+        isOpen={showCaptureModal}
+        isExporting={isExportingCapture}
+        selectedPreset={capturePreset}
+        onSelectPreset={setCapturePreset}
+        onExport={() => { void handleExportCapture() }}
+        onClose={() => setShowCaptureModal(false)}
+      />
       <KeyboardShortcutsModal
         isOpen={showShortcutsModal}
         onClose={() => setShowShortcutsModal(false)}

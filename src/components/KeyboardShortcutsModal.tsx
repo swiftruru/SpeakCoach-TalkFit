@@ -5,8 +5,11 @@ const shortcutGroups = [
   {
     title: '展示控制',
     items: [
+      { keys: ['⌘K', 'Ctrl+K'], description: '開啟快速操作 Command Palette' },
       { keys: ['D'], description: '開始 / 停止示範' },
       { keys: ['P'], description: '切換簡報模式' },
+      { keys: ['F'], description: '切換真正全螢幕展示' },
+      { keys: ['E'], description: '開啟截圖 / 乾淨輸出視窗' },
       { keys: ['A'], description: '開關說明面板' },
       { keys: ['R'], description: '重置原型' },
     ],

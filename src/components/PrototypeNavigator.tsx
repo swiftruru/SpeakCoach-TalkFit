@@ -11,7 +11,11 @@ const CHAPTERS: Array<{ id: Screen; label: string; summary: string }> = [
   { id: 'settings', label: '設定', summary: '調整情境、目標與偵測規則。' },
 ]
 
-export function PrototypeNavigator() {
+interface PrototypeNavigatorProps {
+  isSpotlightMode?: boolean
+}
+
+export function PrototypeNavigator({ isSpotlightMode = false }: PrototypeNavigatorProps) {
   const screen = useNavigationStore((s) => s.screen)
   const requestScreen = useNavigationStore((s) => s.requestScreen)
   const mode = useDemoStore((s) => s.mode)
@@ -38,7 +42,11 @@ export function PrototypeNavigator() {
 
   return (
     <div className="flex w-[344px] items-start gap-3">
-      <div className="w-[168px] rounded-[26px] border border-divider bg-bg-surface/88 px-4 py-4 shadow-sm backdrop-blur-md">
+      <div
+        className={`w-[168px] rounded-[26px] border border-divider bg-bg-surface/88 px-4 py-4 shadow-sm backdrop-blur-md transition-all ${
+          isSpotlightMode ? 'opacity-70' : ''
+        }`}
+      >
         <div className="flex items-start justify-between gap-2">
           <div>
             <p className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
@@ -159,7 +167,11 @@ export function PrototypeNavigator() {
 
       <div
         data-prototype-summary-card
-        className="w-[163px] rounded-[24px] border border-divider bg-bg-surface/92 px-4 py-4 shadow-sm backdrop-blur-md"
+        className={`w-[163px] rounded-[24px] border border-divider bg-bg-surface/92 px-4 py-4 shadow-sm backdrop-blur-md transition-all ${
+          isSpotlightMode
+            ? 'border-accent-amber/35 shadow-[0_16px_34px_rgba(249,115,22,0.14)]'
+            : ''
+        }`}
       >
         <div className="flex items-start justify-between gap-2">
           <div>
