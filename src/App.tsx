@@ -10,6 +10,7 @@ import { PhoneFrame } from './components/shell/PhoneFrame'
 import { PrototypeNavigator } from './components/PrototypeNavigator'
 import { AnnotationPanel } from './annotation/AnnotationPanel'
 import { DesignStoryModal } from './components/DesignStoryModal'
+import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal'
 import { HomeScreen } from './screens/HomeScreen'
 import { PracticeScreen } from './screens/PracticeScreen'
 import { ReportScreen } from './screens/ReportScreen'
@@ -93,7 +94,14 @@ function isScreen(value: string | null): value is Screen {
 
 function shouldShowLaunchOverlay() {
   const params = new URLSearchParams(window.location.search)
-  const hasDeepLink = params.has('screen') || params.get('panel') === 'open'
+  const hasDeepLink =
+    params.has('screen') ||
+    params.has('panel') ||
+    params.has('annotation') ||
+    params.has('demo') ||
+    params.has('step') ||
+    params.has('theme') ||
+    params.has('view')
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   return !hasDeepLink && !prefersReducedMotion
@@ -131,8 +139,15 @@ export default function App() {
   const [hoverSource, setHoverSource] = useState<HoverSource | null>(null)
   const [navigatorOffsetY, setNavigatorOffsetY] = useState(0)
   const [showStoryModal, setShowStoryModal] = useState(false)
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false)
   const [showDesktopNotice, setShowDesktopNotice] = useState(() => isMobileBrowserDevice())
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
+  const [isPresentationMode, setIsPresentationMode] = useState(
+    () => new URLSearchParams(window.location.search).get('view') === 'present'
+  )
+  const [isDesktopAnnotationsVisible, setIsDesktopAnnotationsVisible] = useState(
+    () => new URLSearchParams(window.location.search).get('panel') !== 'closed'
+  )
   const [showLaunchOverlay, setShowLaunchOverlay] = useState(() => shouldShowLaunchOverlay())
   const [pendingPhoneLaunch, setPendingPhoneLaunch] = useState(false)
   const [showPhoneLaunch, setShowPhoneLaunch] = useState(false)
@@ -143,6 +158,7 @@ export default function App() {
   const navigatorStickyRef = useRef<HTMLDivElement | null>(null)
   const navigatorInnerRef = useRef<HTMLDivElement | null>(null)
   const phoneStageRef = useRef<HTMLDivElement | null>(null)
+  const hasAppliedInitialUrlState = useRef(false)
 
   useEffect(() => {
     const handler = () => {
@@ -172,6 +188,9 @@ export default function App() {
 
   // Theme: light by default, persist in localStorage
   const [isDark, setIsDark] = useState(() => {
+    const themeParam = new URLSearchParams(window.location.search).get('theme')
+    if (themeParam === 'dark') return true
+    if (themeParam === 'light') return false
     return localStorage.getItem('talkfit-theme') === 'dark'
   })
 
@@ -193,13 +212,37 @@ export default function App() {
   }, [sessions, report, setReport])
 
   useEffect(() => {
+    if (hasAppliedInitialUrlState.current) return
+    hasAppliedInitialUrlState.current = true
+
     const params = new URLSearchParams(window.location.search)
     const screenParam = params.get('screen')
     if (isScreen(screenParam)) {
       ensurePrototypeDataForScreen(screenParam)
       setScreen(screenParam)
     }
-  }, [setScreen])
+
+    const annotationParam = params.get('annotation')
+    if (annotationParam) {
+      pinAnnotationGuide(annotationParam, 'annotation')
+    }
+
+    const demoParam = params.get('demo')
+    if (demoParam === '1' || demoParam === 'on') {
+      const stepCount = getDemoSteps('demo').length
+      const requestedStep = Number(params.get('step'))
+      const nextStep = Number.isFinite(requestedStep)
+        ? Math.min(Math.max(0, Math.floor(requestedStep)), Math.max(0, stepCount - 1))
+        : 0
+
+      useDemoStore.setState({
+        mode: 'demo',
+        isDemoActive: true,
+        isDemoPaused: false,
+        currentStepIndex: nextStep,
+      })
+    }
+  }, [pinAnnotationGuide, setScreen])
 
   // Scroll phone screen to show element when annotation panel item is hovered
   useEffect(() => {
@@ -246,7 +289,7 @@ export default function App() {
   }, [activeAnnotationId, isMobile])
 
   const updateHoverConnector = useCallback(() => {
-    if (!activeAnnotationId || isMobile) {
+    if (!activeAnnotationId || isMobile || !isDesktopAnnotationsVisible) {
       setHoverConnector(null)
       return
     }
@@ -347,7 +390,7 @@ export default function App() {
     }
 
     setHoverConnector({ d, arrowHeadD, arrowHighlight, start, end })
-  }, [activeAnnotationId, activeHoverSource, isMobile])
+  }, [activeAnnotationId, activeHoverSource, isDesktopAnnotationsVisible, isMobile])
 
   useEffect(() => {
     let frame = 0
@@ -455,49 +498,78 @@ export default function App() {
     else url.searchParams.set('screen', screen)
 
     if (showMobileAnnotations) url.searchParams.set('panel', 'open')
+    else if (!isDesktopAnnotationsVisible) url.searchParams.set('panel', 'closed')
     else url.searchParams.delete('panel')
 
-    window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`)
-  }, [screen, showMobileAnnotations])
+    if (pinnedAnnotationId) url.searchParams.set('annotation', pinnedAnnotationId)
+    else url.searchParams.delete('annotation')
 
-  // Keyboard shortcuts for Live Demo
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isDemoActive) return
-      if (e.key === 'ArrowRight' || e.key === ' ') {
-        e.preventDefault()
-        if (currentStepIndex < currentDemoSteps.length - 1) goToStep(currentStepIndex + 1)
-      } else if (e.key === 'ArrowLeft') {
-        e.preventDefault()
-        if (currentStepIndex > 0) goToStep(currentStepIndex - 1)
-      } else if (e.key.toLowerCase() === 'k') {
-        e.preventDefault()
-        useDemoStore.getState().togglePause()
-      } else if (e.key === 'Escape') {
-        stopDemo()
-      }
+    if (isDemoActive) {
+      url.searchParams.set('demo', '1')
+      url.searchParams.set('step', currentStepIndex.toString())
+    } else {
+      url.searchParams.delete('demo')
+      url.searchParams.delete('step')
     }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [currentDemoSteps.length, isDemoActive, currentStepIndex, goToStep, stopDemo])
+
+    if (isDark) url.searchParams.set('theme', 'dark')
+    else url.searchParams.delete('theme')
+
+    if (isPresentationMode) url.searchParams.set('view', 'present')
+    else url.searchParams.delete('view')
+
+    window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`)
+  }, [
+    currentStepIndex,
+    isDark,
+    isDemoActive,
+    isDesktopAnnotationsVisible,
+    isPresentationMode,
+    pinnedAnnotationId,
+    screen,
+    showMobileAnnotations,
+  ])
+
+  const handleToggleDemo = useCallback(() => {
+    if (isDemoActive) {
+      stopDemo()
+      return
+    }
+
+    setDemoMode('demo')
+    startDemo()
+  }, [isDemoActive, setDemoMode, startDemo, stopDemo])
+
+  const handleToggleAnnotationPanel = useCallback(() => {
+    if (isMobile) {
+      setShowMobileAnnotations((current) => !current)
+      return
+    }
+
+    setIsDesktopAnnotationsVisible((current) => !current)
+  }, [isMobile])
+
+  const handleTogglePresentationMode = useCallback(() => {
+    setIsPresentationMode((current) => !current)
+  }, [])
 
   const handlePhoneMouseOver = useCallback((e: React.MouseEvent) => {
-    if (pinnedAnnotationId) return
+    if (pinnedAnnotationId || !isDesktopAnnotationsVisible) return
     const target = e.target as HTMLElement
     const annotated = target.closest('[data-annotation-id]') as HTMLElement | null
     const id = annotated?.dataset?.annotationId ?? null
     setHoveredAnnotationId(id)
     setHoverSource(id ? 'phone' : null)
-  }, [pinnedAnnotationId])
+  }, [isDesktopAnnotationsVisible, pinnedAnnotationId])
 
   const handlePhoneMouseOut = useCallback((e: React.MouseEvent) => {
-    if (pinnedAnnotationId) return
+    if (pinnedAnnotationId || !isDesktopAnnotationsVisible) return
     const related = e.relatedTarget as HTMLElement | null
     if (!related?.closest?.('[data-annotation-id]') && !related?.closest?.('[data-annotation-card-for]')) {
       setHoveredAnnotationId(null)
       setHoverSource(null)
     }
-  }, [pinnedAnnotationId])
+  }, [isDesktopAnnotationsVisible, pinnedAnnotationId])
 
   const handleResetPrototype = useCallback(() => {
     resetPrototypeState()
@@ -505,6 +577,10 @@ export default function App() {
     clearAnnotationGuide()
     setHoverSource(null)
     setShowMobileAnnotations(false)
+    setIsDesktopAnnotationsVisible(true)
+    setIsPresentationMode(false)
+    setShowStoryModal(false)
+    setShowShortcutsModal(false)
     showPhoneNotification({
       title: '原型已重置',
       body: '已回到首頁，並清除所有練習資料與目前報告',
@@ -525,6 +601,105 @@ export default function App() {
       })
     }
   }, [showPhoneNotification])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null
+      const isTyping =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target?.isContentEditable
+
+      if (isTyping) return
+
+      if ((e.key === '?' || (e.key === '/' && e.shiftKey)) && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault()
+        setShowShortcutsModal((current) => !current)
+        return
+      }
+
+      if (showShortcutsModal) {
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          setShowShortcutsModal(false)
+        }
+        return
+      }
+
+      if (!showStoryModal && e.key.toLowerCase() === 'd') {
+        e.preventDefault()
+        handleToggleDemo()
+        return
+      }
+
+      if (!showStoryModal && e.key.toLowerCase() === 'r') {
+        e.preventDefault()
+        handleResetPrototype()
+        return
+      }
+
+      if (!showStoryModal && e.key.toLowerCase() === 'a') {
+        e.preventDefault()
+        handleToggleAnnotationPanel()
+        return
+      }
+
+      if (!showStoryModal && e.key.toLowerCase() === 'p') {
+        e.preventDefault()
+        handleTogglePresentationMode()
+        return
+      }
+
+      if (!showStoryModal && e.key.toLowerCase() === 't') {
+        e.preventDefault()
+        setIsDark((current) => !current)
+        return
+      }
+
+      if (!showStoryModal && e.key.toLowerCase() === 's') {
+        e.preventDefault()
+        setShowStoryModal(true)
+        return
+      }
+
+      if (!showStoryModal && e.key.toLowerCase() === 'l') {
+        e.preventDefault()
+        void handleCopyCurrentViewLink()
+        return
+      }
+
+      if (!isDemoActive) return
+
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        e.preventDefault()
+        if (currentStepIndex < currentDemoSteps.length - 1) goToStep(currentStepIndex + 1)
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        if (currentStepIndex > 0) goToStep(currentStepIndex - 1)
+      } else if (e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        useDemoStore.getState().togglePause()
+      } else if (e.key === 'Escape') {
+        stopDemo()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [
+    currentDemoSteps.length,
+    currentStepIndex,
+    goToStep,
+    handleCopyCurrentViewLink,
+    handleResetPrototype,
+    handleToggleAnnotationPanel,
+    handleToggleDemo,
+    handleTogglePresentationMode,
+    isDemoActive,
+    showShortcutsModal,
+    showStoryModal,
+    stopDemo,
+  ])
 
   const handleCompleteLaunch = useCallback(() => {
     setShowLaunchOverlay(false)
@@ -568,7 +743,15 @@ export default function App() {
       )}
 
       {/* Top bar */}
-      <div className="flex-shrink-0 border-b border-divider px-4 md:px-8 py-2 md:py-3.5 flex items-center justify-between">
+      <AnimatePresence initial={false}>
+        {!isPresentationMode && (
+          <motion.div
+            className="flex-shrink-0 border-b border-divider px-4 md:px-8 py-2 md:py-3.5 flex items-center justify-between"
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.18 }}
+          >
         <div className="flex items-center gap-2 md:gap-3">
           <img src="/app-icon.png" alt="TalkFit" className="w-10 h-10 md:w-20 md:h-20 rounded-2xl object-cover flex-shrink-0 shadow-sm" />
           <div>
@@ -599,6 +782,13 @@ export default function App() {
             ✦ 設計動機
           </button>
 
+          <button
+            onClick={() => setShowShortcutsModal(true)}
+            className="hidden md:flex text-xs px-3 py-1.5 rounded-full border border-divider text-text-secondary hover:text-text-primary hover:bg-bg-card transition-all items-center gap-1.5"
+          >
+            ⌘ 快捷鍵
+          </button>
+
           {/* Mock data — desktop only */}
           <button
             onClick={() => {
@@ -615,13 +805,22 @@ export default function App() {
           </button>
 
           <button
+            onClick={handleToggleAnnotationPanel}
+            className="hidden md:flex text-xs px-3 py-1.5 rounded-full border border-divider text-text-secondary hover:text-text-primary hover:bg-bg-card transition-all items-center gap-1.5"
+          >
+            <span>{isDesktopAnnotationsVisible ? '收合說明' : '展開說明'}</span>
+          </button>
+
+          <button
+            onClick={handleTogglePresentationMode}
+            className="hidden md:flex text-xs px-3 py-1.5 rounded-full border border-accent-blue/35 text-accent-blue-light hover:bg-accent-blue/10 transition-all items-center gap-1.5"
+          >
+            <span>{isPresentationMode ? '結束簡報' : '簡報模式'}</span>
+          </button>
+
+          <button
             onClick={() => {
-              if (isDemoActive) {
-                stopDemo()
-                return
-              }
-              setDemoMode('demo')
-              startDemo()
+              handleToggleDemo()
             }}
             className={`lg:hidden text-xs px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 ${
               isDemoActive
@@ -688,7 +887,40 @@ export default function App() {
             )}
           </button>
         </div>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence initial={false}>
+        {isPresentationMode && (
+          <motion.div
+            className="fixed right-6 top-5 z-40 hidden items-center gap-2 rounded-full border border-divider bg-bg-surface/92 px-3 py-2 shadow-lg backdrop-blur md:flex"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.18 }}
+          >
+            <button
+              onClick={handleTogglePresentationMode}
+              className="rounded-full border border-divider px-3 py-1.5 text-xs text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
+            >
+              結束簡報
+            </button>
+            <button
+              onClick={handleToggleAnnotationPanel}
+              className="rounded-full border border-divider px-3 py-1.5 text-xs text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
+            >
+              {isDesktopAnnotationsVisible ? '收合說明' : '展開說明'}
+            </button>
+            <button
+              onClick={() => setShowShortcutsModal(true)}
+              className="rounded-full border border-divider px-3 py-1.5 text-xs text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
+            >
+              快捷鍵
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main content: phone + annotation panel */}
       <div ref={desktopStageRef} className="relative flex-1 flex flex-col md:flex-row overflow-hidden">
@@ -761,8 +993,12 @@ export default function App() {
         </AnimatePresence>
 
         {/* Phone area */}
-        <div className="flex-1 overflow-auto px-4 pt-6 pb-8 md:px-8 md:pb-8">
-          <div className="flex items-start justify-center gap-5 xl:gap-7">
+        <div
+          className={`flex-1 overflow-auto px-4 pb-8 md:pb-8 ${
+            isPresentationMode ? 'pt-5 md:px-6 md:pt-5' : 'pt-6 md:px-8'
+          }`}
+        >
+          <div className={`flex items-start justify-center ${isPresentationMode ? 'gap-4 xl:gap-5' : 'gap-5 xl:gap-7'}`}>
             <div className="hidden lg:block w-[344px] flex-shrink-0">
               <div ref={navigatorStickyRef} className="sticky top-6">
                 <div
@@ -780,7 +1016,11 @@ export default function App() {
               style={
                 isMobile
                   ? { transform: 'scale(0.9)', transformOrigin: 'top center', marginBottom: '-81px' }
-                  : { transform: 'scale(0.85)', transformOrigin: 'top center', marginBottom: '-122px' }
+                  : {
+                      transform: isPresentationMode ? 'scale(0.92)' : 'scale(0.85)',
+                      transformOrigin: 'top center',
+                      marginBottom: isPresentationMode ? '-70px' : '-122px',
+                    }
               }
               onMouseOver={handlePhoneMouseOver}
               onMouseOut={handlePhoneMouseOut}
@@ -793,40 +1033,50 @@ export default function App() {
         </div>
 
         {/* Vertical divider — desktop only */}
-        <div className="hidden md:block w-px bg-border-divider flex-shrink-0 self-stretch" />
+        {isDesktopAnnotationsVisible && (
+          <div className="hidden md:block w-px bg-border-divider flex-shrink-0 self-stretch" />
+        )}
 
         {/* Annotation panel — desktop only */}
-        <div
-          className="hidden md:flex bg-bg-surface overflow-hidden flex-col flex-shrink-0"
-          style={{ width: 340 }}
-        >
-          <AnnotationPanel
-            screen={screen}
-            activeId={activeAnnotationId}
-            pinnedId={pinnedAnnotationId}
-            onHoverItem={(id) => {
-              if (pinnedAnnotationId) return
-              setHoveredAnnotationId(id)
-              setHoverSource(id ? 'annotation' : null)
-            }}
-            onTogglePin={(id) => {
-              if (pinnedAnnotationId === id) {
-                clearAnnotationGuide()
-                setHoverSource(null)
-                return
-              }
+        <AnimatePresence initial={false}>
+          {isDesktopAnnotationsVisible && (
+            <motion.div
+              className="hidden md:flex bg-bg-surface overflow-hidden flex-col flex-shrink-0"
+              style={{ width: isPresentationMode ? 360 : 340 }}
+              initial={{ opacity: 0, x: 18 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 18 }}
+              transition={{ duration: 0.18 }}
+            >
+              <AnnotationPanel
+                screen={screen}
+                activeId={activeAnnotationId}
+                pinnedId={pinnedAnnotationId}
+                onHoverItem={(id) => {
+                  if (pinnedAnnotationId) return
+                  setHoveredAnnotationId(id)
+                  setHoverSource(id ? 'annotation' : null)
+                }}
+                onTogglePin={(id) => {
+                  if (pinnedAnnotationId === id) {
+                    clearAnnotationGuide()
+                    setHoverSource(null)
+                    return
+                  }
 
-              pinAnnotationGuide(id, 'annotation')
-              setHoverSource('annotation')
-              setHoveredAnnotationId(null)
-            }}
-            onClearPin={() => {
-              clearAnnotationGuide()
-              setHoverSource(null)
-            }}
-            onNavigate={requestScreen}
-          />
-        </div>
+                  pinAnnotationGuide(id, 'annotation')
+                  setHoverSource('annotation')
+                  setHoveredAnnotationId(null)
+                }}
+                onClearPin={() => {
+                  clearAnnotationGuide()
+                  setHoverSource(null)
+                }}
+                onNavigate={requestScreen}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Mobile bottom nav — mobile only */}
@@ -919,6 +1169,10 @@ export default function App() {
       </AnimatePresence>
 
       <DesignStoryModal isOpen={showStoryModal} onClose={() => setShowStoryModal(false)} />
+      <KeyboardShortcutsModal
+        isOpen={showShortcutsModal}
+        onClose={() => setShowShortcutsModal(false)}
+      />
       {/* Mobile-browser notice — floating card, bottom-right */}
       <AnimatePresence>
         {showDesktopNotice && (
