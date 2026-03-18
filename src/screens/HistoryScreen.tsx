@@ -152,7 +152,7 @@ function SessionItem({ session, onClick }: { session: SessionSummary; onClick: (
           {t('history:list.countBadge', { count: session.fillerCount })}
         </span>
       </div>
-      <div className="flex gap-3 text-[11px] text-gray-500">
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-gray-500">
         <span><strong className="text-gray-700">{t('history:list.meta.wpm', { value: session.avgWpm })}</strong></span>
         <span><strong className="text-gray-700">{t('history:list.meta.duration', { value: formatDuration(session.durationSeconds) })}</strong></span>
         <span><strong className={gradeColor(session.grade)}>{t('history:list.meta.grade', { value: session.grade })}</strong></span>
@@ -166,11 +166,11 @@ function SummaryCard({ label, value, unit, color }: {
 }) {
   return (
     <div className="bg-white rounded-2xl p-3 shadow-sm text-center">
-      <p className={`text-xl font-bold ${color}`}>
+      <p className={`text-xl font-bold leading-none ${color}`}>
         {value}
         {unit && <span className="text-xs font-normal ml-0.5">{unit}</span>}
       </p>
-      <p className="text-[10px] text-gray-400 mt-0.5">{label}</p>
+      <p className="mt-1 min-h-[1.8rem] text-[10px] leading-snug text-gray-400">{label}</p>
     </div>
   )
 }

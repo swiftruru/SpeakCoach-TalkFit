@@ -610,11 +610,11 @@ function ScoreCard({ label, value, unit, color, icon }: {
   return (
     <div className="bg-white rounded-2xl p-3 shadow-sm text-center">
       <div className="text-base mb-1">{icon}</div>
-      <p className={`text-xl font-bold ${color}`}>
+      <p className={`text-xl font-bold leading-none ${color}`}>
         {value}
         {unit && <span className="text-[10px] font-normal ml-0.5">{unit}</span>}
       </p>
-      <p className="text-[10px] text-gray-400 mt-0.5">{label}</p>
+      <p className="mt-1 min-h-[1.8rem] text-[10px] leading-snug text-gray-400">{label}</p>
     </div>
   )
 }

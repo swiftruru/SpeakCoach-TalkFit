@@ -217,8 +217,10 @@ function StatCard({
 }) {
   return (
     <div className="bg-white rounded-2xl p-3 shadow-sm text-center">
-      <p className="text-[10px] text-gray-400 mb-1">{label}</p>
-      <p className={`text-xl font-bold ${color}`}>
+      <p className="mb-1 min-h-[1.8rem] text-[10px] leading-snug text-gray-400">
+        {label}
+      </p>
+      <p className={`text-xl font-bold leading-none ${color}`}>
         {value}
         {unit && (
           <span className={`text-[11px] font-normal ${compactUnit ? 'ml-1' : 'ml-0.5'}`}>
@@ -226,7 +228,11 @@ function StatCard({
           </span>
         )}
       </p>
-      {sub && <p className="text-[10px] text-gray-400 mt-0.5">{sub}</p>}
+      {sub && (
+        <p className="mt-1 min-h-[1.8rem] text-[10px] leading-snug text-gray-400">
+          {sub}
+        </p>
+      )}
     </div>
   )
 }

@@ -304,15 +304,17 @@ function ToggleRow({
   onChange: (v: boolean) => void
 }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-3.5">
+    <div className="flex items-start gap-3 px-4 py-3.5">
       <div className={`w-7 h-7 rounded-xl ${iconBg} flex items-center justify-center text-sm flex-shrink-0`}>
         {icon}
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm text-gray-800 font-medium">{title}</p>
-        <p className="text-[11px] text-gray-400 truncate">{sub}</p>
+        <p className="mt-0.5 text-[11px] leading-relaxed text-gray-400">{sub}</p>
       </div>
-      <Toggle value={value} onChange={onChange} />
+      <div className="pt-0.5">
+        <Toggle value={value} onChange={onChange} />
+      </div>
     </div>
   )
 }

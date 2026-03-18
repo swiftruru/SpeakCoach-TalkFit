@@ -33,7 +33,16 @@ const ROSE_GOLD = `linear-gradient(
 
 export function PhoneFrame({ screen, isLaunching = false, children }: PhoneFrameProps) {
   const { t } = useTranslation(['common', 'launch'])
-  const drag = useDragScroll()
+  const {
+    wrapperRef,
+    cursor,
+    ripples,
+    onMouseEnter,
+    onMouseDown,
+    onMouseMove,
+    onMouseUp,
+    onMouseLeave,
+  } = useDragScroll()
   const outerR = 48  // outer frame radius
   const ringW = 4    // rose gold ring thickness
   const innerR = outerR - ringW  // black body radius = 44
@@ -99,16 +108,16 @@ export function PhoneFrame({ screen, isLaunching = false, children }: PhoneFrame
                   <PhoneNotificationBanner />
 
                   <div
-                    ref={drag.wrapperRef}
+                    ref={wrapperRef}
                     className="flex-1 overflow-hidden relative phone-screen-area"
-                    onMouseEnter={drag.onMouseEnter}
-                    onMouseDown={drag.onMouseDown}
-                    onMouseMove={drag.onMouseMove}
-                    onMouseUp={drag.onMouseUp}
-                    onMouseLeave={drag.onMouseLeave}
+                    onMouseEnter={onMouseEnter}
+                    onMouseDown={onMouseDown}
+                    onMouseMove={onMouseMove}
+                    onMouseUp={onMouseUp}
+                    onMouseLeave={onMouseLeave}
                   >
                     {/* Ripples */}
-                    {drag.ripples.map((r) => (
+                    {ripples.map((r) => (
                       <div
                         key={r.id}
                         data-capture-ignore
@@ -122,20 +131,20 @@ export function PhoneFrame({ screen, isLaunching = false, children }: PhoneFrame
                     ))}
 
                     {/* Custom touch-point cursor */}
-                    {drag.cursor.visible && (
+                    {cursor.visible && (
                       <div
                         data-capture-ignore
                         className="pointer-events-none absolute z-50 rounded-full transition-[width,height,opacity] duration-100"
                         style={{
-                          width: drag.cursor.pressed ? 58 : 48,
-                          height: drag.cursor.pressed ? 58 : 48,
-                          left: drag.cursor.x,
-                          top: drag.cursor.y,
+                          width: cursor.pressed ? 58 : 48,
+                          height: cursor.pressed ? 58 : 48,
+                          left: cursor.x,
+                          top: cursor.y,
                           transform: 'translate(-50%, -50%)',
-                          background: drag.cursor.pressed
+                          background: cursor.pressed
                             ? 'rgba(255,255,255,0.38)'
                             : 'rgba(255,255,255,0.22)',
-                          border: drag.cursor.pressed
+                          border: cursor.pressed
                             ? '1.5px solid rgba(255,255,255,0.9)'
                             : '1.5px solid rgba(255,255,255,0.7)',
                           boxShadow: '0 2px 16px rgba(0,0,0,0.22)',
