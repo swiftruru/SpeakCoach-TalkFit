@@ -19,6 +19,7 @@ import { useDemoStore } from './demo/demoStore'
 import { useLiveDemo } from './demo/useLiveDemo'
 import { getDemoSteps } from './demo/demoScript'
 import { ensurePrototypeDataForScreen, resetPrototypeState } from './lib/prototypeState'
+import { useAnnotationGuideStore } from './stores/annotationGuideStore'
 import type { Screen } from './types'
 import './index.css'
 
@@ -121,14 +122,14 @@ interface HoverConnector {
   end: { x: number; y: number }
 }
 
-type HoverSource = 'phone' | 'annotation'
+type HoverSource = 'phone' | 'annotation' | 'demo'
 
 export default function App() {
   const { screen, setScreen, requestScreen } = useNavigationStore()
   const [hoveredAnnotationId, setHoveredAnnotationId] = useState<string | null>(null)
-  const [pinnedAnnotationId, setPinnedAnnotationId] = useState<string | null>(null)
   const [hoverConnector, setHoverConnector] = useState<HoverConnector | null>(null)
   const [hoverSource, setHoverSource] = useState<HoverSource | null>(null)
+  const [navigatorOffsetY, setNavigatorOffsetY] = useState(0)
   const [showStoryModal, setShowStoryModal] = useState(false)
   const [showDesktopNotice, setShowDesktopNotice] = useState(() => isMobileBrowserDevice())
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
@@ -139,6 +140,9 @@ export default function App() {
     () => new URLSearchParams(window.location.search).get('panel') === 'open'
   )
   const desktopStageRef = useRef<HTMLDivElement | null>(null)
+  const navigatorStickyRef = useRef<HTMLDivElement | null>(null)
+  const navigatorInnerRef = useRef<HTMLDivElement | null>(null)
+  const phoneStageRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const handler = () => {
@@ -152,12 +156,18 @@ export default function App() {
   const report = useReportStore((s) => s.report)
   const setReport = useReportStore((s) => s.setReport)
   const showPhoneNotification = usePhoneNotificationStore((s) => s.show)
+  const pinnedAnnotationId = useAnnotationGuideStore((s) => s.pinnedId)
+  const pinnedAnnotationSource = useAnnotationGuideStore((s) => s.source)
+  const pinAnnotationGuide = useAnnotationGuideStore((s) => s.pin)
+  const clearAnnotationGuide = useAnnotationGuideStore((s) => s.clear)
   const { startDemo, stopDemo, isDemoActive } = useDemoStore()
+  const setDemoMode = useDemoStore((s) => s.setMode)
   const demoMode = useDemoStore((s) => s.mode)
   const currentStepIndex = useDemoStore((s) => s.currentStepIndex)
   const goToStep = useDemoStore((s) => s.goToStep)
   useLiveDemo()
   const activeAnnotationId = pinnedAnnotationId ?? hoveredAnnotationId
+  const activeHoverSource = pinnedAnnotationId ? (pinnedAnnotationSource ?? 'demo') : hoverSource
   const currentDemoSteps = getDemoSteps(demoMode)
 
   // Theme: light by default, persist in localStorage
@@ -201,6 +211,40 @@ export default function App() {
     el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }, [activeAnnotationId])
 
+  const updateNavigatorOffset = useCallback(() => {
+    if (isMobile || !activeAnnotationId) {
+      setNavigatorOffsetY(0)
+      return
+    }
+
+    const sticky = navigatorStickyRef.current
+    const inner = navigatorInnerRef.current
+    const phoneStage = phoneStageRef.current
+    const target = phoneStage?.querySelector(
+      `[data-annotation-id="${activeAnnotationId}"]`
+    ) as HTMLElement | null
+    const summaryCard = inner?.querySelector('[data-prototype-summary-card]') as HTMLElement | null
+
+    if (!sticky || !inner || !target || !summaryCard) {
+      setNavigatorOffsetY(0)
+      return
+    }
+
+    const stickyRect = sticky.getBoundingClientRect()
+    const targetRect = target.getBoundingClientRect()
+    const targetCenterY = targetRect.top + targetRect.height / 2
+    const summaryCenterLocal = summaryCard.offsetTop + summaryCard.offsetHeight / 2
+    const desiredOffset = targetCenterY - (stickyRect.top + summaryCenterLocal)
+    const viewportPadding = 32
+    const maxDown = Math.max(
+      0,
+      window.innerHeight - viewportPadding - (stickyRect.top + inner.offsetHeight)
+    )
+    const nextOffset = Math.max(0, Math.min(desiredOffset, maxDown))
+
+    setNavigatorOffsetY((current) => (Math.abs(current - nextOffset) < 1 ? current : nextOffset))
+  }, [activeAnnotationId, isMobile])
+
   const updateHoverConnector = useCallback(() => {
     if (!activeAnnotationId || isMobile) {
       setHoverConnector(null)
@@ -237,8 +281,8 @@ export default function App() {
       x: cardRect.left - stageRect.left - 22,
       y: cardRect.top - stageRect.top + Math.min(42, cardRect.height / 2),
     }
-    const start = hoverSource === 'annotation' ? annotationPoint : phonePoint
-    const end = hoverSource === 'annotation' ? phonePoint : annotationPoint
+    const start = activeHoverSource === 'annotation' ? annotationPoint : phonePoint
+    const end = activeHoverSource === 'annotation' ? phonePoint : annotationPoint
     const direction = end.x >= start.x ? 1 : -1
     const horizontalGap = Math.max(56, Math.abs(end.x - start.x) * 0.32)
     const c1 = {
@@ -303,7 +347,7 @@ export default function App() {
     }
 
     setHoverConnector({ d, arrowHeadD, arrowHighlight, start, end })
-  }, [activeAnnotationId, hoverSource, isMobile])
+  }, [activeAnnotationId, activeHoverSource, isMobile])
 
   useEffect(() => {
     let frame = 0
@@ -353,14 +397,56 @@ export default function App() {
   }, [activeAnnotationId, isMobile, screen, updateHoverConnector])
 
   useEffect(() => {
+    let frame = 0
+
+    const scheduleUpdate = () => {
+      window.cancelAnimationFrame(frame)
+      frame = window.requestAnimationFrame(() => {
+        updateNavigatorOffset()
+      })
+    }
+
+    scheduleUpdate()
+
+    const phoneStage = phoneStageRef.current
+    const sticky = navigatorStickyRef.current
+    const inner = navigatorInnerRef.current
+    const scroller = phoneStage?.querySelector('.phone-scroll') as HTMLElement | null
+    const target = phoneStage?.querySelector(
+      `[data-annotation-id="${activeAnnotationId}"]`
+    ) as HTMLElement | null
+    const summaryCard = inner?.querySelector('[data-prototype-summary-card]') as HTMLElement | null
+
+    const resizeObserver = new ResizeObserver(() => {
+      scheduleUpdate()
+    })
+
+    if (sticky) resizeObserver.observe(sticky)
+    if (inner) resizeObserver.observe(inner)
+    if (target) resizeObserver.observe(target)
+    if (summaryCard) resizeObserver.observe(summaryCard)
+
+    scroller?.addEventListener('scroll', scheduleUpdate, { passive: true })
+    window.addEventListener('resize', scheduleUpdate)
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+      resizeObserver.disconnect()
+      scroller?.removeEventListener('scroll', scheduleUpdate)
+      window.removeEventListener('resize', scheduleUpdate)
+    }
+  }, [activeAnnotationId, isMobile, screen, updateNavigatorOffset])
+
+  useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
       setHoveredAnnotationId(null)
-      setPinnedAnnotationId(null)
+      clearAnnotationGuide()
       setHoverSource(null)
+      setNavigatorOffsetY(0)
     })
 
     return () => window.cancelAnimationFrame(frame)
-  }, [screen])
+  }, [clearAnnotationGuide, screen])
 
   useEffect(() => {
     const url = new URL(window.location.href)
@@ -416,14 +502,14 @@ export default function App() {
   const handleResetPrototype = useCallback(() => {
     resetPrototypeState()
     setHoveredAnnotationId(null)
-    setPinnedAnnotationId(null)
+    clearAnnotationGuide()
     setHoverSource(null)
     setShowMobileAnnotations(false)
     showPhoneNotification({
       title: '原型已重置',
       body: '已回到首頁，並清除所有練習資料與目前報告',
     })
-  }, [showPhoneNotification])
+  }, [clearAnnotationGuide, showPhoneNotification])
 
   const handleCopyCurrentViewLink = useCallback(async () => {
     try {
@@ -534,41 +620,23 @@ export default function App() {
                 stopDemo()
                 return
               }
-              if (demoMode === 'explore') {
-                showPhoneNotification({
-                  title: '自由探索模式',
-                  body: '可直接切換章節、點擊說明卡或使用畫面連結進行展示',
-                })
-                return
-              }
+              setDemoMode('demo')
               startDemo()
             }}
             className={`lg:hidden text-xs px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 ${
               isDemoActive
                 ? 'border-accent-amber/40 text-accent-amber bg-accent-amber/10'
-                : demoMode === 'explore'
-                ? 'border-emerald-400/40 text-emerald-600 hover:bg-emerald-500/10 dark:text-emerald-300'
                 : 'border-accent-blue/40 text-accent-blue-light hover:bg-accent-blue/10'
             }`}
           >
             <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor">
               {isDemoActive ? (
                 <rect x="6" y="6" width="12" height="12" rx="2" />
-              ) : demoMode === 'explore' ? (
-                <path d="M12 2l2.6 6.4L21 11l-6.4 2.6L12 20l-2.6-6.4L3 11l6.4-2.6L12 2z" />
               ) : (
                 <polygon points="5,3 19,12 5,21" />
               )}
             </svg>
-            <span>
-              {isDemoActive
-                ? '停止示範'
-                : demoMode === 'demo'
-                ? '開始示範'
-                : demoMode === 'explore'
-                ? '自由探索'
-                : '開始示範'}
-            </span>
+            <span>{isDemoActive ? '停止示範' : '開始示範'}</span>
           </button>
 
           <button
@@ -696,12 +764,19 @@ export default function App() {
         <div className="flex-1 overflow-auto px-4 pt-6 pb-8 md:px-8 md:pb-8">
           <div className="flex items-start justify-center gap-5 xl:gap-7">
             <div className="hidden lg:block w-[344px] flex-shrink-0">
-              <div className="sticky top-6">
-                <PrototypeNavigator />
+              <div ref={navigatorStickyRef} className="sticky top-6">
+                <div
+                  ref={navigatorInnerRef}
+                  className="transition-transform duration-300 ease-out will-change-transform"
+                  style={{ transform: `translateY(${navigatorOffsetY}px)` }}
+                >
+                  <PrototypeNavigator />
+                </div>
               </div>
             </div>
 
             <div
+              ref={phoneStageRef}
               style={
                 isMobile
                   ? { transform: 'scale(0.9)', transformOrigin: 'top center', marginBottom: '-81px' }
@@ -735,15 +810,18 @@ export default function App() {
               setHoverSource(id ? 'annotation' : null)
             }}
             onTogglePin={(id) => {
-              setPinnedAnnotationId((current) => {
-                const next = current === id ? null : id
-                setHoverSource(next ? 'annotation' : null)
-                setHoveredAnnotationId(null)
-                return next
-              })
+              if (pinnedAnnotationId === id) {
+                clearAnnotationGuide()
+                setHoverSource(null)
+                return
+              }
+
+              pinAnnotationGuide(id, 'annotation')
+              setHoverSource('annotation')
+              setHoveredAnnotationId(null)
             }}
             onClearPin={() => {
-              setPinnedAnnotationId(null)
+              clearAnnotationGuide()
               setHoverSource(null)
             }}
             onNavigate={requestScreen}
@@ -818,15 +896,18 @@ export default function App() {
                     setHoverSource(id ? 'annotation' : null)
                   }}
                   onTogglePin={(id) => {
-                    setPinnedAnnotationId((current) => {
-                      const next = current === id ? null : id
-                      setHoverSource(next ? 'annotation' : null)
-                      setHoveredAnnotationId(null)
-                      return next
-                    })
+                    if (pinnedAnnotationId === id) {
+                      clearAnnotationGuide()
+                      setHoverSource(null)
+                      return
+                    }
+
+                    pinAnnotationGuide(id, 'annotation')
+                    setHoverSource('annotation')
+                    setHoveredAnnotationId(null)
                   }}
                   onClearPin={() => {
-                    setPinnedAnnotationId(null)
+                    clearAnnotationGuide()
                     setHoverSource(null)
                   }}
                   onNavigate={(s) => { requestScreen(s); setShowMobileAnnotations(false) }}

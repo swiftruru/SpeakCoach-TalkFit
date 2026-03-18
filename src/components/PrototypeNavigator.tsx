@@ -1,4 +1,4 @@
-import { DEMO_MODE_OPTIONS, DEMO_STEPS, getDemoSteps } from '../demo/demoScript'
+import { DEMO_STEPS, getDemoSteps } from '../demo/demoScript'
 import { useDemoStore } from '../demo/demoStore'
 import { useNavigationStore } from '../stores/navigationStore'
 import type { Screen } from '../types'
@@ -15,11 +15,11 @@ export function PrototypeNavigator() {
   const screen = useNavigationStore((s) => s.screen)
   const requestScreen = useNavigationStore((s) => s.requestScreen)
   const mode = useDemoStore((s) => s.mode)
-  const setMode = useDemoStore((s) => s.setMode)
   const isDemoActive = useDemoStore((s) => s.isDemoActive)
   const isDemoPaused = useDemoStore((s) => s.isDemoPaused)
   const currentStepIndex = useDemoStore((s) => s.currentStepIndex)
   const startDemo = useDemoStore((s) => s.startDemo)
+  const setMode = useDemoStore((s) => s.setMode)
   const goToStep = useDemoStore((s) => s.goToStep)
   const stopDemo = useDemoStore((s) => s.stopDemo)
   const togglePause = useDemoStore((s) => s.togglePause)
@@ -35,7 +35,6 @@ export function PrototypeNavigator() {
     : ((chapterIndex + 1) / CHAPTERS.length) * 100
   const summaryTitle = isDemoActive ? currentStep.title : activeChapter.label
   const summaryDescription = isDemoActive ? currentStep.description : activeChapter.summary
-  const currentMode = DEMO_MODE_OPTIONS.find((option) => option.id === mode)
 
   return (
     <div className="flex w-[344px] items-start gap-3">
@@ -60,37 +59,29 @@ export function PrototypeNavigator() {
 
         <div className="mt-4">
           <p className="text-[11px] font-semibold tracking-[0.14em] text-text-muted uppercase">
-            展示模式
+            完整導覽
           </p>
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            {DEMO_MODE_OPTIONS.map((option) => {
-              const isActive = mode === option.id
-              return (
-                <button
-                  key={option.id}
-                  onClick={() => {
-                    if (option.id === 'demo') {
-                      setMode('demo')
-                      startDemo()
-                      return
-                    }
+          <button
+            onClick={() => {
+              if (isDemoActive) {
+                stopDemo()
+                return
+              }
 
-                    setMode(option.id)
-                  }}
-                  aria-pressed={isActive}
-                  className={`rounded-xl border px-2.5 py-2 text-[11px] font-medium shadow-sm transition-all duration-150 active:scale-[0.98] ${
-                    isActive
-                      ? option.id === 'demo'
-                        ? 'border-accent-blue/30 bg-accent-blue/12 text-accent-blue-light shadow-[0_8px_18px_rgba(59,130,246,0.12)]'
-                        : 'border-emerald-400/25 bg-emerald-500/12 text-emerald-600 shadow-[0_8px_18px_rgba(16,185,129,0.12)] dark:text-emerald-300'
-                      : 'border-divider bg-bg-card text-text-secondary hover:-translate-y-0.5 hover:border-text-muted/30 hover:text-text-primary hover:shadow-md'
-                  }`}
-                >
-                  {option.label}
-                </button>
-              )
-            })}
-          </div>
+              setMode('demo')
+              startDemo()
+            }}
+            className={`mt-2 w-full rounded-2xl border px-3 py-3 text-sm font-semibold shadow-sm transition-all duration-150 active:scale-[0.985] ${
+              isDemoActive
+                ? 'border-accent-amber/35 bg-accent-amber/12 text-accent-amber shadow-[0_10px_22px_rgba(245,158,11,0.16)]'
+                : 'border-accent-blue/30 bg-accent-blue/12 text-accent-blue-light hover:-translate-y-0.5 hover:shadow-md'
+            }`}
+          >
+            {isDemoActive ? '結束示範' : '開始示範'}
+          </button>
+          <p className="mt-2 text-[11px] leading-relaxed text-text-secondary">
+            不播放示範時，現在的畫面就是自由探索模式，可直接切換章節與閱讀說明。
+          </p>
         </div>
 
         <div className="mt-4 h-px bg-border-divider" />
@@ -128,12 +119,6 @@ export function PrototypeNavigator() {
                 {playbackRate}x
               </button>
             </div>
-            <button
-              onClick={stopDemo}
-              className="mt-2 w-full rounded-xl border border-accent-amber/30 bg-accent-amber/10 px-2.5 py-2 text-[11px] text-accent-amber transition-all hover:bg-accent-amber/15"
-            >
-              結束示範
-            </button>
           </div>
         ) : null}
 
@@ -172,7 +157,10 @@ export function PrototypeNavigator() {
         </div>
       </div>
 
-      <div className="w-[163px] rounded-[24px] border border-divider bg-bg-surface/92 px-4 py-4 shadow-sm backdrop-blur-md">
+      <div
+        data-prototype-summary-card
+        className="w-[163px] rounded-[24px] border border-divider bg-bg-surface/92 px-4 py-4 shadow-sm backdrop-blur-md"
+      >
         <div className="flex items-start justify-between gap-2">
           <div>
             <p className="text-[11px] uppercase tracking-[0.16em] text-text-muted">
@@ -184,12 +172,12 @@ export function PrototypeNavigator() {
           </div>
           <span
             className={`mt-0.5 rounded-full px-2 py-1 text-[10px] ${
-              mode === 'demo'
-                ? 'bg-accent-blue/12 text-accent-blue-light'
+              isDemoActive
+                ? 'bg-accent-amber/12 text-accent-amber'
                 : 'bg-emerald-500/12 text-emerald-600 dark:text-emerald-300'
             }`}
           >
-            {currentMode?.label}
+            {isDemoActive ? '示範中' : '自由探索'}
           </span>
         </div>
 
@@ -208,12 +196,12 @@ export function PrototypeNavigator() {
 
         <div className="mt-4 rounded-2xl bg-bg-card px-3 py-2.5">
           <p className="text-[11px] font-medium text-text-primary">
-            {mode === 'explore' ? '目前為自由探索模式' : '展示提示'}
+            {isDemoActive ? '展示提示' : '目前為自由探索'}
           </p>
           <p className="mt-1 text-[11px] leading-relaxed text-text-secondary">
-            {mode === 'explore'
-              ? '直接切換章節、點註解卡或使用畫面連結，手動展示每個重點。'
-              : currentMode?.description}
+            {isDemoActive
+              ? '目前正在播放完整 App Demo；可使用上一頁、下一頁、暫停與倍速控制調整節奏。'
+              : '不按示範時，原型網站預設就是自由探索，可直接切換章節、點註解卡或使用畫面連結。'}
           </p>
         </div>
       </div>

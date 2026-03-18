@@ -502,7 +502,7 @@ export function ReportScreen() {
 
       {/* Share card preview */}
       {shareCardData && (
-        <div className="mx-4 mb-3 bg-white rounded-2xl p-4 shadow-sm">
+        <div data-annotation-id="report-share-preview" className="mx-4 mb-3 bg-white rounded-2xl p-4 shadow-sm">
           <div className="mb-3">
             <h3 className="text-sm font-semibold text-gray-700">分享卡匯出</h3>
             <p className="text-[10px] text-gray-400 mt-0.5">

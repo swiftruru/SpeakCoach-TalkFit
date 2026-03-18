@@ -4,6 +4,7 @@ import { useReportStore } from '../stores/reportStore'
 import { useNavigationStore } from '../stores/navigationStore'
 import { usePhoneNotificationStore } from '../stores/phoneNotificationStore'
 import { useSettingsStore } from '../stores/settingsStore'
+import { useAnnotationGuideStore } from '../stores/annotationGuideStore'
 import { buildSessionSummary } from '../lib/speechAnalysis'
 import { MOCK_SESSIONS } from '../lib/mockData'
 import {
@@ -12,6 +13,7 @@ import {
   SAMPLE_REPLAY_TITLE,
 } from './sampleReplayData'
 import type { DemoMode } from './demoStore'
+import type { Screen } from '../types'
 
 export interface DemoStep {
   title: string
@@ -21,33 +23,89 @@ export interface DemoStep {
   onExit?: () => void
 }
 
-export const DEMO_MODE_OPTIONS: Array<{
-  id: DemoMode
-  label: string
-  description: string
-}> = [
-  {
-    id: 'demo',
-    label: '開始示範',
-    description: '完整走完回放、報告、首頁、歷史與設定，適合正式展示產品流程。',
-  },
-  {
-    id: 'explore',
-    label: '自由探索',
-    description: '不自動播放，保留手動切頁與說明互動。',
-  },
-]
-
 const SAMPLE_REPLAY_STEP_MS = SAMPLE_REPLAY_DURATION_SECONDS * 1000 + 1500
+const DEMO_FOCUS_DELAY_MS = 260
 let cleanupSampleReplay: (() => void) | null = null
+let cleanupFocusedSection: (() => void) | null = null
 
 function stopSampleReplay() {
   cleanupSampleReplay?.()
   cleanupSampleReplay = null
 }
 
+function stopFocusedSection() {
+  cleanupFocusedSection?.()
+  cleanupFocusedSection = null
+}
+
+function focusScreenSection(
+  screen: Screen,
+  targetId?: string,
+  notification?: { title: string; body: string }
+) {
+  stopFocusedSection()
+
+  const { setScreen } = useNavigationStore.getState()
+  const { pin, clear } = useAnnotationGuideStore.getState()
+  const showNotification = usePhoneNotificationStore.getState().show
+  const timeouts: ReturnType<typeof setTimeout>[] = []
+
+  clear()
+  setScreen(screen)
+
+  if (targetId) {
+    timeouts.push(
+      setTimeout(() => {
+        pin(targetId, 'demo')
+      }, DEMO_FOCUS_DELAY_MS)
+    )
+  }
+
+  if (notification) {
+    timeouts.push(
+      setTimeout(() => {
+        showNotification(notification)
+      }, targetId ? DEMO_FOCUS_DELAY_MS + 120 : 120)
+    )
+  }
+
+  cleanupFocusedSection = () => {
+    timeouts.forEach((timeout) => clearTimeout(timeout))
+    clear()
+  }
+}
+
+function createFocusedStep({
+  title,
+  description,
+  durationMs,
+  screen,
+  targetId,
+  notification,
+}: {
+  title: string
+  description: string
+  durationMs: number
+  screen: Screen
+  targetId?: string
+  notification?: { title: string; body: string }
+}): DemoStep {
+  return {
+    title,
+    description,
+    durationMs,
+    onEnter: () => {
+      focusScreenSection(screen, targetId, notification)
+    },
+    onExit: () => {
+      stopFocusedSection()
+    },
+  }
+}
+
 function startSampleReplay() {
   stopSampleReplay()
+  stopFocusedSection()
 
   let didComplete = false
   const timeouts: ReturnType<typeof setTimeout>[] = []
@@ -151,54 +209,147 @@ const FULL_DEMO_STEPS: DemoStep[] = [
       stopSampleReplay()
     },
   },
-  {
+  createFocusedStep({
     title: '分析報告 — 評分',
-    description: '三項評分：平均語速（字／分）、贅字總數、流暢度評分（A+ ～ D），綜合表現一目了然。',
-    durationMs: 4000,
-    onEnter: () => {
-      useNavigationStore.getState().setScreen('report')
-    },
-  },
-  {
+    description: '先看本次目標是否達標，再用平均語速、贅字總數與流暢度評分，快速掌握整體表現。',
+    durationMs: 2400,
+    screen: 'report',
+    targetId: 'report-goal-summary',
+  }),
+  createFocusedStep({
+    title: '分析報告 — 核心指標',
+    description: '三張核心評分卡把這次練習濃縮成最重要的數據，適合第一眼快速判斷表現。',
+    durationMs: 2200,
+    screen: 'report',
+    targetId: 'report-score-section',
+  }),
+  createFocusedStep({
+    title: '分析報告 — 教練建議',
+    description: '不是只給數據，而是直接整理出下一輪最值得優先修正的 3 件事。',
+    durationMs: 2200,
+    screen: 'report',
+    targetId: 'report-coaching-next-steps',
+  }),
+  createFocusedStep({
     title: '分析報告 — 贅字排行',
-    description: '贅字排行榜依出現次數排序，搭配比例長條，幫助使用者識別最需改進的詞彙。',
-    durationMs: 3000,
-    onEnter: () => {
-      useNavigationStore.getState().setScreen('report')
+    description: '贅字排行榜會把最常出現的詞直接排出優先順序，讓使用者知道先改哪一個最有效。',
+    durationMs: 2200,
+    screen: 'report',
+    targetId: 'filler-ranking',
+  }),
+  createFocusedStep({
+    title: '分析報告 — 語速曲線',
+    description: '語速曲線會凸顯偏快或偏慢的片段，讓問題不是只有總結，而是能定位到時間點。',
+    durationMs: 2200,
+    screen: 'report',
+    targetId: 'speed-curve-chart',
+  }),
+  createFocusedStep({
+    title: '分析報告 — 逐字稿定位',
+    description: '逐字稿會把贅字與語速異常直接標出，方便從問題位置往回看完整上下文。',
+    durationMs: 2400,
+    screen: 'report',
+    targetId: 'annotated-transcript',
+  }),
+  createFocusedStep({
+    title: '分析報告 — 分享卡預覽',
+    description: '專用分享卡會整理評分、Top 贅字與語速節奏，適合直接貼到作品集與 hackathon 成果頁。',
+    durationMs: 2200,
+    screen: 'report',
+    targetId: 'report-share-preview',
+  }),
+  createFocusedStep({
+    title: '分析報告 — 匯出 PNG / SVG',
+    description: '示範會聚焦分享卡匯出按鈕，實際產品可輸出 PNG 與 SVG；自動示範不會真的下載檔案。',
+    durationMs: 2200,
+    screen: 'report',
+    targetId: 'report-share-row',
+    notification: {
+      title: '分享卡匯出',
+      body: '支援 PNG 與 SVG；示範模式僅展示流程，不會真的下載檔案。',
     },
-  },
-  {
-    title: '首頁總覽',
-    description: '回到首頁查看本週練習次數、平均贅字與每日趨勢，讓使用者快速掌握近期進步狀態。',
-    durationMs: 3000,
-    onEnter: () => {
-      useNavigationStore.getState().setScreen('home')
-    },
-  },
-  {
-    title: '歷史紀錄',
-    description: '折線圖追蹤每次練習的贅字次數變化，長期進步趨勢一目了然。',
-    durationMs: 3000,
-    onEnter: () => {
-      useNavigationStore.getState().setScreen('history')
-    },
-  },
-  {
-    title: '設定頁面',
-    description: '可自訂贅字清單、調整語速閾值（預設 120–180 字/分）、選擇辨識語言與回饋方式。',
-    durationMs: 3000,
-    onEnter: () => {
-      useNavigationStore.getState().setScreen('settings')
-    },
-  },
-  {
+  }),
+  createFocusedStep({
+    title: '歷史紀錄 — 整體回顧',
+    description: '歷史頁先用累計練習次數、總時長與最常出現的贅字，快速回顧整體訓練成果。',
+    durationMs: 2200,
+    screen: 'history',
+    targetId: 'history-summary-cards',
+  }),
+  createFocusedStep({
+    title: '歷史紀錄 — 趨勢與列表',
+    description: '再往下看贅字趨勢圖與練習紀錄列表，確認自己是持續進步，還是卡在固定壞習慣。',
+    durationMs: 2400,
+    screen: 'history',
+    targetId: 'history-trend-chart',
+  }),
+  createFocusedStep({
+    title: '設定頁面 — 偵測開關',
+    description: '可分別控制贅字偵測、語速監控與重複連接詞，示範產品不是只有固定規則。',
+    durationMs: 2200,
+    screen: 'settings',
+    targetId: 'settings-detection-toggles',
+  }),
+  createFocusedStep({
+    title: '設定頁面 — 練習情境',
+    description: '透過情境 preset，一鍵切換面試自介、專題簡報或 Demo Pitch 的預設語速與贅字清單。',
+    durationMs: 2200,
+    screen: 'settings',
+    targetId: 'settings-practice-presets',
+  }),
+  createFocusedStep({
+    title: '設定頁面 — 練習目標',
+    description: '每次練習前可以先指定一個單一目標，讓練習中與報告頁都圍繞同一個焦點。',
+    durationMs: 2200,
+    screen: 'settings',
+    targetId: 'settings-practice-goal',
+  }),
+  createFocusedStep({
+    title: '設定頁面 — 語速與贅字',
+    description: '語速範圍可手動調整，贅字清單也能自由啟用、停用或增減，讓偵測規則更貼近個人習慣。',
+    durationMs: 2400,
+    screen: 'settings',
+    targetId: 'speed-range-slider',
+  }),
+  createFocusedStep({
+    title: '設定頁面 — 贅字清單',
+    description: '預設清單與自訂清單分開管理，方便留下常用詞，同時保留個人化調整的彈性。',
+    durationMs: 2200,
+    screen: 'settings',
+    targetId: 'filler-chip-editor',
+  }),
+  createFocusedStep({
+    title: '設定頁面 — 回饋方式',
+    description: '可切換觸覺震動與音效提示，讓即時提醒更符合不同練習情境與個人偏好。',
+    durationMs: 2200,
+    screen: 'settings',
+    targetId: 'settings-feedback',
+  }),
+  createFocusedStep({
+    title: '設定頁面 — 辨識語言',
+    description: '最後示範語言切換設定，完整帶過偵測規則、目標、回饋與語言等主要自訂能力。',
+    durationMs: 2200,
+    screen: 'settings',
+    targetId: 'settings-language',
+  }),
+  createFocusedStep({
+    title: '回到首頁 — 週期總覽',
+    description: '示範收尾前回到首頁，重新看到本週次數、平均贅字與近期變化，對照整體練習成果。',
+    durationMs: 2200,
+    screen: 'home',
+    targetId: 'home-stat-cards',
+  }),
+  createFocusedStep({
     title: '示範完成 ✓',
-    description: '完整流程展示結束。你可以自由操作各項功能，或重新點擊「開始示範」再跑一次完整流程。',
+    description: '完整流程展示結束，已回到首頁。接下來可以改用自由探索，手動查看每個畫面細節。',
     durationMs: 1800,
-    onEnter: () => {
-      useNavigationStore.getState().setScreen('home')
+    screen: 'home',
+    targetId: 'home-record-btn',
+    notification: {
+      title: '示範完成',
+      body: '可切換為自由探索，或再次點擊「開始示範」重新播放完整流程。',
     },
-  },
+  }),
 ]
 
 export function getDemoSteps(mode: DemoMode): DemoStep[] {

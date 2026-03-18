@@ -14,6 +14,7 @@ import { useReportStore } from '../stores/reportStore'
 import { useRetryPracticeStore } from '../stores/retryPracticeStore'
 import { useSessionStore } from '../stores/sessionStore'
 import { useSettingsStore } from '../stores/settingsStore'
+import { useAnnotationGuideStore } from '../stores/annotationGuideStore'
 import type { Screen } from '../types'
 
 export function seedPrototypeData() {
@@ -44,6 +45,7 @@ export function resetPrototypeState() {
   useDemoStore.getState().stopDemo()
   useSessionStore.getState().reset()
   useRetryPracticeStore.getState().clearRetryPractice()
+  useAnnotationGuideStore.getState().clear()
   usePhoneNotificationStore.getState().dismiss()
   useHistoryStore.setState({ sessions: [] })
   useReportStore.getState().clearReport()

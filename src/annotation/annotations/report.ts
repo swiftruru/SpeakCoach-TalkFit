@@ -44,10 +44,17 @@ export const reportAnnotations: AnnotationItem[] = [
     type: 'feature',
   },
   {
+    id: 'report-share-preview',
+    targetId: 'report-share-preview',
+    title: '分享卡預覽',
+    description: '獨立設計的分享卡會整理本次評分、Top 贅字與語速節奏，版面固定，適合貼到 README、作品集與 hackathon 成果頁。',
+    type: 'design',
+  },
+  {
     id: 'report-share-row',
     targetId: 'report-share-row',
     title: '分享 / 匯出',
-    description: '匯出練習紀錄，或複製摘要文字，方便貼到筆記或傳給教練進行回饋。',
+    description: '除複製摘要與匯出 JSON 外，也能輸出分享卡 PNG / SVG。自動示範只會聚焦流程，不會真的觸發下載。',
     type: 'feature',
   },
 ]

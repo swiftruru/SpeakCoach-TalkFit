@@ -26,13 +26,7 @@ export const useDemoStore = create<DemoState>((set) => ({
     mode,
     ...(state.isDemoActive ? { isDemoActive: false, isDemoPaused: false, currentStepIndex: 0 } : {}),
   })),
-  startDemo: () => set((state) => {
-    if (state.mode === 'explore') {
-      return state
-    }
-
-    return { isDemoActive: true, isDemoPaused: false, currentStepIndex: 0 }
-  }),
+  startDemo: () => set({ isDemoActive: true, isDemoPaused: false, currentStepIndex: 0 }),
   stopDemo: () => set({ isDemoActive: false, isDemoPaused: false, currentStepIndex: 0 }),
   togglePause: () => set((state) => (
     state.isDemoActive
