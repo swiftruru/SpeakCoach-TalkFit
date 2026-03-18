@@ -1,10 +1,13 @@
 import { useEffect, useRef } from 'react'
 import { useDemoStore } from './demoStore'
-import { DEMO_STEPS } from './demoScript'
+import { getDemoSteps } from './demoScript'
 
 export function useLiveDemo() {
+  const mode = useDemoStore((s) => s.mode)
   const isDemoActive = useDemoStore((s) => s.isDemoActive)
+  const isDemoPaused = useDemoStore((s) => s.isDemoPaused)
   const currentStepIndex = useDemoStore((s) => s.currentStepIndex)
+  const playbackRate = useDemoStore((s) => s.playbackRate)
   const goToStep = useDemoStore((s) => s.goToStep)
   const stopDemo = useDemoStore((s) => s.stopDemo)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -12,26 +15,37 @@ export function useLiveDemo() {
   useEffect(() => {
     if (!isDemoActive) return
 
-    const step = DEMO_STEPS[currentStepIndex]
+    const steps = getDemoSteps(mode)
+    const step = steps[currentStepIndex]
     if (!step) return
 
-    // Execute this step's side effects
     step.onEnter()
 
-    // Schedule advance or auto-stop when the final step finishes.
-    if (step.durationMs !== Infinity && currentStepIndex < DEMO_STEPS.length - 1) {
+    return () => {
+      step.onExit?.()
+    }
+  }, [mode, isDemoActive, currentStepIndex])
+
+  useEffect(() => {
+    if (!isDemoActive || isDemoPaused) return
+
+    const steps = getDemoSteps(mode)
+    const step = steps[currentStepIndex]
+    if (!step || step.durationMs === Infinity) return
+
+    const durationMs = step.durationMs / playbackRate
+    if (currentStepIndex < steps.length - 1) {
       timeoutRef.current = setTimeout(() => {
         goToStep(currentStepIndex + 1)
-      }, step.durationMs)
-    } else if (step.durationMs !== Infinity) {
+      }, durationMs)
+    } else {
       timeoutRef.current = setTimeout(() => {
         stopDemo()
-      }, step.durationMs)
+      }, durationMs)
     }
 
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
-      step.onExit?.()
     }
-  }, [isDemoActive, currentStepIndex]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [mode, isDemoActive, isDemoPaused, currentStepIndex, playbackRate, goToStep, stopDemo])
 }

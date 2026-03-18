@@ -11,6 +11,7 @@ import {
   SAMPLE_REPLAY_EVENTS,
   SAMPLE_REPLAY_TITLE,
 } from './sampleReplayData'
+import type { DemoMode } from './demoStore'
 
 export interface DemoStep {
   title: string
@@ -19,6 +20,23 @@ export interface DemoStep {
   onEnter: () => void
   onExit?: () => void
 }
+
+export const DEMO_MODE_OPTIONS: Array<{
+  id: DemoMode
+  label: string
+  description: string
+}> = [
+  {
+    id: 'demo',
+    label: '開始示範',
+    description: '完整走完回放、報告、首頁、歷史與設定，適合正式展示產品流程。',
+  },
+  {
+    id: 'explore',
+    label: '自由探索',
+    description: '不自動播放，保留手動切頁與說明互動。',
+  },
+]
 
 const SAMPLE_REPLAY_STEP_MS = SAMPLE_REPLAY_DURATION_SECONDS * 1000 + 1500
 let cleanupSampleReplay: (() => void) | null = null
@@ -121,7 +139,7 @@ function startSampleReplay() {
   }
 }
 
-export const DEMO_STEPS: DemoStep[] = [
+const FULL_DEMO_STEPS: DemoStep[] = [
   {
     title: '快速體驗回放',
     description: '先用一段 10 秒 sample session 模擬真實使用流程，不開麥克風也能直接看到逐字稿、語速表與贅字警示。',
@@ -182,3 +200,10 @@ export const DEMO_STEPS: DemoStep[] = [
     },
   },
 ]
+
+export function getDemoSteps(mode: DemoMode): DemoStep[] {
+  if (mode === 'demo') return FULL_DEMO_STEPS
+  return []
+}
+
+export const DEMO_STEPS = FULL_DEMO_STEPS

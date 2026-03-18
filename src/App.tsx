@@ -17,7 +17,7 @@ import { HistoryScreen } from './screens/HistoryScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
 import { useDemoStore } from './demo/demoStore'
 import { useLiveDemo } from './demo/useLiveDemo'
-import { DEMO_STEPS } from './demo/demoScript'
+import { getDemoSteps } from './demo/demoScript'
 import { ensurePrototypeDataForScreen, resetPrototypeState } from './lib/prototypeState'
 import type { Screen } from './types'
 import './index.css'
@@ -98,6 +98,21 @@ function shouldShowLaunchOverlay() {
   return !hasDeepLink && !prefersReducedMotion
 }
 
+function isMobileBrowserDevice() {
+  const userAgentData = (navigator as Navigator & {
+    userAgentData?: { mobile?: boolean }
+  }).userAgentData
+  if (typeof userAgentData?.mobile === 'boolean') {
+    return userAgentData.mobile
+  }
+
+  const ua = navigator.userAgent
+  const matchesMobileUa = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua)
+  const coarsePointer = window.matchMedia('(pointer: coarse)').matches
+
+  return matchesMobileUa || (coarsePointer && window.innerWidth < 1024)
+}
+
 interface HoverConnector {
   d: string
   arrowHeadD: string
@@ -111,10 +126,11 @@ type HoverSource = 'phone' | 'annotation'
 export default function App() {
   const { screen, setScreen, requestScreen } = useNavigationStore()
   const [hoveredAnnotationId, setHoveredAnnotationId] = useState<string | null>(null)
+  const [pinnedAnnotationId, setPinnedAnnotationId] = useState<string | null>(null)
   const [hoverConnector, setHoverConnector] = useState<HoverConnector | null>(null)
   const [hoverSource, setHoverSource] = useState<HoverSource | null>(null)
   const [showStoryModal, setShowStoryModal] = useState(false)
-  const [showDesktopNotice, setShowDesktopNotice] = useState(true)
+  const [showDesktopNotice, setShowDesktopNotice] = useState(() => isMobileBrowserDevice())
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
   const [showLaunchOverlay, setShowLaunchOverlay] = useState(() => shouldShowLaunchOverlay())
   const [pendingPhoneLaunch, setPendingPhoneLaunch] = useState(false)
@@ -125,7 +141,10 @@ export default function App() {
   const desktopStageRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth < 768)
+    const handler = () => {
+      setIsMobile(window.innerWidth < 768)
+      setShowDesktopNotice((current) => current && isMobileBrowserDevice())
+    }
     window.addEventListener('resize', handler)
     return () => window.removeEventListener('resize', handler)
   }, [])
@@ -134,9 +153,12 @@ export default function App() {
   const setReport = useReportStore((s) => s.setReport)
   const showPhoneNotification = usePhoneNotificationStore((s) => s.show)
   const { startDemo, stopDemo, isDemoActive } = useDemoStore()
+  const demoMode = useDemoStore((s) => s.mode)
   const currentStepIndex = useDemoStore((s) => s.currentStepIndex)
   const goToStep = useDemoStore((s) => s.goToStep)
   useLiveDemo()
+  const activeAnnotationId = pinnedAnnotationId ?? hoveredAnnotationId
+  const currentDemoSteps = getDemoSteps(demoMode)
 
   // Theme: light by default, persist in localStorage
   const [isDark, setIsDark] = useState(() => {
@@ -171,16 +193,16 @@ export default function App() {
 
   // Scroll phone screen to show element when annotation panel item is hovered
   useEffect(() => {
-    if (!hoveredAnnotationId) return
+    if (!activeAnnotationId) return
     const el = document.querySelector(
-      `[data-annotation-id="${hoveredAnnotationId}"]`
+      `[data-annotation-id="${activeAnnotationId}"]`
     ) as HTMLElement | null
     if (!el) return
     el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-  }, [hoveredAnnotationId])
+  }, [activeAnnotationId])
 
   const updateHoverConnector = useCallback(() => {
-    if (!hoveredAnnotationId || isMobile) {
+    if (!activeAnnotationId || isMobile) {
       setHoverConnector(null)
       return
     }
@@ -192,10 +214,10 @@ export default function App() {
     }
 
     const phoneTarget = stage.querySelector(
-      `[data-annotation-id="${hoveredAnnotationId}"]`
+      `[data-annotation-id="${activeAnnotationId}"]`
     ) as HTMLElement | null
     const annotationCard = stage.querySelector(
-      `[data-annotation-card-for="${hoveredAnnotationId}"]`
+      `[data-annotation-card-for="${activeAnnotationId}"]`
     ) as HTMLElement | null
 
     if (!phoneTarget || !annotationCard) {
@@ -281,12 +303,12 @@ export default function App() {
     }
 
     setHoverConnector({ d, arrowHeadD, arrowHighlight, start, end })
-  }, [hoverSource, hoveredAnnotationId, isMobile])
+  }, [activeAnnotationId, hoverSource, isMobile])
 
   useEffect(() => {
     let frame = 0
 
-    if (!hoveredAnnotationId || isMobile) {
+    if (!activeAnnotationId || isMobile) {
       frame = window.requestAnimationFrame(() => {
         setHoverConnector(null)
       })
@@ -305,10 +327,10 @@ export default function App() {
     }
     const stage = desktopStageRef.current
     const phoneTarget = stage?.querySelector(
-      `[data-annotation-id="${hoveredAnnotationId}"]`
+      `[data-annotation-id="${activeAnnotationId}"]`
     ) as HTMLElement | null
     const annotationCard = stage?.querySelector(
-      `[data-annotation-card-for="${hoveredAnnotationId}"]`
+      `[data-annotation-card-for="${activeAnnotationId}"]`
     ) as HTMLElement | null
 
     const resizeObserver = new ResizeObserver(() => {
@@ -328,7 +350,17 @@ export default function App() {
       window.removeEventListener('resize', handleReposition)
       window.removeEventListener('scroll', handleReposition, true)
     }
-  }, [hoveredAnnotationId, isMobile, screen, updateHoverConnector])
+  }, [activeAnnotationId, isMobile, screen, updateHoverConnector])
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      setHoveredAnnotationId(null)
+      setPinnedAnnotationId(null)
+      setHoverSource(null)
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [screen])
 
   useEffect(() => {
     const url = new URL(window.location.href)
@@ -348,37 +380,43 @@ export default function App() {
       if (!isDemoActive) return
       if (e.key === 'ArrowRight' || e.key === ' ') {
         e.preventDefault()
-        if (currentStepIndex < DEMO_STEPS.length - 1) goToStep(currentStepIndex + 1)
+        if (currentStepIndex < currentDemoSteps.length - 1) goToStep(currentStepIndex + 1)
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault()
         if (currentStepIndex > 0) goToStep(currentStepIndex - 1)
+      } else if (e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        useDemoStore.getState().togglePause()
       } else if (e.key === 'Escape') {
         stopDemo()
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isDemoActive, currentStepIndex, goToStep, stopDemo])
+  }, [currentDemoSteps.length, isDemoActive, currentStepIndex, goToStep, stopDemo])
 
   const handlePhoneMouseOver = useCallback((e: React.MouseEvent) => {
+    if (pinnedAnnotationId) return
     const target = e.target as HTMLElement
     const annotated = target.closest('[data-annotation-id]') as HTMLElement | null
     const id = annotated?.dataset?.annotationId ?? null
     setHoveredAnnotationId(id)
     setHoverSource(id ? 'phone' : null)
-  }, [])
+  }, [pinnedAnnotationId])
 
   const handlePhoneMouseOut = useCallback((e: React.MouseEvent) => {
+    if (pinnedAnnotationId) return
     const related = e.relatedTarget as HTMLElement | null
     if (!related?.closest?.('[data-annotation-id]') && !related?.closest?.('[data-annotation-card-for]')) {
       setHoveredAnnotationId(null)
       setHoverSource(null)
     }
-  }, [])
+  }, [pinnedAnnotationId])
 
   const handleResetPrototype = useCallback(() => {
     resetPrototypeState()
     setHoveredAnnotationId(null)
+    setPinnedAnnotationId(null)
     setHoverSource(null)
     setShowMobileAnnotations(false)
     showPhoneNotification({
@@ -431,9 +469,9 @@ export default function App() {
   return (
     <div className="min-h-screen bg-bg-base flex flex-col font-sans">
       {/* Highlight style injection */}
-      {hoveredAnnotationId && (
+      {activeAnnotationId && (
         <style>{`
-          [data-annotation-id="${hoveredAnnotationId}"] {
+          [data-annotation-id="${activeAnnotationId}"] {
             border-radius: 12px;
             box-shadow:
               inset 0 0 0 2px rgba(251,191,36,0.72),
@@ -496,18 +534,41 @@ export default function App() {
                 stopDemo()
                 return
               }
+              if (demoMode === 'explore') {
+                showPhoneNotification({
+                  title: '自由探索模式',
+                  body: '可直接切換章節、點擊說明卡或使用畫面連結進行展示',
+                })
+                return
+              }
               startDemo()
             }}
-            className={`text-xs px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 ${
+            className={`lg:hidden text-xs px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 ${
               isDemoActive
                 ? 'border-accent-amber/40 text-accent-amber bg-accent-amber/10'
+                : demoMode === 'explore'
+                ? 'border-emerald-400/40 text-emerald-600 hover:bg-emerald-500/10 dark:text-emerald-300'
                 : 'border-accent-blue/40 text-accent-blue-light hover:bg-accent-blue/10'
             }`}
           >
             <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor">
-              {isDemoActive ? <rect x="6" y="6" width="12" height="12" rx="2" /> : <polygon points="5,3 19,12 5,21" />}
+              {isDemoActive ? (
+                <rect x="6" y="6" width="12" height="12" rx="2" />
+              ) : demoMode === 'explore' ? (
+                <path d="M12 2l2.6 6.4L21 11l-6.4 2.6L12 20l-2.6-6.4L3 11l6.4-2.6L12 2z" />
+              ) : (
+                <polygon points="5,3 19,12 5,21" />
+              )}
             </svg>
-            <span>{isDemoActive ? '停止示範' : '開始示範'}</span>
+            <span>
+              {isDemoActive
+                ? '停止示範'
+                : demoMode === 'demo'
+                ? '開始示範'
+                : demoMode === 'explore'
+                ? '自由探索'
+                : '開始示範'}
+            </span>
           </button>
 
           <button
@@ -634,7 +695,7 @@ export default function App() {
         {/* Phone area */}
         <div className="flex-1 overflow-auto px-4 pt-6 pb-8 md:px-8 md:pb-8">
           <div className="flex items-start justify-center gap-5 xl:gap-7">
-            <div className="hidden lg:block w-[168px] flex-shrink-0">
+            <div className="hidden lg:block w-[344px] flex-shrink-0">
               <div className="sticky top-6">
                 <PrototypeNavigator />
               </div>
@@ -666,10 +727,24 @@ export default function App() {
         >
           <AnnotationPanel
             screen={screen}
-            hoveredId={hoveredAnnotationId}
+            activeId={activeAnnotationId}
+            pinnedId={pinnedAnnotationId}
             onHoverItem={(id) => {
+              if (pinnedAnnotationId) return
               setHoveredAnnotationId(id)
               setHoverSource(id ? 'annotation' : null)
+            }}
+            onTogglePin={(id) => {
+              setPinnedAnnotationId((current) => {
+                const next = current === id ? null : id
+                setHoverSource(next ? 'annotation' : null)
+                setHoveredAnnotationId(null)
+                return next
+              })
+            }}
+            onClearPin={() => {
+              setPinnedAnnotationId(null)
+              setHoverSource(null)
             }}
             onNavigate={requestScreen}
           />
@@ -735,10 +810,24 @@ export default function App() {
               <div className="flex-1 overflow-hidden">
                 <AnnotationPanel
                   screen={screen}
-                  hoveredId={hoveredAnnotationId}
+                  activeId={activeAnnotationId}
+                  pinnedId={pinnedAnnotationId}
                   onHoverItem={(id) => {
+                    if (pinnedAnnotationId) return
                     setHoveredAnnotationId(id)
                     setHoverSource(id ? 'annotation' : null)
+                  }}
+                  onTogglePin={(id) => {
+                    setPinnedAnnotationId((current) => {
+                      const next = current === id ? null : id
+                      setHoverSource(next ? 'annotation' : null)
+                      setHoveredAnnotationId(null)
+                      return next
+                    })
+                  }}
+                  onClearPin={() => {
+                    setPinnedAnnotationId(null)
+                    setHoverSource(null)
                   }}
                   onNavigate={(s) => { requestScreen(s); setShowMobileAnnotations(false) }}
                 />
@@ -749,7 +838,7 @@ export default function App() {
       </AnimatePresence>
 
       <DesignStoryModal isOpen={showStoryModal} onClose={() => setShowStoryModal(false)} />
-      {/* Desktop notice — floating card, bottom-right */}
+      {/* Mobile-browser notice — floating card, bottom-right */}
       <AnimatePresence>
         {showDesktopNotice && (
           <motion.div

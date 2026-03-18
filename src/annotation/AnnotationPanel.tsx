@@ -31,22 +31,34 @@ const TYPE_BADGE: Record<AnnotationItem['type'], { label: string; cls: string }>
 
 interface AnnotationPanelProps {
   screen: Screen
-  hoveredId: string | null
+  activeId: string | null
+  pinnedId: string | null
   onHoverItem: (id: string | null) => void
+  onTogglePin: (id: string) => void
+  onClearPin: () => void
   onNavigate: (screen: Screen) => void
 }
 
-export function AnnotationPanel({ screen, hoveredId, onHoverItem, onNavigate }: AnnotationPanelProps) {
+export function AnnotationPanel({
+  screen,
+  activeId,
+  pinnedId,
+  onHoverItem,
+  onTogglePin,
+  onClearPin,
+  onNavigate,
+}: AnnotationPanelProps) {
   const annotations = SCREEN_ANNOTATIONS[screen] ?? []
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const pinnedItem = annotations.find((item) => item.targetId === pinnedId)
 
   // Auto-scroll to hovered item when phone element is hovered
   useEffect(() => {
-    if (hoveredId) {
-      const el = itemRefs.current[hoveredId]
+    if (activeId) {
+      const el = itemRefs.current[activeId]
       el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     }
-  }, [hoveredId])
+  }, [activeId])
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -71,10 +83,32 @@ export function AnnotationPanel({ screen, hoveredId, onHoverItem, onNavigate }: 
 
       <div className="w-full h-px bg-border-divider flex-shrink-0 mt-2" />
 
+      {pinnedItem && (
+        <div className="mx-4 mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2.5 dark:border-amber-400/30 dark:bg-amber-500/10">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-semibold tracking-[0.14em] text-amber-700 uppercase dark:text-amber-200">
+                已固定說明
+              </p>
+              <p className="mt-1 text-sm font-medium text-amber-900 dark:text-amber-100">
+                {pinnedItem.title}
+              </p>
+            </div>
+            <button
+              onClick={onClearPin}
+              className="rounded-full bg-white/80 px-2.5 py-1 text-[11px] text-amber-700 transition-all hover:bg-white dark:bg-white/10 dark:text-amber-100"
+            >
+              解除
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Annotation list */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2 phone-scroll">
         {annotations.map((item) => {
-          const isHighlighted = hoveredId === item.targetId
+          const isHighlighted = activeId === item.targetId
+          const isPinned = pinnedId === item.targetId
           return (
             <div
               key={item.id}
@@ -82,6 +116,7 @@ export function AnnotationPanel({ screen, hoveredId, onHoverItem, onNavigate }: 
               data-annotation-card-for={item.targetId}
               onMouseEnter={() => onHoverItem(item.targetId)}
               onMouseLeave={() => onHoverItem(null)}
+              onClick={() => onTogglePin(item.targetId)}
               className={`rounded-xl p-3.5 border cursor-pointer transition-all duration-200 ${
                 isHighlighted
                   ? 'bg-amber-50 border-amber-200 shadow-[0_12px_28px_rgba(249,115,22,0.12)] dark:bg-amber-500/10 dark:border-amber-400/30'
@@ -92,9 +127,25 @@ export function AnnotationPanel({ screen, hoveredId, onHoverItem, onNavigate }: 
                 <span className={`text-sm font-medium ${isHighlighted ? 'text-amber-800 dark:text-amber-200' : 'text-text-primary'}`}>
                   {item.title}
                 </span>
-                <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0 ${TYPE_BADGE[item.type].cls}`}>
-                  {TYPE_BADGE[item.type].label}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onTogglePin(item.targetId)
+                    }}
+                    className={`rounded-full px-1.5 py-0.5 text-[10px] transition-all ${
+                      isPinned
+                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200'
+                        : 'bg-bg-card2 text-text-muted hover:text-text-primary'
+                    }`}
+                    title={isPinned ? '解除固定這張說明卡' : '固定這張說明卡'}
+                  >
+                    {isPinned ? '已固定' : '固定'}
+                  </button>
+                  <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0 ${TYPE_BADGE[item.type].cls}`}>
+                    {TYPE_BADGE[item.type].label}
+                  </span>
+                </div>
               </div>
               <p className="text-sm text-text-secondary leading-relaxed">
                 {item.description}
