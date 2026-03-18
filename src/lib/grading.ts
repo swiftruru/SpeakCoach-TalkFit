@@ -1,18 +1,17 @@
-// Grade a session based on filler count and average WPM
+import i18n from '../i18n'
+
 export function gradeSession(fillerCount: number, avgWpm: number, durationSeconds: number): string {
   if (durationSeconds < 10) return '—'
 
   const fillerPerMinute = fillerCount / (durationSeconds / 60)
   let score = 100
 
-  // Penalize for fillers per minute
   if (fillerPerMinute > 15) score -= 40
   else if (fillerPerMinute > 10) score -= 30
   else if (fillerPerMinute > 6) score -= 20
   else if (fillerPerMinute > 3) score -= 10
   else if (fillerPerMinute > 1) score -= 5
 
-  // Penalize for out-of-range WPM (ideal 120–180)
   if (avgWpm > 220 || avgWpm < 80) score -= 20
   else if (avgWpm > 190 || avgWpm < 100) score -= 10
   else if (avgWpm > 180 || avgWpm < 120) score -= 5
@@ -60,7 +59,5 @@ export function wpmColor(status: 'slow' | 'normal' | 'fast'): string {
 }
 
 export function wpmLabel(status: 'slow' | 'normal' | 'fast'): string {
-  if (status === 'fast') return '語速偏快'
-  if (status === 'slow') return '語速偏慢'
-  return '速度適中'
+  return i18n.t(`practice:speedStatus.${status}`)
 }

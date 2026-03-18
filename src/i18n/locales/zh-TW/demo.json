@@ -1,0 +1,113 @@
+{
+  "sampleReplay": {
+    "title": "Sample 回放練習",
+    "startNotification": {
+      "title": "開始示範",
+      "body": "先播放無麥克風 sample session，接著自動帶你看各頁分析。"
+    },
+    "completeNotification": {
+      "title": "Sample 回放完成",
+      "body": "已接續進入示範導覽，接下來會依序介紹報告、首頁、歷史與設定。"
+    },
+    "segments": {
+      "intro": "各位好，今天我要用一分鐘介紹 TalkFit。",
+      "fillerUm": "嗯",
+      "realtime": "它會即時幫你抓出演講裡的贅字和語速問題。",
+      "fillerThen": "然後",
+      "slowDown": "當你講太快的時候，系統會直接提醒你放慢。",
+      "report": "練完之後，報告會把贅字排行榜和語速曲線都整理好。"
+    }
+  },
+  "steps": {
+    "sampleReplay": {
+      "title": "快速體驗回放",
+      "description": "先用一段 10 秒 sample session 模擬真實使用流程，不開麥克風也能直接看到逐字稿、語速表與贅字警示。"
+    },
+    "reportGoal": {
+      "title": "分析報告 — 評分",
+      "description": "先看本次目標是否達標，再用平均語速、贅字總數與流暢度評分，快速掌握整體表現。"
+    },
+    "reportScore": {
+      "title": "分析報告 — 核心指標",
+      "description": "三張核心評分卡把這次練習濃縮成最重要的數據，適合第一眼快速判斷表現。"
+    },
+    "reportCoaching": {
+      "title": "分析報告 — 教練建議",
+      "description": "不是只給數據，而是直接整理出下一輪最值得優先修正的 3 件事。"
+    },
+    "reportFiller": {
+      "title": "分析報告 — 贅字排行",
+      "description": "贅字排行榜會把最常出現的詞直接排出優先順序，讓使用者知道先改哪一個最有效。"
+    },
+    "reportSpeed": {
+      "title": "分析報告 — 語速曲線",
+      "description": "語速曲線會凸顯偏快或偏慢的片段，讓問題不是只有總結，而是能定位到時間點。"
+    },
+    "reportTranscript": {
+      "title": "分析報告 — 逐字稿定位",
+      "description": "逐字稿會把贅字與語速異常直接標出，方便從問題位置往回看完整上下文。"
+    },
+    "reportSharePreview": {
+      "title": "分析報告 — 分享卡預覽",
+      "description": "專用分享卡會整理評分、Top 贅字與語速節奏，適合直接貼到作品集與 hackathon 成果頁。"
+    },
+    "reportExport": {
+      "title": "分析報告 — 匯出 PNG / SVG",
+      "description": "示範會聚焦分享卡匯出按鈕，實際產品可輸出 PNG 與 SVG；自動示範不會真的下載檔案。"
+    },
+    "historySummary": {
+      "title": "歷史紀錄 — 整體回顧",
+      "description": "歷史頁先用累計練習次數、總時長與最常出現的贅字，快速回顧整體訓練成果。"
+    },
+    "historyTrend": {
+      "title": "歷史紀錄 — 趨勢與列表",
+      "description": "再往下看贅字趨勢圖與練習紀錄列表，確認自己是持續進步，還是卡在固定壞習慣。"
+    },
+    "settingsDetection": {
+      "title": "設定頁面 — 偵測開關",
+      "description": "可分別控制贅字偵測、語速監控與重複連接詞，示範產品不是只有固定規則。"
+    },
+    "settingsPreset": {
+      "title": "設定頁面 — 練習情境",
+      "description": "透過情境 preset，一鍵切換面試自介、專題簡報或 Demo Pitch 的預設語速與贅字清單。"
+    },
+    "settingsGoal": {
+      "title": "設定頁面 — 練習目標",
+      "description": "每次練習前可以先指定一個單一目標，讓練習中與報告頁都圍繞同一個焦點。"
+    },
+    "settingsSpeed": {
+      "title": "設定頁面 — 語速與贅字",
+      "description": "語速範圍可手動調整，贅字清單也能自由啟用、停用或增減，讓偵測規則更貼近個人習慣。"
+    },
+    "settingsFillerList": {
+      "title": "設定頁面 — 贅字清單",
+      "description": "預設清單與自訂清單分開管理，方便留下常用詞，同時保留個人化調整的彈性。"
+    },
+    "settingsFeedback": {
+      "title": "設定頁面 — 回饋方式",
+      "description": "可切換觸覺震動與音效提示，讓即時提醒更符合不同練習情境與個人偏好。"
+    },
+    "settingsLanguage": {
+      "title": "設定頁面 — 辨識語言",
+      "description": "最後示範語言切換設定，完整帶過偵測規則、目標、回饋與語言等主要自訂能力。"
+    },
+    "homeSummary": {
+      "title": "回到首頁 — 週期總覽",
+      "description": "示範收尾前回到首頁，重新看到本週次數、平均贅字與近期變化，對照整體練習成果。"
+    },
+    "complete": {
+      "title": "示範完成 ✓",
+      "description": "完整流程展示結束，已回到首頁。接下來可以改用自由探索，手動查看每個畫面細節。"
+    }
+  },
+  "notifications": {
+    "shareExport": {
+      "title": "分享卡匯出",
+      "body": "支援 PNG 與 SVG；示範模式僅展示流程，不會真的下載檔案。"
+    },
+    "complete": {
+      "title": "示範完成",
+      "body": "可切換為自由探索，或再次點擊「開始示範」重新播放完整流程。"
+    }
+  }
+}

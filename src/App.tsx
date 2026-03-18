@@ -1,10 +1,13 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { useNavigationStore } from './stores/navigationStore'
 import { useHistoryStore } from './stores/historyStore'
 import { useReportStore } from './stores/reportStore'
 import { usePhoneNotificationStore } from './stores/phoneNotificationStore'
-import { MOCK_SESSIONS } from './lib/mockData'
+import { getMockSessions } from './lib/mockData'
+import { DEFAULT_LANGUAGE } from './i18n/config'
+import { useAppLanguage } from './i18n/useAppLanguage'
 import { AppLaunchOverlay } from './components/AppLaunchOverlay'
 import { PhoneFrame } from './components/shell/PhoneFrame'
 import { PrototypeNavigator } from './components/PrototypeNavigator'
@@ -27,7 +30,6 @@ import { useAnnotationGuideStore } from './stores/annotationGuideStore'
 import type { Screen } from './types'
 import './index.css'
 
-
 function ScreenContent({ screen }: { screen: Screen }) {
   switch (screen) {
     case 'home':     return <HomeScreen />
@@ -37,57 +39,6 @@ function ScreenContent({ screen }: { screen: Screen }) {
     case 'settings': return <SettingsScreen />
   }
 }
-
-const MOBILE_NAV = [
-  {
-    id: 'home' as const,
-    label: '首頁',
-    icon: (
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-        <polyline points="9 22 9 12 15 12 15 22" />
-      </svg>
-    ),
-  },
-  {
-    id: 'practice' as const,
-    label: '練習',
-    icon: (
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-        <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" />
-      </svg>
-    ),
-  },
-  {
-    id: 'report' as const,
-    label: '報告',
-    icon: (
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
-        <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
-      </svg>
-    ),
-  },
-  {
-    id: 'history' as const,
-    label: '紀錄',
-    icon: (
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-      </svg>
-    ),
-  },
-  {
-    id: 'settings' as const,
-    label: '設定',
-    icon: (
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="12" cy="12" r="3" />
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-      </svg>
-    ),
-  },
-]
 
 const SCREENS: Screen[] = ['home', 'practice', 'report', 'history', 'settings']
 
@@ -149,6 +100,8 @@ interface SpotlightGeometry {
 type HoverSource = 'phone' | 'annotation' | 'demo'
 
 export default function App() {
+  const { t } = useTranslation(['common', 'app', 'commandPalette'])
+  const { currentLanguage, setLanguage } = useAppLanguage()
   const { screen, setScreen, requestScreen } = useNavigationStore()
   const [hoveredAnnotationId, setHoveredAnnotationId] = useState<string | null>(null)
   const [hoverConnector, setHoverConnector] = useState<HoverConnector | null>(null)
@@ -228,6 +181,63 @@ export default function App() {
     if (themeParam === 'light') return false
     return localStorage.getItem('talkfit-theme') === 'dark'
   })
+
+  const mobileNav = useMemo(
+    () => [
+      {
+        id: 'home' as const,
+        label: t('common:screens.home'),
+        icon: (
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+        ),
+      },
+      {
+        id: 'practice' as const,
+        label: t('common:screens.practice'),
+        icon: (
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" />
+          </svg>
+        ),
+      },
+      {
+        id: 'report' as const,
+        label: t('common:screens.report'),
+        icon: (
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="18" y1="20" x2="18" y2="10" />
+            <line x1="12" y1="20" x2="12" y2="4" />
+            <line x1="6" y1="20" x2="6" y2="14" />
+          </svg>
+        ),
+      },
+      {
+        id: 'history' as const,
+        label: t('common:screens.history'),
+        icon: (
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+        ),
+      },
+      {
+        id: 'settings' as const,
+        label: t('common:screens.settings'),
+        icon: (
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+        ),
+      },
+    ],
+    [t]
+  )
 
   useEffect(() => {
     if (isDark) {
@@ -606,8 +616,12 @@ export default function App() {
     if (isPresentationMode) url.searchParams.set('view', 'present')
     else url.searchParams.delete('view')
 
+    if (currentLanguage !== DEFAULT_LANGUAGE) url.searchParams.set('lang', currentLanguage)
+    else url.searchParams.delete('lang')
+
     window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`)
   }, [
+    currentLanguage,
     currentStepIndex,
     isDark,
     isDemoActive,
@@ -652,20 +666,21 @@ export default function App() {
       await target.requestFullscreen()
     } catch {
       showPhoneNotification({
-        title: '無法進入全螢幕',
-        body: '目前瀏覽器或裝置不支援 Fullscreen API。',
+        title: t('app:notifications.fullscreenError.title'),
+        body: t('app:notifications.fullscreenError.body'),
       })
     }
-  }, [showPhoneNotification])
+  }, [showPhoneNotification, t])
 
   const handleLoadMockData = useCallback(() => {
-    useHistoryStore.setState({ sessions: MOCK_SESSIONS })
-    setReport(MOCK_SESSIONS[0])
+    const mockSessions = getMockSessions()
+    useHistoryStore.setState({ sessions: mockSessions })
+    setReport(mockSessions[0])
     showPhoneNotification({
-      title: 'App 已新增 Mock 資料',
-      body: '練習紀錄、分析報告已載入，可直接瀏覽各頁面',
+      title: t('app:notifications.mockLoaded.title'),
+      body: t('app:notifications.mockLoaded.body'),
     })
-  }, [setReport, showPhoneNotification])
+  }, [setReport, showPhoneNotification, t])
 
   const handlePhoneMouseOver = useCallback((e: React.MouseEvent) => {
     if (pinnedAnnotationId || !isDesktopAnnotationsVisible) return
@@ -698,25 +713,25 @@ export default function App() {
     setShowStoryModal(false)
     setShowShortcutsModal(false)
     showPhoneNotification({
-      title: '原型已重置',
-      body: '已回到首頁，並清除所有練習資料與目前報告',
+      title: t('app:notifications.prototypeReset.title'),
+      body: t('app:notifications.prototypeReset.body'),
     })
-  }, [clearAnnotationGuide, showPhoneNotification])
+  }, [clearAnnotationGuide, showPhoneNotification, t])
 
   const handleCopyCurrentViewLink = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(window.location.href)
       showPhoneNotification({
-        title: '已複製畫面連結',
-        body: '可以直接分享目前這個原型畫面的網址',
+        title: t('app:notifications.copyLinkSuccess.title'),
+        body: t('app:notifications.copyLinkSuccess.body'),
       })
     } catch {
       showPhoneNotification({
-        title: '複製失敗',
-        body: '瀏覽器目前無法複製連結，請手動複製網址列',
+        title: t('app:notifications.copyLinkError.title'),
+        body: t('app:notifications.copyLinkError.body'),
       })
     }
-  }, [showPhoneNotification])
+  }, [showPhoneNotification, t])
 
   const handleExportCapture = useCallback(async () => {
     const desktopStage = desktopStageRef.current
@@ -729,8 +744,8 @@ export default function App() {
 
     if (!target) {
       showPhoneNotification({
-        title: '無法輸出畫面',
-        body: '目前找不到可匯出的展示區塊。',
+        title: t('app:notifications.exportNoTarget.title'),
+        body: t('app:notifications.exportNoTarget.body'),
       })
       return
     }
@@ -768,32 +783,37 @@ export default function App() {
 
       setShowCaptureModal(false)
       showPhoneNotification({
-        title: 'PNG 已下載',
-        body: '已輸出目前網站畫面，可直接放入 README 或作品集。',
+        title: t('app:notifications.exportSuccess.title'),
+        body: t('app:notifications.exportSuccess.body'),
       })
     } catch (error) {
       console.error('Failed to export PNG capture', error)
       showPhoneNotification({
-        title: '輸出失敗',
-        body: '瀏覽器目前無法完成匯出，建議改用桌機最新版瀏覽器。',
+        title: t('app:notifications.exportError.title'),
+        body: t('app:notifications.exportError.body'),
       })
     } finally {
       setIsExportingCapture(false)
     }
-  }, [capturePreset, showPhoneNotification])
+  }, [capturePreset, showPhoneNotification, t])
 
   const commandPaletteActions = useMemo(() => {
+    const getKeywords = (key: string) => {
+      const value = t(key, { returnObjects: true })
+      return Array.isArray(value) ? value.map(String) : []
+    }
+
     const screenActions: Array<{
       id: Screen
       title: string
       description: string
       keywords: string[]
     }> = [
-      { id: 'home', title: '前往首頁', description: '查看首頁總覽、提醒與本週數據。', keywords: ['首頁', 'home', 'dashboard'] },
-      { id: 'practice', title: '前往練習頁', description: '切到練習中的儀表板與逐字稿頁面。', keywords: ['練習', 'practice', '錄音'] },
-      { id: 'report', title: '前往分析報告', description: '查看報告總覽、問題跳轉與分享卡。', keywords: ['報告', 'report', '分享卡'] },
-      { id: 'history', title: '前往歷史紀錄', description: '瀏覽歷史趨勢與練習列表。', keywords: ['紀錄', 'history', '趨勢'] },
-      { id: 'settings', title: '前往設定頁', description: '調整 preset、練習目標與偵測規則。', keywords: ['設定', 'settings', 'preset'] },
+      { id: 'home', title: t('commandPalette:actions.home.title'), description: t('commandPalette:actions.home.description'), keywords: getKeywords('commandPalette:actions.home.keywords') },
+      { id: 'practice', title: t('commandPalette:actions.practice.title'), description: t('commandPalette:actions.practice.description'), keywords: getKeywords('commandPalette:actions.practice.keywords') },
+      { id: 'report', title: t('commandPalette:actions.report.title'), description: t('commandPalette:actions.report.description'), keywords: getKeywords('commandPalette:actions.report.keywords') },
+      { id: 'history', title: t('commandPalette:actions.history.title'), description: t('commandPalette:actions.history.description'), keywords: getKeywords('commandPalette:actions.history.keywords') },
+      { id: 'settings', title: t('commandPalette:actions.settings.title'), description: t('commandPalette:actions.settings.description'), keywords: getKeywords('commandPalette:actions.settings.keywords') },
     ]
 
     return [
@@ -801,7 +821,7 @@ export default function App() {
         id: `screen-${action.id}`,
         title: action.title,
         description: action.description,
-        section: '畫面跳轉',
+        section: t('commandPalette:sections.screen'),
         keywords: action.keywords,
         onSelect: () => {
           ensurePrototypeDataForScreen(action.id)
@@ -810,100 +830,130 @@ export default function App() {
       })),
       {
         id: 'toggle-demo',
-        title: isDemoActive ? '停止完整示範' : '開始完整示範',
-        description: isDemoActive ? '停止目前正在播放的完整 App Demo。' : '直接播放完整 App Demo 流程。' ,
-        section: '展示控制',
+        title: isDemoActive
+          ? t('commandPalette:actions.demoStop.title')
+          : t('commandPalette:actions.demoStart.title'),
+        description: isDemoActive
+          ? t('commandPalette:actions.demoStop.description')
+          : t('commandPalette:actions.demoStart.description'),
+        section: t('commandPalette:sections.showcase'),
         shortcut: 'D',
-        keywords: ['demo', '示範', '導覽'],
+        keywords: isDemoActive
+          ? getKeywords('commandPalette:actions.demoStop.keywords')
+          : getKeywords('commandPalette:actions.demoStart.keywords'),
         onSelect: handleToggleDemo,
       },
       {
         id: 'toggle-presentation',
-        title: isPresentationMode ? '結束簡報模式' : '進入簡報模式',
-        description: '切換成更乾淨的展示版面，隱藏頂部工具列。',
-        section: '展示控制',
+        title: isPresentationMode
+          ? t('commandPalette:actions.presentationOff.title')
+          : t('commandPalette:actions.presentationOn.title'),
+        description: isPresentationMode
+          ? t('commandPalette:actions.presentationOff.description')
+          : t('commandPalette:actions.presentationOn.description'),
+        section: t('commandPalette:sections.showcase'),
         shortcut: 'P',
-        keywords: ['簡報', 'presentation', 'hud'],
+        keywords: isPresentationMode
+          ? getKeywords('commandPalette:actions.presentationOff.keywords')
+          : getKeywords('commandPalette:actions.presentationOn.keywords'),
         onSelect: handleTogglePresentationMode,
       },
       {
         id: 'toggle-fullscreen',
-        title: isFullscreen ? '退出全螢幕' : '進入全螢幕',
-        description: '使用瀏覽器 Fullscreen API 進行真正全螢幕展示。',
-        section: '展示控制',
+        title: isFullscreen
+          ? t('commandPalette:actions.fullscreenOff.title')
+          : t('commandPalette:actions.fullscreenOn.title'),
+        description: isFullscreen
+          ? t('commandPalette:actions.fullscreenOff.description')
+          : t('commandPalette:actions.fullscreenOn.description'),
+        section: t('commandPalette:sections.showcase'),
         shortcut: 'F',
-        keywords: ['fullscreen', '全螢幕', 'full screen'],
+        keywords: isFullscreen
+          ? getKeywords('commandPalette:actions.fullscreenOff.keywords')
+          : getKeywords('commandPalette:actions.fullscreenOn.keywords'),
         onSelect: () => { void handleToggleFullscreen() },
       },
       {
         id: 'toggle-annotations',
-        title: isDesktopAnnotationsVisible || showMobileAnnotations ? '收合說明面板' : '展開說明面板',
-        description: '切換右側說明面板，方便純展示或講解。',
-        section: '展示控制',
+        title: isDesktopAnnotationsVisible || showMobileAnnotations
+          ? t('commandPalette:actions.annotationsHide.title')
+          : t('commandPalette:actions.annotationsShow.title'),
+        description: isDesktopAnnotationsVisible || showMobileAnnotations
+          ? t('commandPalette:actions.annotationsHide.description')
+          : t('commandPalette:actions.annotationsShow.description'),
+        section: t('commandPalette:sections.showcase'),
         shortcut: 'A',
-        keywords: ['說明', 'annotation', 'panel'],
+        keywords: isDesktopAnnotationsVisible || showMobileAnnotations
+          ? getKeywords('commandPalette:actions.annotationsHide.keywords')
+          : getKeywords('commandPalette:actions.annotationsShow.keywords'),
         onSelect: handleToggleAnnotationPanel,
       },
       {
         id: 'load-mock',
-        title: '載入 Mock 資料',
-        description: '快速補齊首頁、報告與歷史頁的展示資料。',
-        section: '資料與工具',
-        keywords: ['mock', '資料', 'seed'],
+        title: t('commandPalette:actions.loadMock.title'),
+        description: t('commandPalette:actions.loadMock.description'),
+        section: t('commandPalette:sections.tools'),
+        keywords: getKeywords('commandPalette:actions.loadMock.keywords'),
         onSelect: handleLoadMockData,
       },
       {
         id: 'open-capture-export',
-        title: '截圖 / 乾淨輸出',
-        description: '開啟 PNG 匯出面板，輸出作品集展示版、乾淨展示版或純手機版。',
-        section: '資料與工具',
+        title: t('commandPalette:actions.capture.title'),
+        description: t('commandPalette:actions.capture.description'),
+        section: t('commandPalette:sections.tools'),
         shortcut: 'E',
-        keywords: ['截圖', '輸出', 'capture', 'export', 'png'],
+        keywords: getKeywords('commandPalette:actions.capture.keywords'),
         onSelect: () => setShowCaptureModal(true),
       },
       {
         id: 'copy-link',
-        title: '複製目前畫面連結',
-        description: '將目前畫面、主題與展示狀態複製成 permalink。',
-        section: '資料與工具',
+        title: t('commandPalette:actions.copyLink.title'),
+        description: t('commandPalette:actions.copyLink.description'),
+        section: t('commandPalette:sections.tools'),
         shortcut: 'L',
-        keywords: ['連結', 'url', 'permalink'],
+        keywords: getKeywords('commandPalette:actions.copyLink.keywords'),
         onSelect: () => { void handleCopyCurrentViewLink() },
       },
       {
         id: 'toggle-theme',
-        title: isDark ? '切換為亮色主題' : '切換為暗色主題',
-        description: '切換目前網站的展示主題。',
-        section: '資料與工具',
+        title: isDark
+          ? t('commandPalette:actions.themeLight.title')
+          : t('commandPalette:actions.themeDark.title'),
+        description: isDark
+          ? t('commandPalette:actions.themeLight.description')
+          : t('commandPalette:actions.themeDark.description'),
+        section: t('commandPalette:sections.tools'),
         shortcut: 'T',
-        keywords: ['theme', 'dark', 'light', '主題'],
+        keywords: isDark
+          ? getKeywords('commandPalette:actions.themeLight.keywords')
+          : getKeywords('commandPalette:actions.themeDark.keywords'),
         onSelect: () => setIsDark((current) => !current),
       },
       {
         id: 'open-design-story',
-        title: '開啟設計動機 / 關於',
-        description: '查看產品概念、作者資訊與技術細節。',
-        section: '資料與工具',
+        title: t('commandPalette:actions.designStory.title'),
+        description: t('commandPalette:actions.designStory.description'),
+        section: t('commandPalette:sections.tools'),
         shortcut: 'S',
-        keywords: ['設計動機', '關於', 'about'],
+        keywords: getKeywords('commandPalette:actions.designStory.keywords'),
         onSelect: () => setShowStoryModal(true),
       },
       {
         id: 'open-shortcuts',
-        title: '查看快捷鍵說明',
-        description: '開啟網站快捷鍵清單。',
-        section: '資料與工具',
+        title: t('commandPalette:actions.shortcuts.title'),
+        description: t('commandPalette:actions.shortcuts.description'),
+        section: t('commandPalette:sections.tools'),
         shortcut: '?',
-        keywords: ['快捷鍵', 'keyboard', 'shortcut'],
+        keywords: getKeywords('commandPalette:actions.shortcuts.keywords'),
         onSelect: () => setShowShortcutsModal(true),
       },
       {
         id: 'reset-prototype',
-        title: '重置原型',
-        description: '清除目前資料與展示狀態，回到乾淨首頁。',
-        section: '資料與工具',
+        title: t('commandPalette:actions.reset.title'),
+        description: t('commandPalette:actions.reset.description'),
+        section: t('commandPalette:sections.tools'),
         shortcut: 'R',
-        keywords: ['reset', '重置', '清除'],
+        keywords: getKeywords('commandPalette:actions.reset.keywords'),
         onSelect: handleResetPrototype,
       },
     ]
@@ -922,6 +972,7 @@ export default function App() {
     isPresentationMode,
     requestScreen,
     showMobileAnnotations,
+    t,
   ])
 
   // Keyboard shortcuts
@@ -1087,6 +1138,34 @@ export default function App() {
     return () => window.clearTimeout(timer)
   }, [showPhoneLaunch])
 
+  const renderLanguageToggle = (className = '') => {
+    const nextLanguage = currentLanguage === 'zh-TW' ? 'en' : 'zh-TW'
+    const nextLabel = nextLanguage === 'zh-TW'
+      ? t('common:languageToggle.switchToZh')
+      : t('common:languageToggle.switchToEn')
+    const currentShortLabel = currentLanguage === 'zh-TW'
+      ? t('common:languageToggle.zh')
+      : t('common:languageToggle.en')
+
+    return (
+      <button
+        onClick={() => setLanguage(nextLanguage)}
+        className={`inline-flex items-center gap-2 rounded-full border border-divider bg-bg-card/80 px-3 py-1.5 text-xs font-medium text-text-secondary transition-all hover:border-accent-blue/30 hover:bg-accent-blue/10 hover:text-text-primary ${className}`}
+        title={nextLabel}
+        aria-label={nextLabel}
+      >
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <path d="M4 5h8" />
+          <path d="M8 3v2c0 4.4-2 8.1-5 10" />
+          <path d="M6 11c1.2 1.5 2.6 2.9 4.2 4" />
+          <path d="M14 19l4.2-10.5L22.5 19" />
+          <path d="M15.6 15h5.2" />
+        </svg>
+        <span>{currentShortLabel}</span>
+      </button>
+    )
+  }
+
   return (
     <div ref={appRootRef} className="min-h-screen bg-bg-base flex flex-col font-sans">
       {/* Highlight style injection */}
@@ -1115,15 +1194,15 @@ export default function App() {
         <div className="flex items-center gap-2 md:gap-3">
           <img src="/app-icon.png" alt="TalkFit" className="w-10 h-10 md:w-20 md:h-20 rounded-2xl object-cover flex-shrink-0 shadow-sm" />
           <div>
-            <h1 className="text-sm font-semibold text-text-primary leading-none">說來話長 TalkFit</h1>
-            <p className="hidden md:block text-[10px] text-text-muted mt-0.5">Made with React</p>
+            <h1 className="text-sm font-semibold text-text-primary leading-none">{t('common:appName')}</h1>
+            <p className="hidden md:block text-[10px] text-text-muted mt-0.5">{t('common:madeWithReact')}</p>
           </div>
           {/* GitHub link — desktop only */}
           <a
             href="https://github.com/swiftruru/SpeakCoach-TalkFit"
             target="_blank"
             rel="noopener noreferrer"
-            title="View on GitHub"
+            title={t('common:viewOnGitHub')}
             className="hidden md:block ml-1 text-text-muted hover:text-text-secondary transition-colors"
           >
             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
@@ -1139,7 +1218,7 @@ export default function App() {
             onClick={() => setShowStoryModal(true)}
             className="hidden md:flex text-xs px-3 py-1.5 rounded-full border border-accent-purple/40 text-accent-purple hover:bg-accent-purple/10 transition-all items-center gap-1.5"
           >
-            ✦ 設計動機
+            ✦ {t('common:actions.designStory')}
           </button>
 
           {/* Mock data — desktop only */}
@@ -1147,7 +1226,7 @@ export default function App() {
             onClick={handleLoadMockData}
             className="hidden md:block text-xs px-3 py-1.5 rounded-full border border-accent-amber/40 text-accent-amber hover:bg-accent-amber/10 transition-all"
           >
-            ✦ Mock 資料
+            ✦ {t('common:actions.mockData')}
           </button>
 
           <div
@@ -1163,7 +1242,7 @@ export default function App() {
                   : 'border-divider text-text-secondary hover:text-text-primary hover:bg-bg-card'
               }`}
             >
-              <span>展示工具</span>
+              <span>{t('app:topbar.showcaseTools')}</span>
               <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="6 9 12 15 18 9" />
               </svg>
@@ -1185,8 +1264,8 @@ export default function App() {
                     }}
                     className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
                   >
-                    <span>⌘K 快速操作</span>
-                    <span className="text-[11px] text-text-muted">捷徑</span>
+                    <span>{t('app:topbar.quickActions')}</span>
+                    <span className="text-[11px] text-text-muted">{t('common:actions.quickActions')}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -1195,8 +1274,8 @@ export default function App() {
                     }}
                     className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
                   >
-                    <span>{isDesktopAnnotationsVisible ? '收合說明' : '展開說明'}</span>
-                    <span className="text-[11px] text-text-muted">面板</span>
+                    <span>{isDesktopAnnotationsVisible ? t('common:actions.collapseAnnotations') : t('common:actions.openAnnotations')}</span>
+                    <span className="text-[11px] text-text-muted">{t('app:topbar.annotationsHint')}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -1205,8 +1284,8 @@ export default function App() {
                     }}
                     className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
                   >
-                    <span>輸出畫面</span>
-                    <span className="text-[11px] text-text-muted">PNG</span>
+                    <span>{t('common:actions.exportCapture')}</span>
+                    <span className="text-[11px] text-text-muted">{t('app:topbar.captureHint')}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -1215,8 +1294,8 @@ export default function App() {
                     }}
                     className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
                   >
-                    <span>{isPresentationMode ? '結束簡報' : '簡報模式'}</span>
-                    <span className="text-[11px] text-text-muted">展示</span>
+                    <span>{isPresentationMode ? t('common:actions.endPresentation') : t('common:actions.presentationMode')}</span>
+                    <span className="text-[11px] text-text-muted">{t('app:topbar.presentationHint')}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -1225,8 +1304,8 @@ export default function App() {
                     }}
                     className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
                   >
-                    <span>{isFullscreen ? '退出全螢幕' : '全螢幕'}</span>
-                    <span className="text-[11px] text-text-muted">視圖</span>
+                    <span>{isFullscreen ? t('common:actions.exitFullscreen') : t('common:actions.fullscreen')}</span>
+                    <span className="text-[11px] text-text-muted">{t('app:topbar.fullscreenHint')}</span>
                   </button>
                 </motion.div>
               )}
@@ -1250,7 +1329,7 @@ export default function App() {
                 <polygon points="5,3 19,12 5,21" />
               )}
             </svg>
-            <span>{isDemoActive ? '停止示範' : '開始示範'}</span>
+            <span>{isDemoActive ? t('common:actions.stopDemo') : t('common:actions.startDemo')}</span>
           </button>
 
           <div
@@ -1266,7 +1345,7 @@ export default function App() {
                   : 'border-divider text-text-secondary hover:text-text-primary hover:bg-bg-card'
               }`}
             >
-              <span>更多</span>
+              <span>{t('common:actions.more')}</span>
               <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="6 9 12 15 18 9" />
               </svg>
@@ -1288,8 +1367,8 @@ export default function App() {
                     }}
                     className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
                   >
-                    <span>重置原型</span>
-                    <span className="text-[11px] text-text-muted">清除資料</span>
+                    <span>{t('common:actions.resetPrototype')}</span>
+                    <span className="text-[11px] text-text-muted">{t('app:topbar.resetHint')}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -1298,8 +1377,8 @@ export default function App() {
                     }}
                     className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
                   >
-                    <span>畫面連結</span>
-                    <span className="text-[11px] text-text-muted">分享</span>
+                    <span>{t('common:actions.copyLink')}</span>
+                    <span className="text-[11px] text-text-muted">{t('app:topbar.shareHint')}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -1308,13 +1387,15 @@ export default function App() {
                     }}
                     className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
                   >
-                    <span>{isDark ? '切換亮色模式' : '切換暗色模式'}</span>
-                    <span className="text-[11px] text-text-muted">主題</span>
+                    <span>{isDark ? t('common:actions.themeLight') : t('common:actions.themeDark')}</span>
+                    <span className="text-[11px] text-text-muted">{t('app:topbar.themeHint')}</span>
                   </button>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
+
+          {renderLanguageToggle()}
         </div>
           </motion.div>
         )}
@@ -1333,32 +1414,34 @@ export default function App() {
               onClick={handleTogglePresentationMode}
               className="rounded-full border border-divider px-3 py-1.5 text-xs text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
             >
-              結束簡報
+              {t('common:actions.endPresentation')}
             </button>
+            {renderLanguageToggle()}
             <button
               onClick={handleToggleAnnotationPanel}
               className="rounded-full border border-divider px-3 py-1.5 text-xs text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
             >
-              {isDesktopAnnotationsVisible ? '收合說明' : '展開說明'}
+              {isDesktopAnnotationsVisible ? t('common:actions.collapseAnnotations') : t('common:actions.openAnnotations')}
             </button>
             <button
               onClick={() => setShowCaptureModal(true)}
               className="rounded-full border border-divider px-3 py-1.5 text-xs text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
             >
-              輸出畫面
+              {t('common:actions.exportCapture')}
             </button>
             <button
               onClick={() => { void handleToggleFullscreen() }}
               className="rounded-full border border-divider px-3 py-1.5 text-xs text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
             >
-              {isFullscreen ? '退出全螢幕' : '全螢幕'}
+              {isFullscreen ? t('common:actions.exitFullscreen') : t('common:actions.fullscreen')}
             </button>
             <button
               onClick={() => setShowCommandPalette(true)}
               className="rounded-full border border-divider px-3 py-1.5 text-xs text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
             >
-              快速操作
+              {t('common:actions.quickActions')}
             </button>
+            {renderLanguageToggle()}
           </motion.div>
         )}
       </AnimatePresence>
@@ -1598,7 +1681,7 @@ export default function App() {
 
       {/* Mobile bottom nav — mobile only */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-bg-surface border-t border-divider flex items-center justify-around px-2 py-2">
-        {MOBILE_NAV.map(({ id, label, icon }) => (
+        {mobileNav.map(({ id, label, icon }) => (
           <button
             key={id}
             onClick={() => { requestScreen(id); setShowMobileAnnotations(false) }}
@@ -1622,7 +1705,7 @@ export default function App() {
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
-          說明
+          {t('common:mobile.annotations')}
         </button>
       </nav>
 
@@ -1720,7 +1803,9 @@ export default function App() {
               <line x1="12" y1="17" x2="12" y2="21" />
             </svg>
             <p className="text-xs text-text-secondary leading-relaxed flex-1">
-              此原型網頁建議於<span className="text-accent-amber font-medium">電腦瀏覽器</span>操作，以確保畫面完整呈現，並獲得較佳的說明互動體驗
+              {t('app:mobileNotice.before')}
+              <span className="text-accent-amber font-medium">{t('app:mobileNotice.highlight')}</span>
+              {t('app:mobileNotice.after')}
             </p>
             <button
               onClick={() => setShowDesktopNotice(false)}

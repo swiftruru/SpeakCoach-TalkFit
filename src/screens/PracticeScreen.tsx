@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { useNavigationStore } from '../stores/navigationStore'
 import { useSessionStore } from '../stores/sessionStore'
 import { useReportStore } from '../stores/reportStore'
@@ -7,21 +8,14 @@ import { useHistoryStore } from '../stores/historyStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import { useRetryPracticeStore } from '../stores/retryPracticeStore'
 import { buildSessionSummary, formatDuration } from '../lib/speechAnalysis'
-import { PRACTICE_GOALS, evaluatePracticeGoal } from '../lib/practiceGoals'
+import { evaluatePracticeGoal, getPracticeGoal } from '../lib/practiceGoals'
 import { wpmStatus, wpmColor, wpmLabel } from '../lib/grading'
 import { useAudioLevel } from '../hooks/useAudioLevel'
 import { useDemoStore } from '../demo/demoStore'
-import type { Screen, TranscriptSegment } from '../types'
-
-const SCREEN_LABELS: Record<Screen, string> = {
-  home: '首頁',
-  practice: '練習',
-  report: '報告',
-  history: '紀錄',
-  settings: '設定',
-}
+import type { TranscriptSegment } from '../types'
 
 export function PracticeScreen() {
+  const { t, i18n } = useTranslation(['common', 'practice'])
   const setScreen = useNavigationStore((s) => s.setScreen)
   const requestScreen = useNavigationStore((s) => s.requestScreen)
   const pendingScreen = useNavigationStore((s) => s.pendingScreen)
@@ -57,7 +51,10 @@ export function PracticeScreen() {
     const report = buildSessionSummary(
       Date.now().toString(),
       retryTarget?.sessionTitle
-        ?? ('練習 ' + new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })),
+        ?? `${t('practice:session.titlePrefix')}${new Date().toLocaleTimeString(
+          i18n.resolvedLanguage === 'en' ? 'en-US' : 'zh-TW',
+          { hour: '2-digit', minute: '2-digit', hour12: false }
+        )}`,
       session.elapsedSeconds,
       session.transcript,
       session.speedHistory,
@@ -71,6 +68,8 @@ export function PracticeScreen() {
     addHistory(report)
     setScreen('report')
   }, [
+    t,
+    i18n.resolvedLanguage,
     session,
     setReport,
     addHistory,
@@ -106,7 +105,7 @@ export function PracticeScreen() {
 
   const totalFillers = Object.values(session.fillerCounts).reduce((s, v) => s + v, 0)
   const topFiller = Object.entries(session.fillerCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '—'
-  const activePracticeGoal = PRACTICE_GOALS[settings.practiceGoalId]
+  const activePracticeGoal = getPracticeGoal(settings.practiceGoalId)
   const goalEvaluation = useMemo(
     () => evaluatePracticeGoal({
       durationSeconds: Math.max(session.elapsedSeconds, 1),
@@ -142,20 +141,20 @@ export function PracticeScreen() {
             <span className={`w-2.5 h-2.5 rounded-full ${session.isRecording && !session.isPaused ? 'bg-red-500 animate-pulse-dot' : 'bg-gray-500'}`} />
             <span className="text-sm font-medium text-gray-300">
               {session.isPaused
-                ? '已暫停'
+                ? t('practice:status.paused')
                 : session.isRecording
-                  ? retryTarget ? '片段重練中' : '錄音中'
-                  : '準備中'}
+                  ? retryTarget ? t('practice:status.retrying') : t('practice:status.recording')
+                  : t('practice:status.preparing')}
             </span>
           </div>
           {isDemoActive && (
             <p className="text-[11px] text-accent-amber mt-1">
-              示範模式中，無需麥克風
+              {t('practice:notices.demoNoMic')}
             </p>
           )}
           {!isDemoActive && (
             <p className="text-[11px] text-gray-500 mt-1">
-              原型模式中，不會真的收音
+              {t('practice:notices.prototypeNoCapture')}
             </p>
           )}
         </div>
@@ -176,7 +175,7 @@ export function PracticeScreen() {
       <div className="mx-4 mb-4 rounded-2xl border border-white/10 bg-white/5 px-3.5 py-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[10px] uppercase tracking-[0.18em] text-gray-500">本次目標</p>
+            <p className="text-[10px] uppercase tracking-[0.18em] text-gray-500">{t('practice:goalSection.title')}</p>
             <p className="text-sm font-semibold text-white mt-1">{activePracticeGoal.label}</p>
             <p className="text-[11px] text-gray-400 mt-1 leading-relaxed">
               {activePracticeGoal.description}
@@ -202,18 +201,18 @@ export function PracticeScreen() {
         >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-[0.18em] text-amber-200/80">問題片段重練</p>
+              <p className="text-[10px] uppercase tracking-[0.18em] text-amber-200/80">{t('practice:retryBanner.title')}</p>
               <p className="text-sm font-semibold text-white mt-1">{retryTarget.sessionTitle}</p>
               <p className="text-[11px] text-amber-100/80 mt-1 leading-relaxed">
                 {retryTarget.prompt}
               </p>
             </div>
             <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-white/10 text-amber-100 flex-shrink-0">
-              建議 {retryTarget.recommendedDurationSeconds} 秒
+              {t('practice:retryBanner.recommendedSeconds', { count: retryTarget.recommendedDurationSeconds })}
             </span>
           </div>
           <div className="mt-2 rounded-xl bg-black/20 px-3 py-2">
-            <p className="text-[10px] text-amber-100/70 mb-1">原始片段</p>
+            <p className="text-[10px] text-amber-100/70 mb-1">{t('practice:retryBanner.originalSnippet')}</p>
             <p className="text-[11px] text-gray-100 leading-relaxed">「{retryTarget.snippet}」</p>
           </div>
         </div>
@@ -225,13 +224,13 @@ export function PracticeScreen() {
         className="grid grid-cols-3 gap-3 mx-4 mb-4"
       >
         <LiveStatCard
-          label="贅字"
+          label={t('practice:liveStats.fillerCount')}
           value={totalFillers.toString()}
           color={totalFillers > 10 ? 'text-accent-red' : 'text-white'}
           flash={session.lastFlashedFiller !== null}
         />
-        <LiveStatCard label="最常出現" value={topFiller} color="text-accent-amber" />
-        <LiveStatCard label="長停頓" value="—" color="text-gray-400" />
+        <LiveStatCard label={t('practice:liveStats.topFiller')} value={topFiller} color="text-accent-amber" />
+        <LiveStatCard label={t('practice:liveStats.longPause')} value={t('practice:liveStats.none')} color="text-gray-400" />
       </div>
 
       {/* Waveform */}
@@ -265,19 +264,19 @@ export function PracticeScreen() {
         data-annotation-id="live-transcript"
         className="mx-4 mb-4 bg-gray-900 rounded-xl p-3 max-h-[100px] overflow-y-auto phone-scroll"
       >
-        <p className="text-[11px] text-gray-500 mb-1.5">即時逐字稿</p>
+        <p className="text-[11px] text-gray-500 mb-1.5">{t('practice:transcript.title')}</p>
         <p className="text-xs text-gray-300 leading-relaxed">
           {session.transcript.map((seg, i) => (
             <TranscriptWord key={i} segment={seg} />
           ))}
           {session.transcript.length === 0 && !session.isRecording && (
-            <span className="text-gray-600">開始說話後，文字將會出現在這裡…</span>
+            <span className="text-gray-600">{t('practice:transcript.emptyIdle')}</span>
           )}
           {session.transcript.length === 0 && session.isRecording && retryTarget && (
-            <span className="text-gray-500">請重新講一次這段，先專注修正目標片段…</span>
+            <span className="text-gray-500">{t('practice:transcript.emptyRetry')}</span>
           )}
           {session.transcript.length === 0 && session.isRecording && !retryTarget && (
-            <span className="text-gray-500">這是 App 原型頁面，這裡不會真的辨識麥克風輸入。</span>
+            <span className="text-gray-500">{t('practice:transcript.emptyPrototype')}</span>
           )}
         </p>
       </div>
@@ -352,10 +351,11 @@ export function PracticeScreen() {
             >
               <div className="w-full max-w-[280px] overflow-hidden rounded-[22px] bg-white/95 text-center text-gray-900 shadow-2xl shadow-black/30">
                 <div className="px-5 pt-5 pb-4">
-                  <p className="text-[17px] font-semibold tracking-[-0.01em]">停止錄製？</p>
+                  <p className="text-[17px] font-semibold tracking-[-0.01em]">{t('practice:exitConfirm.title')}</p>
                   <p className="mt-2 text-[13px] leading-5 text-gray-500">
-                    你正在錄音中。若要前往「{pendingScreen ? SCREEN_LABELS[pendingScreen] : '其他頁面'}」，
-                    這次練習會立即停止，且不會產生報告。
+                    {t('practice:exitConfirm.body', {
+                      screen: pendingScreen ? t(`common:screens.${pendingScreen}`) : t('practice:exitConfirm.otherScreen'),
+                    })}
                   </p>
                 </div>
                 <div className="grid grid-cols-2 border-t border-gray-200">
@@ -363,13 +363,13 @@ export function PracticeScreen() {
                     onClick={cancelRecordingExit}
                     className="py-3.5 text-[17px] font-medium text-accent-blue border-r border-gray-200"
                   >
-                    取消
+                    {t('common:actions.cancel')}
                   </button>
                   <button
                     onClick={confirmRecordingExit}
                     className="py-3.5 text-[17px] font-semibold text-red-500"
                   >
-                    停止並離開
+                    {t('practice:exitConfirm.confirm')}
                   </button>
                 </div>
               </div>
@@ -383,6 +383,7 @@ export function PracticeScreen() {
 
 // SVG circular gauge
 function SpeedGauge({ wpm, low, high }: { wpm: number; low: number; high: number }) {
+  const { t } = useTranslation(['practice'])
   const status = wpmStatus(wpm, low, high)
   const color = status === 'fast' ? '#ef4444' : status === 'slow' ? '#8b5cf6' : '#10b981'
 
@@ -436,9 +437,9 @@ function SpeedGauge({ wpm, low, high }: { wpm: number; low: number; high: number
       {/* Center text */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-3xl font-bold text-white tabular-nums">{wpm || '—'}</span>
-        <span className="text-[10px] text-gray-400 mt-0.5">字/分鐘</span>
+        <span className="text-[10px] text-gray-400 mt-0.5">{t('practice:gauge.unit')}</span>
         <span className={`text-[11px] font-medium mt-0.5 ${wpmColor(status)}`}>
-          {wpm > 0 ? wpmLabel(status) : '等待語音'}
+          {wpm > 0 ? wpmLabel(status) : t('practice:gauge.waiting')}
         </span>
       </div>
     </div>

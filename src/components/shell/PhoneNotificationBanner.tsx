@@ -1,10 +1,12 @@
 import { useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { usePhoneNotificationStore } from '../../stores/phoneNotificationStore'
 
 const AUTO_DISMISS_MS = 3200
 
 export function PhoneNotificationBanner() {
+  const { t } = useTranslation(['common'])
   const notification = usePhoneNotificationStore((s) => s.notification)
   const dismiss = usePhoneNotificationStore((s) => s.dismiss)
 
@@ -40,7 +42,7 @@ export function PhoneNotificationBanner() {
             {/* App icon */}
             <img
               src="/app-icon.png"
-              alt="TalkFit"
+              alt={t('common:appName')}
               className="w-9 h-9 rounded-xl flex-shrink-0 object-cover"
               style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.14)' }}
             />
@@ -48,9 +50,9 @@ export function PhoneNotificationBanner() {
             <div className="flex-1 min-w-0 pt-0.5">
               <div className="flex items-baseline justify-between gap-2 mb-0.5">
                 <span className="text-[11px] font-semibold text-black/70 uppercase tracking-wide truncate">
-                  說來話長 TalkFit
+                  {t('common:appName')}
                 </span>
-                <span className="text-[10px] text-black/40 flex-shrink-0">剛剛</span>
+                <span className="text-[10px] text-black/40 flex-shrink-0">{t('common:relativeTime.justNow')}</span>
               </div>
               <p className="text-[13px] font-semibold text-black/90 leading-snug">
                 {notification.title}

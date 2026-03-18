@@ -1,0 +1,245 @@
+{
+  "types": {
+    "feature": "Feature",
+    "design": "Design",
+    "tech": "Tech"
+  },
+  "pinned": {
+    "label": "Pinned Note",
+    "release": "Release"
+  },
+  "pinButton": {
+    "pin": "Pin",
+    "pinned": "Pinned",
+    "pinTitle": "Pin this annotation card",
+    "unpinTitle": "Release this annotation card"
+  },
+  "pagination": {
+    "label": "Notes Pages",
+    "status": "Page {{page}} / {{total}}",
+    "focusHint": "The current focus item is on page {{page}}, so the panel switched to the matching notes automatically."
+  },
+  "footer": "{{appName}} · {{madeWithReact}}",
+  "items": {
+    "home": [
+      {
+        "id": "home-greeting",
+        "targetId": "home-greeting",
+        "title": "Personalized Greeting",
+        "description": "Adapts the greeting to the time of day and adds a short trend cue, such as steady improvement or a recent practice gap.",
+        "type": "feature"
+      },
+      {
+        "id": "home-stat-cards",
+        "targetId": "home-stat-cards",
+        "title": "Weekly Stat Cards",
+        "description": "Three cards summarize weekly sessions, average fillers per run, and change versus last week, with colors that reinforce performance at a glance.",
+        "type": "feature"
+      },
+      {
+        "id": "home-weekly-chart",
+        "targetId": "home-weekly-chart",
+        "title": "Daily Filler Bar Chart",
+        "description": "A quick weekly view of filler counts by day so users can see when they practiced and how each day went.",
+        "type": "feature"
+      },
+      {
+        "id": "home-tip-card",
+        "targetId": "home-tip-card",
+        "title": "Daily Practice Tip",
+        "description": "Turns recent practice history into one short suggestion, such as asking the user to watch their most repeated filler today.",
+        "type": "feature"
+      },
+      {
+        "id": "home-record-btn",
+        "targetId": "home-record-btn",
+        "title": "Start Practice Button",
+        "description": "The main call to action uses a subtle bounce so the tap feedback feels closer to an iOS control.",
+        "type": "design"
+      }
+    ],
+    "practice": [
+      {
+        "id": "retry-practice-banner",
+        "targetId": "retry-practice-banner",
+        "title": "Retry Segment Banner",
+        "description": "After selecting an issue in the report, this banner brings back the original snippet and retry prompt so the user can re-record the exact segment that needs work.",
+        "type": "feature"
+      },
+      {
+        "id": "practice-badge",
+        "targetId": "practice-badge",
+        "title": "Recording Status Light",
+        "description": "A pulsing red dot signals active recording, turns gray when paused, and disappears after the session stops.",
+        "type": "design"
+      },
+      {
+        "id": "speed-gauge",
+        "targetId": "speed-gauge",
+        "title": "Pace Gauge",
+        "description": "A live arc gauge shows speaking pace in wpm, with instant color changes for on pace, too fast, and too slow delivery.",
+        "type": "feature"
+      },
+      {
+        "id": "live-stats",
+        "targetId": "live-stats",
+        "title": "Live Stats Row",
+        "description": "Shows total fillers, the most repeated filler so far, and long pauses over two seconds. The counters react when a new issue is detected.",
+        "type": "feature"
+      },
+      {
+        "id": "waveform",
+        "targetId": "waveform",
+        "title": "Waveform Visualization",
+        "description": "Visualizes voice activity by expanding during speech and settling during pauses, making the speaking rhythm easier to feel.",
+        "type": "design"
+      },
+      {
+        "id": "live-transcript",
+        "targetId": "live-transcript",
+        "title": "Live Transcript",
+        "description": "Transcript text appears in real time, with fillers highlighted and overly fast phrases marked directly in context.",
+        "type": "feature"
+      },
+      {
+        "id": "recording-controls",
+        "targetId": "recording-controls",
+        "title": "Recording Controls",
+        "description": "Three controls cover pause and resume, stop with report generation, and exit back to the Home screen.",
+        "type": "feature"
+      }
+    ],
+    "report": [
+      {
+        "id": "report-goal-summary",
+        "targetId": "report-goal-summary",
+        "title": "Goal Result",
+        "description": "The report opens by comparing the session against the single goal chosen before practice, keeping setup and review tightly connected.",
+        "type": "feature"
+      },
+      {
+        "id": "report-score-section",
+        "targetId": "report-score-section",
+        "title": "Three Score Cards",
+        "description": "Three score cards condense the run into average pace, total fillers, and an overall fluency grade based on both filler frequency and pace quality.",
+        "type": "feature"
+      },
+      {
+        "id": "report-coaching-next-steps",
+        "targetId": "report-coaching-next-steps",
+        "title": "Next 3 Actions",
+        "description": "Instead of stopping at raw numbers, the report distills the session into the three fixes worth tackling first.",
+        "type": "design"
+      },
+      {
+        "id": "filler-ranking",
+        "targetId": "filler-ranking",
+        "title": "Filler Ranking",
+        "description": "All fillers are sorted by occurrence count with proportional bars so the user can see which speaking habit deserves attention first.",
+        "type": "feature"
+      },
+      {
+        "id": "speed-curve-chart",
+        "targetId": "speed-curve-chart",
+        "title": "Pace Curve",
+        "description": "A line chart tracks pace across the whole session, with the recommended band highlighted and abnormal points emphasized for quick jumps.",
+        "type": "feature"
+      },
+      {
+        "id": "annotated-transcript",
+        "targetId": "annotated-transcript",
+        "title": "Annotated Transcript",
+        "description": "The full transcript highlights fillers and pace issues directly in context, making it easy to jump back into retry mode for the exact segment.",
+        "type": "feature"
+      },
+      {
+        "id": "report-share-preview",
+        "targetId": "report-share-preview",
+        "title": "Share Card Preview",
+        "description": "A dedicated preview card packages the score, top fillers, and pace rhythm into a fixed layout that works well in a README, portfolio, or hackathon recap post.",
+        "type": "design"
+      },
+      {
+        "id": "report-share-row",
+        "targetId": "report-share-row",
+        "title": "Share / Export",
+        "description": "Alongside summary copy and JSON export, the report can export a dedicated share card as PNG or SVG. Demo mode only highlights the flow and does not trigger a real download.",
+        "type": "feature"
+      }
+    ],
+    "history": [
+      {
+        "id": "history-summary-cards",
+        "targetId": "history-summary-cards",
+        "title": "Overview Cards",
+        "description": "Shows total sessions, total practice time, and the most repeated filler so long-term progress is readable at a glance.",
+        "type": "feature"
+      },
+      {
+        "id": "history-trend-chart",
+        "targetId": "history-trend-chart",
+        "title": "Filler Trend Chart",
+        "description": "Tracks filler counts across sessions so longer-term improvement is easy to spot.",
+        "type": "feature"
+      },
+      {
+        "id": "history-list",
+        "targetId": "history-list",
+        "title": "Session List",
+        "description": "Each row shows the title, date, filler count, pace, duration, and fluency grade. Selecting a row opens the full report.",
+        "type": "feature"
+      }
+    ],
+    "settings": [
+      {
+        "id": "settings-detection-toggles",
+        "targetId": "settings-detection-toggles",
+        "title": "Detection Toggles",
+        "description": "Lets the user enable filler detection, pace monitoring, and repeated-connector marking independently.",
+        "type": "feature"
+      },
+      {
+        "id": "settings-practice-presets",
+        "targetId": "settings-practice-presets",
+        "title": "Practice Presets",
+        "description": "Applies scenario presets that bundle a pace range with default filler categories. Manual edits switch the state back to Custom automatically.",
+        "type": "feature"
+      },
+      {
+        "id": "settings-practice-goal",
+        "targetId": "settings-practice-goal",
+        "title": "Practice Goal",
+        "description": "Lets the user pick one focus for the next session, such as reducing fillers or stabilizing pace. The same goal carries through practice and reporting.",
+        "type": "feature"
+      },
+      {
+        "id": "filler-chip-editor",
+        "targetId": "filler-chip-editor",
+        "title": "Filler List",
+        "description": "Default fillers and custom fillers are managed separately. Chips toggle enabled state, × removes an item, and Restore defaults only brings the built-in entries back.",
+        "type": "feature"
+      },
+      {
+        "id": "speed-range-slider",
+        "targetId": "speed-range-slider",
+        "title": "Pace Range Control",
+        "description": "Two sliders adjust the slow and fast thresholds. Changes immediately affect both the live pace gauge and the report curve.",
+        "type": "feature"
+      },
+      {
+        "id": "settings-feedback",
+        "targetId": "settings-feedback",
+        "title": "Feedback Mode",
+        "description": "Switches between haptics and sound cues for real-time alerts when a filler is detected.",
+        "type": "design"
+      },
+      {
+        "id": "settings-language",
+        "targetId": "settings-language",
+        "title": "Site Language",
+        "description": "Switches the whole prototype between Traditional Chinese and English, including the in-phone UI, annotation cards, and guided demo text.",
+        "type": "feature"
+      }
+    ]
+  }
+}

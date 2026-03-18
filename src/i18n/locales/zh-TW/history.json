@@ -1,0 +1,30 @@
+{
+  "title": "紀錄",
+  "summary": {
+    "totalPractice": "總練習次數",
+    "totalDuration": "總練習時長",
+    "topFiller": "最常贅字",
+    "minutes": "分",
+    "emptyValue": "—"
+  },
+  "trend": {
+    "title": "贅字趨勢",
+    "reducedSinceFirst": "較第一次減少 {{percent}}%",
+    "tooltipValue": "{{count}} 次",
+    "tooltipName": "贅字"
+  },
+  "list": {
+    "title": "練習紀錄",
+    "clearAll": "清除全部",
+    "clearConfirm": "確認清除所有紀錄？",
+    "emptyEmoji": "🎙",
+    "emptyTitle": "還沒有練習紀錄",
+    "emptyAction": "開始第一次練習",
+    "countBadge": "{{count}} 次",
+    "meta": {
+      "wpm": "語速 {{value}} 字/分",
+      "duration": "時長 {{value}}",
+      "grade": "評分 {{value}}"
+    }
+  }
+}

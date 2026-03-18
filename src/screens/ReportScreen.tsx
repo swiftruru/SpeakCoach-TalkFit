@@ -1,4 +1,5 @@
 import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigationStore } from '../stores/navigationStore'
 import { useReportStore } from '../stores/reportStore'
 import { useRetryPracticeStore } from '../stores/retryPracticeStore'
@@ -8,7 +9,7 @@ import {
   ResponsiveContainer, CartesianGrid, ReferenceArea
 } from 'recharts'
 import { formatDuration, formatDate } from '../lib/speechAnalysis'
-import { PRACTICE_GOALS, evaluatePracticeGoal } from '../lib/practiceGoals'
+import { evaluatePracticeGoal, getPracticeGoal } from '../lib/practiceGoals'
 import { buildReportCoachingTips } from '../lib/reportCoaching'
 import { buildFillerMarkers, buildSpeedMarkers, describeReportIssue } from '../lib/reportIssueMarkers'
 import { buildRetryPracticeTarget } from '../lib/retryPractice'
@@ -23,6 +24,7 @@ import { ReportShareCard } from '../components/report/ReportShareCard'
 import type { ReportIssueMarker, TranscriptSegment } from '../types'
 
 export function ReportScreen() {
+  const { t } = useTranslation(['common', 'report'])
   const setScreen = useNavigationStore((s) => s.setScreen)
   const report = useReportStore((s) => s.report)
   const startRetryPractice = useRetryPracticeStore((s) => s.startRetryPractice)
@@ -36,7 +38,7 @@ export function ReportScreen() {
 
   const speedRange = report?.speedRangeSnapshot ?? configuredSpeedRange
   const practiceGoalId = report?.practiceGoalId ?? currentPracticeGoalId
-  const activePracticeGoal = PRACTICE_GOALS[practiceGoalId]
+  const activePracticeGoal = getPracticeGoal(practiceGoalId)
   const sortedFillers = useMemo(
     () => (report ? Object.entries(report.fillerCounts).sort((a, b) => b[1] - a[1]) : []),
     [report]
@@ -159,7 +161,7 @@ export function ReportScreen() {
         role="button"
         tabIndex={0}
         style={{ cursor: 'pointer' }}
-        aria-label={`${describeReportIssue(marker)}，定位逐字稿`}
+        aria-label={t('report:issues.locateAria', { description: describeReportIssue(marker) })}
         onClick={() => handleSpeedMarkerClick(marker.id)}
         onKeyDown={(event) => {
           if (event.key === 'Enter' || event.key === ' ') {
@@ -188,7 +190,7 @@ export function ReportScreen() {
         />
       </g>
     )
-  }, [handleSpeedMarkerClick, scopedActiveMarkerId, speedMarkersByPoint])
+  }, [handleSpeedMarkerClick, scopedActiveMarkerId, speedMarkersByPoint, t])
 
   const handleExportShareCard = useCallback(async (format: 'png' | 'svg') => {
     if (!report || !shareCardRef.current) return
@@ -204,21 +206,21 @@ export function ReportScreen() {
         exportReportShareSvg(shareCardRef.current, filename)
       }
     } catch (error) {
-      setShareError(error instanceof Error ? error.message : '分享卡匯出失敗')
+      setShareError(error instanceof Error ? error.message : t('report:shareActions.errorFallback'))
     } finally {
       setShareExporting(null)
     }
-  }, [report])
+  }, [report, t])
 
   if (!report) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-3 text-gray-400">
-        <p className="text-sm">尚無分析報告</p>
+        <p className="text-sm">{t('report:empty.title')}</p>
         <button
           onClick={() => setScreen('practice')}
           className="text-accent-blue text-sm"
         >
-          開始練習
+          {t('report:empty.action')}
         </button>
       </div>
     )
@@ -235,14 +237,17 @@ export function ReportScreen() {
   }
 
   const copyText = () => {
-    const text = `TalkFit 練習報告
-日期：${formatDate(report.date)}
-時長：${formatDuration(report.durationSeconds)}
-語速：${report.avgWpm} 字/分
-贅字：${report.fillerCount} 次
-評分：${report.grade}
-最常贅字：${report.topFiller ?? '無'}
-`
+    const text = [
+      t('report:copySummaryText.title', { appName: t('common:appName') }),
+      t('report:copySummaryText.date', { value: formatDate(report.date) }),
+      t('report:copySummaryText.duration', { value: formatDuration(report.durationSeconds) }),
+      t('report:copySummaryText.wpm', { value: report.avgWpm }),
+      t('report:copySummaryText.fillers', { value: report.fillerCount }),
+      t('report:copySummaryText.grade', { value: report.grade }),
+      t('report:copySummaryText.topFiller', {
+        value: report.topFiller ?? t('report:copySummaryText.none'),
+      }),
+    ].join('\n')
     navigator.clipboard.writeText(text)
   }
 
@@ -250,7 +255,7 @@ export function ReportScreen() {
     <div className="bg-gray-50 min-h-full pb-4">
       {/* Header */}
       <div className="px-5 pt-5 pb-4 bg-white border-b border-gray-100">
-        <h2 className="text-xl font-bold text-gray-900">練習報告</h2>
+        <h2 className="text-xl font-bold text-gray-900">{t('report:title')}</h2>
         <p className="text-xs text-gray-400 mt-0.5">
           {formatDate(report.date)} · {formatDuration(report.durationSeconds)}
         </p>
@@ -263,7 +268,7 @@ export function ReportScreen() {
         >
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.18em] text-gray-400">本次練習目標</p>
+              <p className="text-[10px] uppercase tracking-[0.18em] text-gray-400">{t('report:header.goalEyebrow')}</p>
               <h3 className="text-sm font-semibold text-gray-800 mt-1">{activePracticeGoal.label}</h3>
               <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">
                 {activePracticeGoal.description}
@@ -274,7 +279,7 @@ export function ReportScreen() {
                 ? 'bg-emerald-50 text-emerald-700'
                 : 'bg-amber-50 text-amber-700'
             }`}>
-              {goalEvaluation.success ? '已達標' : '再練一次'}
+              {goalEvaluation.success ? t('report:header.goalAchieved') : t('report:header.goalRetry')}
             </span>
           </div>
 
@@ -296,20 +301,20 @@ export function ReportScreen() {
         className="grid grid-cols-3 gap-2 px-4 mb-3"
       >
         <ScoreCard
-          label="平均語速"
+          label={t('report:scoreCards.avgWpm')}
           value={report.avgWpm.toString()}
-          unit="字/分"
+          unit={t('report:scoreCards.wpmUnit')}
           color="text-accent-blue"
           icon="📈"
         />
         <ScoreCard
-          label="贅字總數"
+          label={t('report:scoreCards.fillerCount')}
           value={report.fillerCount.toString()}
           color={fillerCountColor(report.fillerCount)}
           icon="✗"
         />
         <ScoreCard
-          label="流暢度"
+          label={t('report:scoreCards.fluency')}
           value={report.grade}
           color={gradeColor(report.grade)}
           icon="✓"
@@ -322,9 +327,9 @@ export function ReportScreen() {
           className="mx-4 mb-3 bg-white rounded-2xl p-4 shadow-sm"
         >
           <div className="mb-3">
-            <h3 className="text-sm font-semibold text-gray-700">下一輪先改這 3 件事</h3>
+            <h3 className="text-sm font-semibold text-gray-700">{t('report:coaching.title')}</h3>
             <p className="text-[10px] text-gray-400 mt-0.5">
-              先把注意力放在最有機會立刻進步的三件事，不要一次改太多。
+              {t('report:coaching.description')}
             </p>
           </div>
           <div className="space-y-2.5">
@@ -355,9 +360,9 @@ export function ReportScreen() {
           className="mx-4 mb-3 bg-white rounded-2xl p-4 shadow-sm"
         >
           <div className="mb-3">
-            <h3 className="text-sm font-semibold text-gray-700">贅字排行榜</h3>
+            <h3 className="text-sm font-semibold text-gray-700">{t('report:ranking.title')}</h3>
             <p className="text-[10px] text-gray-400 mt-0.5">
-              點同一個贅字可依序跳到每一次出現的位置
+              {t('report:ranking.description')}
             </p>
           </div>
           <div className="space-y-2">
@@ -383,7 +388,10 @@ export function ReportScreen() {
                     <span className="text-xs text-gray-700">{word}</span>
                     {isActiveWord && activeMarker && (
                       <p className="text-[10px] text-red-500 mt-0.5">
-                        第 {(activeMarker.occurrenceIndex ?? 0) + 1} / {activeMarker.occurrenceCount ?? count} 次
+                        {t('report:ranking.occurrence', {
+                          current: (activeMarker.occurrenceIndex ?? 0) + 1,
+                          total: activeMarker.occurrenceCount ?? count,
+                        })}
                       </p>
                     )}
                   </div>
@@ -409,9 +417,12 @@ export function ReportScreen() {
           data-annotation-id="speed-curve-chart"
           className="mx-4 mb-3 bg-white rounded-2xl p-4 shadow-sm"
         >
-          <h3 className="text-sm font-semibold text-gray-700 mb-1">語速曲線</h3>
+          <h3 className="text-sm font-semibold text-gray-700 mb-1">{t('report:speedCurve.title')}</h3>
           <p className="text-[10px] text-gray-400 mb-2">
-            藍線為語速，灰色區域為建議範圍（{speedRange.low}–{speedRange.high} 字/分），僅凸顯偏快或偏慢點位供定位
+            {t('report:speedCurve.description', {
+              low: speedRange.low,
+              high: speedRange.high,
+            })}
           </p>
           <ResponsiveContainer width="100%" height={120}>
             <LineChart data={report.speedHistory} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
@@ -423,7 +434,12 @@ export function ReportScreen() {
               />
               <YAxis tick={{ fontSize: 9, fill: '#9ca3af' }} domain={['auto', 'auto']} />
               <Tooltip
-                formatter={(value) => [`${Array.isArray(value) ? value.join(', ') : value ?? '—'} 字/分`, '語速']}
+                formatter={(value) => [
+                  t('report:speedCurve.tooltipValue', {
+                    value: Array.isArray(value) ? value.join(', ') : value ?? '—',
+                  }),
+                  t('report:speedCurve.tooltipName'),
+                ]}
                 labelFormatter={(label) => formatDuration(Number(label ?? 0))}
                 contentStyle={{ fontSize: 11, borderRadius: 8 }}
               />
@@ -452,13 +468,15 @@ export function ReportScreen() {
         data-annotation-id="annotated-transcript"
         className="mx-4 mb-3 bg-white rounded-2xl p-4 shadow-sm"
       >
-        <h3 className="text-sm font-semibold text-gray-700 mb-2">逐字稿標記</h3>
+        <h3 className="text-sm font-semibold text-gray-700 mb-2">{t('report:transcript.title')}</h3>
         {activeMarker && (
           <div className={`mb-3 rounded-xl border px-3 py-2 ${markerBannerClass(activeMarker.kind)}`}>
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-[11px] font-semibold">
-                  已定位到 {formatDuration(Math.round(activeMarker.timestamp))}
+                  {t('report:transcript.positionedAt', {
+                    time: formatDuration(Math.round(activeMarker.timestamp)),
+                  })}
                 </p>
                 <p className="text-[11px] mt-0.5">
                   {describeReportIssue(activeMarker)}
@@ -470,14 +488,14 @@ export function ReportScreen() {
                   onClick={handleRetryPractice}
                   className="rounded-full bg-white/85 px-2.5 py-1 text-[11px] font-semibold text-gray-700 hover:bg-white"
                 >
-                  重練這段
+                  {t('report:transcript.retry')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveMarkerId(null)}
                   className="text-[11px] font-medium opacity-80 hover:opacity-100"
                 >
-                  清除
+                  {t('report:transcript.clear')}
                 </button>
               </div>
             </div>
@@ -494,9 +512,9 @@ export function ReportScreen() {
           ))}
         </div>
         <div className="flex gap-3 mt-3">
-          <Legend color="bg-red-100" label="贅字" />
-          <Legend lineColor="border-amber-400" label="語速過快" />
-          <Legend lineColor="border-purple-400 border-dashed" label="語速偏慢" />
+          <Legend color="bg-red-100" label={t('report:transcript.legend.filler')} />
+          <Legend lineColor="border-amber-400" label={t('report:transcript.legend.fast')} />
+          <Legend lineColor="border-purple-400 border-dashed" label={t('report:transcript.legend.slow')} />
         </div>
       </div>
 
@@ -504,9 +522,9 @@ export function ReportScreen() {
       {shareCardData && (
         <div data-annotation-id="report-share-preview" className="mx-4 mb-3 bg-white rounded-2xl p-4 shadow-sm">
           <div className="mb-3">
-            <h3 className="text-sm font-semibold text-gray-700">分享卡匯出</h3>
+            <h3 className="text-sm font-semibold text-gray-700">{t('report:sharePreview.title')}</h3>
             <p className="text-[10px] text-gray-400 mt-0.5">
-              專用版面會整理重點指標、Top 贅字與語速節奏，適合貼到作品集與 hackathon 成果頁
+              {t('report:sharePreview.description')}
             </p>
           </div>
           <div className="rounded-[28px] border border-gray-200 bg-slate-50 px-4 py-5">
@@ -519,7 +537,7 @@ export function ReportScreen() {
             </div>
           </div>
           <p className="text-[10px] text-gray-400 mt-2">
-            `PNG` 適合直接分享；`SVG` 適合後續排版或再編修。
+            {t('report:sharePreview.footer')}
           </p>
         </div>
       )}
@@ -533,27 +551,27 @@ export function ReportScreen() {
           onClick={copyText}
           className="py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 flex items-center justify-center gap-1.5 hover:bg-gray-50 transition-colors"
         >
-          <span>📋</span> 複製摘要
+          <span>📋</span> {t('report:shareActions.copySummary')}
         </button>
         <button
           onClick={exportJSON}
           className="py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 flex items-center justify-center gap-1.5 hover:bg-gray-50 transition-colors"
         >
-          <span>⬇</span> 匯出 JSON
+          <span>⬇</span> {t('report:shareActions.exportJson')}
         </button>
         <button
           onClick={() => void handleExportShareCard('png')}
           disabled={!shareCardData || shareExporting !== null}
           className="py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 flex items-center justify-center gap-1.5 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <span>🖼</span> {shareExporting === 'png' ? '匯出中…' : '分享卡 PNG'}
+          <span>🖼</span> {shareExporting === 'png' ? t('report:shareActions.exporting') : t('report:shareActions.sharePng')}
         </button>
         <button
           onClick={() => void handleExportShareCard('svg')}
           disabled={!shareCardData || shareExporting !== null}
           className="py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 flex items-center justify-center gap-1.5 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <span>◇</span> {shareExporting === 'svg' ? '匯出中…' : '分享卡 SVG'}
+          <span>◇</span> {shareExporting === 'svg' ? t('report:shareActions.exporting') : t('report:shareActions.shareSvg')}
         </button>
       </div>
       {shareError && (

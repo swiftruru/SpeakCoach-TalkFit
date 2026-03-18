@@ -1,0 +1,123 @@
+{
+  "goals": {
+    "reduce-fillers": {
+      "label": "少講贅字",
+      "description": "先把整體口頭禪數量壓低，練出更乾淨的表達。",
+      "coachHint": "優先盯住贅字總數與排行榜第一名。"
+    },
+    "steady-speed": {
+      "label": "穩住語速",
+      "description": "讓大部分時間都落在建議語速區間，不要忽快忽慢。",
+      "coachHint": "注意異常語速點，先把節奏穩下來。"
+    },
+    "cut-top-filler": {
+      "label": "抓掉口頭禪",
+      "description": "先挑一個最常出現的詞，把它壓到可控制的範圍。",
+      "coachHint": "先修正同一個詞，比一次改全部更有效。"
+    }
+  },
+  "goalEvaluation": {
+    "steadySpeed": {
+      "progress": "{{inRange}}/{{total}} 點在範圍內",
+      "successStatus": "大部分語速點都落在 {{low}}–{{high}} 字/分內。",
+      "failureStatus": "目前有 {{count}} 個異常語速點，節奏還不夠穩。",
+      "nextFast": "先從偏快點開始，句尾多留半拍再進下一句。",
+      "nextSlow": "先把偏慢段落推進一點，避免句子尾端拖太長。"
+    },
+    "cutTopFiller": {
+      "noneTopWord": "目前沒有明顯口頭禪",
+      "progress": "{{word}} {{count}}/{{allowed}} 次",
+      "noProgress": "尚未出現明顯口頭禪",
+      "successStatus": "最常出現的「{{word}}」已壓在可控制範圍內。",
+      "failureStatus": "最常出現的「{{word}}」還有點明顯，建議先集中處理它。",
+      "noneStatus": "這次沒有單一詞特別突出，控制得不錯。",
+      "nextWithWord": "下一輪先點排行榜中的「{{word}}」，逐段重講最有效。",
+      "nextWithoutWord": "可以換成更高挑戰的目標，例如穩住語速。"
+    },
+    "reduceFillers": {
+      "progress": "{{count}}/{{allowed}} 次",
+      "successStatus": "整體贅字量已控制在這次練習目標內。",
+      "failureStatus": "這次贅字還有點多，距離目標上限差 {{difference}} 次。",
+      "nextWithWord": "先從最常出現的「{{word}}」開始壓低，效果最快。",
+      "nextWithoutWord": "下一輪維持現在的節奏，盡量讓每句結尾更乾淨。"
+    }
+  },
+  "presets": {
+    "interview-intro": {
+      "label": "面試自介",
+      "description": "放慢一點、講清楚，優先抓填充音、口頭禪開場與尾句確認。"
+    },
+    "project-presentation": {
+      "label": "專題簡報",
+      "description": "最接近完整簡報場景，兼顧內容銜接、語速穩定與贅字控制。"
+    },
+    "demo-pitch": {
+      "label": "Demo Pitch",
+      "description": "節奏可以更俐落，但要特別壓住「然後」「這個」這類破壞銳利感的詞。"
+    }
+  },
+  "fillerCategories": {
+    "filler-sound": "填充音",
+    "connector": "連接贅詞",
+    "demonstrative": "指示贅詞",
+    "opener": "習慣性開場白",
+    "closer": "習慣性結尾",
+    "custom": "自訂"
+  },
+  "speedStatus": {
+    "fast": "語速偏快",
+    "slow": "語速偏慢",
+    "normal": "速度適中"
+  },
+  "retryPractice": {
+    "fillerPrompt": "重講這段時，刻意不要說「{{word}}」，把句子一次講完整。",
+    "fillerSessionTitle": "片段重練 · {{word}}",
+    "slowPrompt": "把這段再講得更俐落一點，盡量維持在 {{low}}–{{high}} 字/分內。",
+    "slowSessionTitle": "片段重練 · 語速偏慢",
+    "fastPrompt": "把這段放慢一點，句尾多留半拍，先穩回 {{low}}–{{high}} 字/分。",
+    "fastSessionTitle": "片段重練 · 語速偏快"
+  },
+  "status": {
+    "paused": "已暫停",
+    "retrying": "片段重練中",
+    "recording": "錄音中",
+    "preparing": "準備中"
+  },
+  "notices": {
+    "demoNoMic": "示範模式中，無需麥克風",
+    "prototypeNoCapture": "原型模式中，不會真的收音"
+  },
+  "session": {
+    "titlePrefix": "練習 "
+  },
+  "goalSection": {
+    "title": "本次目標"
+  },
+  "retryBanner": {
+    "title": "問題片段重練",
+    "recommendedSeconds": "建議 {{count}} 秒",
+    "originalSnippet": "原始片段"
+  },
+  "liveStats": {
+    "fillerCount": "贅字",
+    "topFiller": "最常出現",
+    "longPause": "長停頓",
+    "none": "—"
+  },
+  "transcript": {
+    "title": "即時逐字稿",
+    "emptyIdle": "開始說話後，文字將會出現在這裡…",
+    "emptyRetry": "請重新講一次這段，先專注修正目標片段…",
+    "emptyPrototype": "這是 App 原型頁面，這裡不會真的辨識麥克風輸入。"
+  },
+  "exitConfirm": {
+    "title": "停止錄製？",
+    "body": "你正在錄音中。若要前往「{{screen}}」，這次練習會立即停止，且不會產生報告。",
+    "otherScreen": "其他頁面",
+    "confirm": "停止並離開"
+  },
+  "gauge": {
+    "unit": "字/分鐘",
+    "waiting": "等待語音"
+  }
+}

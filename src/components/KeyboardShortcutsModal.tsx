@@ -1,38 +1,6 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-
-const shortcutGroups = [
-  {
-    title: '展示控制',
-    items: [
-      { keys: ['⌘K', 'Ctrl+K'], description: '開啟快速操作 Command Palette' },
-      { keys: ['D'], description: '開始 / 停止示範' },
-      { keys: ['P'], description: '切換簡報模式' },
-      { keys: ['F'], description: '切換真正全螢幕展示' },
-      { keys: ['E'], description: '開啟截圖 / 乾淨輸出視窗' },
-      { keys: ['A'], description: '開關說明面板' },
-      { keys: ['R'], description: '重置原型' },
-    ],
-  },
-  {
-    title: '示範播放',
-    items: [
-      { keys: ['←'], description: '回到上一步' },
-      { keys: ['→'], description: '前往下一步' },
-      { keys: ['K'], description: '暫停 / 繼續播放' },
-      { keys: ['Esc'], description: '關閉視窗或停止示範' },
-    ],
-  },
-  {
-    title: '網站操作',
-    items: [
-      { keys: ['?'], description: '開啟快捷鍵說明' },
-      { keys: ['T'], description: '切換亮 / 暗色主題' },
-      { keys: ['S'], description: '開啟設計動機 / 關於' },
-      { keys: ['L'], description: '複製目前畫面連結' },
-    ],
-  },
-]
+import { useTranslation } from 'react-i18next'
 
 interface KeyboardShortcutsModalProps {
   isOpen: boolean
@@ -43,6 +11,43 @@ export function KeyboardShortcutsModal({
   isOpen,
   onClose,
 }: KeyboardShortcutsModalProps) {
+  const { t } = useTranslation(['common', 'shortcuts'])
+  const shortcutGroups = useMemo(
+    () => [
+      {
+        title: t('shortcuts:groups.showcase'),
+        items: [
+          { keys: ['⌘K', 'Ctrl+K'], description: t('shortcuts:items.palette') },
+          { keys: ['D'], description: t('shortcuts:items.demo') },
+          { keys: ['P'], description: t('shortcuts:items.presentation') },
+          { keys: ['F'], description: t('shortcuts:items.fullscreen') },
+          { keys: ['E'], description: t('shortcuts:items.capture') },
+          { keys: ['A'], description: t('shortcuts:items.annotations') },
+          { keys: ['R'], description: t('shortcuts:items.reset') },
+        ],
+      },
+      {
+        title: t('shortcuts:groups.playback'),
+        items: [
+          { keys: ['←'], description: t('shortcuts:items.previous') },
+          { keys: ['→'], description: t('shortcuts:items.next') },
+          { keys: ['K'], description: t('shortcuts:items.pause') },
+          { keys: ['Esc'], description: t('shortcuts:items.escape') },
+        ],
+      },
+      {
+        title: t('shortcuts:groups.site'),
+        items: [
+          { keys: ['?'], description: t('shortcuts:items.help') },
+          { keys: ['T'], description: t('shortcuts:items.theme') },
+          { keys: ['S'], description: t('shortcuts:items.story') },
+          { keys: ['L'], description: t('shortcuts:items.link') },
+        ],
+      },
+    ],
+    [t]
+  )
+
   useEffect(() => {
     if (!isOpen) return
 
@@ -82,12 +87,12 @@ export function KeyboardShortcutsModal({
                 <div className="mb-1 flex items-center gap-2">
                   <div className="h-3.5 w-1 rounded-full bg-accent-blue" />
                   <span className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-blue-light">
-                    Shortcuts
+                    {t('shortcuts:eyebrow')}
                   </span>
                 </div>
-                <h2 className="text-xl font-bold text-text-primary">網站快捷鍵</h2>
+                <h2 className="text-xl font-bold text-text-primary">{t('shortcuts:title')}</h2>
                 <p className="mt-1 text-sm text-text-secondary">
-                  這些快捷鍵主要針對桌面展示與作品集操作流程設計。
+                  {t('shortcuts:description')}
                 </p>
               </div>
 

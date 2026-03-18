@@ -1,0 +1,123 @@
+{
+  "goals": {
+    "reduce-fillers": {
+      "label": "Reduce Fillers",
+      "description": "Lower your overall filler count first to build cleaner delivery.",
+      "coachHint": "Watch total fillers and the top item in the ranking first."
+    },
+    "steady-speed": {
+      "label": "Steady Pace",
+      "description": "Keep most of your speaking pace inside the recommended range.",
+      "coachHint": "Focus on out-of-range pace points and stabilize rhythm first."
+    },
+    "cut-top-filler": {
+      "label": "Cut the Top Habit",
+      "description": "Pick the most repeated filler and push it down into a controllable range.",
+      "coachHint": "Fixing one repeated habit first is more effective than fixing everything at once."
+    }
+  },
+  "goalEvaluation": {
+    "steadySpeed": {
+      "progress": "{{inRange}}/{{total}} points in range",
+      "successStatus": "Most pace points stayed within {{low}}–{{high}} wpm.",
+      "failureStatus": "There are still {{count}} out-of-range pace points, so the rhythm is not stable yet.",
+      "nextFast": "Start with the fast segments and leave a little space at the end of each sentence.",
+      "nextSlow": "Push the slower segments forward a bit so the sentence ending does not drag."
+    },
+    "cutTopFiller": {
+      "noneTopWord": "No dominant filler yet",
+      "progress": "{{word}} {{count}}/{{allowed}} times",
+      "noProgress": "No dominant filler yet",
+      "successStatus": "“{{word}}” is already within a controllable range.",
+      "failureStatus": "“{{word}}” is still too noticeable, so it should be your first fix.",
+      "noneStatus": "No single filler stands out this time. Control looks solid.",
+      "nextWithWord": "Click “{{word}}” in the ranking next and re-record those spots first.",
+      "nextWithoutWord": "You can switch to a harder goal next, such as stabilizing pace."
+    },
+    "reduceFillers": {
+      "progress": "{{count}}/{{allowed}} times",
+      "successStatus": "Your total filler count stayed inside the target for this session.",
+      "failureStatus": "Fillers are still a bit high. You are {{difference}} over the current target.",
+      "nextWithWord": "Start by pushing down “{{word}}” first for the quickest gain.",
+      "nextWithoutWord": "Keep the current rhythm next round and clean up sentence endings."
+    }
+  },
+  "presets": {
+    "interview-intro": {
+      "label": "Interview Intro",
+      "description": "Slow down a bit and speak clearly. Prioritize filler sounds, habitual openings, and confirmation endings."
+    },
+    "project-presentation": {
+      "label": "Project Presentation",
+      "description": "Closest to a full presentation scenario, balancing transitions, pace stability, and filler control."
+    },
+    "demo-pitch": {
+      "label": "Demo Pitch",
+      "description": "The pace can be sharper, but transition fillers such as “and then” and vague placeholders should stay under control."
+    }
+  },
+  "fillerCategories": {
+    "filler-sound": "Filler Sounds",
+    "connector": "Connector Fillers",
+    "demonstrative": "Demonstratives",
+    "opener": "Habitual Openers",
+    "closer": "Habitual Closers",
+    "custom": "Custom"
+  },
+  "speedStatus": {
+    "fast": "Too fast",
+    "slow": "Too slow",
+    "normal": "On pace"
+  },
+  "retryPractice": {
+    "fillerPrompt": "Repeat this part without saying “{{word}}”, and finish the sentence cleanly in one pass.",
+    "fillerSessionTitle": "Retry Segment · {{word}}",
+    "slowPrompt": "Make this segment more concise and try to stay within {{low}}–{{high}} wpm.",
+    "slowSessionTitle": "Retry Segment · Too Slow",
+    "fastPrompt": "Slow this segment down and leave a small beat at the end of each sentence to get back into {{low}}–{{high}} wpm.",
+    "fastSessionTitle": "Retry Segment · Too Fast"
+  },
+  "status": {
+    "paused": "Paused",
+    "retrying": "Retrying Segment",
+    "recording": "Recording",
+    "preparing": "Preparing"
+  },
+  "notices": {
+    "demoNoMic": "Demo mode active. No microphone needed.",
+    "prototypeNoCapture": "Prototype mode. No real audio is captured."
+  },
+  "session": {
+    "titlePrefix": "Practice "
+  },
+  "goalSection": {
+    "title": "This round goal"
+  },
+  "retryBanner": {
+    "title": "Retry This Segment",
+    "recommendedSeconds": "{{count}} sec recommended",
+    "originalSnippet": "Original snippet"
+  },
+  "liveStats": {
+    "fillerCount": "Fillers",
+    "topFiller": "Most Frequent",
+    "longPause": "Long Pause",
+    "none": "—"
+  },
+  "transcript": {
+    "title": "Live Transcript",
+    "emptyIdle": "Speech will appear here after you start talking…",
+    "emptyRetry": "Say this segment again and focus only on fixing the target issue…",
+    "emptyPrototype": "This is a prototype page, so microphone input is not actually transcribed here."
+  },
+  "exitConfirm": {
+    "title": "Stop recording?",
+    "body": "You are still recording. If you go to “{{screen}}”, this session will stop immediately and no report will be generated.",
+    "otherScreen": "another screen",
+    "confirm": "Stop and Leave"
+  },
+  "gauge": {
+    "unit": "wpm",
+    "waiting": "Waiting for speech"
+  }
+}

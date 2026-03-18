@@ -1,0 +1,41 @@
+{
+  "greeting": {
+    "morning": "早安",
+    "afternoon": "下午好",
+    "evening": "晚上好"
+  },
+  "trend": {
+    "noSessions": "還沒有練習紀錄，今天開始吧！",
+    "improved": "上次練習有進步，繼續保持！",
+    "needsAttention": "試著注意「{{filler}}」，你最常說它。",
+    "average": "平均贅字 {{count}} 次，繼續練習讓它降下來。"
+  },
+  "stats": {
+    "weekPractice": "本週練習",
+    "averageFillers": "平均贅字",
+    "vsLastWeek": "較上週",
+    "sessionUnit": "次",
+    "perSessionUnit": "次/場",
+    "improving": "持續進步中",
+    "needsWork": "需要加油",
+    "insufficient": "資料不足"
+  },
+  "weeklyChart": {
+    "title": "本週每日贅字次數",
+    "tooltip": "{{count}} 次贅字",
+    "days": {
+      "mon": "一",
+      "tue": "二",
+      "wed": "三",
+      "thu": "四",
+      "fri": "五",
+      "sat": "六",
+      "sun": "日"
+    }
+  },
+  "tip": {
+    "title": "今日提醒",
+    "body": "試著意識到你最常說的贅字「{{filler}}」。說之前先停頓一秒，效果立竿見影。"
+  },
+  "recordButton": "開始練習"
+}

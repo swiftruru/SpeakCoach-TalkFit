@@ -1,3 +1,4 @@
+import i18n from '../i18n'
 import type {
   TranscriptSegment,
   FillerWord,
@@ -12,10 +13,24 @@ export function detectFillers(
   fillerWords: FillerWord[]
 ): { isFiller: boolean; fillerWord?: string } {
   const enabled = fillerWords.filter((f) => f.enabled)
-  // Sort by length desc so longer phrases match first (e.g. "你懂我意思嗎" before "嗯")
   const sorted = [...enabled].sort((a, b) => b.word.length - a.word.length)
+
+  const matchesFiller = (sourceText: string, word: string) => {
+    if (!word.trim()) return false
+
+    // Latin phrases need boundary matching so common substrings such as "right"
+    // or "like" do not trigger inside unrelated words.
+    if (/[A-Za-z]/.test(word)) {
+      const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const pattern = new RegExp(`(^|[^\\p{L}\\p{N}])${escaped}(?=$|[^\\p{L}\\p{N}])`, 'iu')
+      return pattern.test(sourceText)
+    }
+
+    return sourceText.includes(word)
+  }
+
   for (const fw of sorted) {
-    if (text.includes(fw.word)) {
+    if (matchesFiller(text, fw.word)) {
       return { isFiller: true, fillerWord: fw.word }
     }
   }
@@ -25,7 +40,6 @@ export function detectFillers(
 export function calculateAvgWpm(segments: TranscriptSegment[], durationSeconds: number): number {
   if (durationSeconds <= 0) return 0
   const totalChars = segments.reduce((sum, s) => sum + s.text.length, 0)
-  // Chinese: roughly 1 char ≈ 1 word for wpm purposes
   return Math.round((totalChars / durationSeconds) * 60)
 }
 
@@ -87,18 +101,21 @@ export function formatDate(isoString: string): string {
   const d = new Date(isoString)
   const now = new Date()
   const diffDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24))
+  const time = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
+
   if (diffDays === 0) {
-    const h = d.getHours().toString().padStart(2, '0')
-    const m = d.getMinutes().toString().padStart(2, '0')
-    return `今天 ${h}:${m}`
+    return i18n.t('common:dates.todayAt', { time })
   }
+
   if (diffDays === 1) {
-    const h = d.getHours().toString().padStart(2, '0')
-    const m = d.getMinutes().toString().padStart(2, '0')
-    return `昨天 ${h}:${m}`
+    return i18n.t('common:dates.yesterdayAt', { time })
   }
-  return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours().toString().padStart(2, '0')}:${d
-    .getMinutes()
-    .toString()
-    .padStart(2, '0')}`
+
+  const locale = i18n.resolvedLanguage === 'en' ? 'en-US' : 'zh-TW'
+  const datePart = new Intl.DateTimeFormat(locale, {
+    month: 'numeric',
+    day: 'numeric',
+  }).format(d)
+
+  return `${datePart} ${time}`
 }

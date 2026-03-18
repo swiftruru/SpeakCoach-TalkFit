@@ -1,3 +1,4 @@
+import i18n from '../i18n'
 import { formatDuration } from './speechAnalysis'
 import type { SessionSummary, SpeedDataPoint, SpeedRange } from '../types'
 
@@ -52,12 +53,15 @@ export interface ReportShareCardData {
 
 function formatShareDate(isoString: string) {
   const date = new Date(isoString)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  return `${year}/${month}/${day} ${hours}:${minutes}`
+  const locale = i18n.resolvedLanguage === 'en' ? 'en-US' : 'zh-TW'
+  return new Intl.DateTimeFormat(locale, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(date)
 }
 
 function truncateText(text: string, maxChars: number) {
@@ -81,7 +85,7 @@ function wrapText(text: string, maxCharsPerLine: number, maxLines: number) {
     lines.push(next)
   }
 
-  return lines.length ? lines : ['持續練習，讓表達更穩定。']
+  return lines.length ? lines : [i18n.t('report:shareCard.fallbackBody')]
 }
 
 function buildInsight(report: SessionSummary, speedRange: SpeedRange) {
@@ -89,24 +93,24 @@ function buildInsight(report: SessionSummary, speedRange: SpeedRange) {
   const slowCount = report.speedHistory.filter((point) => point.wpm < speedRange.low).length
   const topWord = report.topFiller
 
-  let title = '維持目前的表達節奏'
-  let body = '這次沒有明顯的贅字高峰，繼續把節奏穩定下來。'
+  let title = i18n.t('report:shareCard.defaultInsightTitle')
+  let body = i18n.t('report:shareCard.defaultInsightBody')
 
   if (topWord) {
     const topCount = report.fillerCounts[topWord] ?? 0
-    title = `先把「${topWord}」降下來`
-    body = `這次共出現 ${topCount} 次，建議先修正這個最常出現的口頭禪。`
+    title = i18n.t('report:shareCard.topFillerInsightTitle', { word: topWord })
+    body = i18n.t('report:shareCard.topFillerInsightBody', { count: topCount })
   }
 
   if (fastCount > 0 || slowCount > 0) {
     const speedSummary = [
-      fastCount > 0 ? `偏快 ${fastCount} 段` : null,
-      slowCount > 0 ? `偏慢 ${slowCount} 段` : null,
+      fastCount > 0 ? i18n.t('report:shareCard.speedFastSegment', { count: fastCount }) : null,
+      slowCount > 0 ? i18n.t('report:shareCard.speedSlowSegment', { count: slowCount }) : null,
     ].filter(Boolean).join('、')
 
     body = topWord
-      ? `${body} 語速方面有 ${speedSummary}，可優先重錄節奏最不穩的一段。`
-      : `語速方面有 ${speedSummary}，建議先修正節奏波動最明顯的位置。`
+      ? i18n.t('report:shareCard.topWithSpeed', { body, summary: speedSummary })
+      : i18n.t('report:shareCard.speedOnly', { summary: speedSummary })
   }
 
   return {
@@ -178,14 +182,14 @@ export function buildReportShareCardData(report: SessionSummary, speedRange: Spe
   const shareDate = formatShareDate(report.date)
 
   return {
-    title: truncateText(report.title || '演講練習報告', 24),
+    title: truncateText(report.title || i18n.t('report:shareCard.fallbackTitle'), 24),
     dateLabel: shareDate,
     durationLabel: formatDuration(report.durationSeconds),
     grade: report.grade,
     metrics: [
-      { label: '平均語速', value: `${report.avgWpm}`, accent: '#2563eb' },
-      { label: '贅字總數', value: `${report.fillerCount}`, accent: '#ef4444' },
-      { label: '最常贅字', value: truncateText(report.topFiller ?? '無', 6), accent: '#f59e0b' },
+      { label: i18n.t('report:shareCard.metrics.avgWpm'), value: `${report.avgWpm}`, accent: '#2563eb' },
+      { label: i18n.t('report:shareCard.metrics.fillerCount'), value: `${report.fillerCount}`, accent: '#ef4444' },
+      { label: i18n.t('report:shareCard.metrics.topFiller'), value: truncateText(report.topFiller ?? i18n.t('report:shareCard.metrics.none'), 6), accent: '#f59e0b' },
     ],
     topFillers: buildTopFillers(report),
     insightTitle: insight.title,
@@ -198,7 +202,7 @@ export function buildReportShareCardData(report: SessionSummary, speedRange: Spe
     chartMaxLabel: chart.maxLabel,
     chartStartLabel: chart.startLabel,
     chartEndLabel: chart.endLabel,
-    footerNote: `talkfit.swift.moe · ${shareDate} · ${report.avgWpm} 字/分`,
+    footerNote: i18n.t('report:shareCard.footer', { date: shareDate, wpm: report.avgWpm }),
   }
 }
 
@@ -244,7 +248,7 @@ export async function exportReportSharePng(svg: SVGSVGElement, filename: string)
     const image = await new Promise<HTMLImageElement>((resolve, reject) => {
       const img = new Image()
       img.onload = () => resolve(img)
-      img.onerror = () => reject(new Error('分享卡圖像載入失敗'))
+      img.onerror = () => reject(new Error(i18n.t('report:shareCard.errors.imageLoad')))
       img.src = url
     })
 
@@ -255,7 +259,7 @@ export async function exportReportSharePng(svg: SVGSVGElement, filename: string)
 
     const context = canvas.getContext('2d')
     if (!context) {
-      throw new Error('無法建立分享卡畫布')
+      throw new Error(i18n.t('report:shareCard.errors.canvas'))
     }
 
     context.scale(scale, scale)
@@ -266,7 +270,7 @@ export async function exportReportSharePng(svg: SVGSVGElement, filename: string)
     const blob = await new Promise<Blob>((resolve, reject) => {
       canvas.toBlob((result) => {
         if (result) resolve(result)
-        else reject(new Error('PNG 匯出失敗'))
+        else reject(new Error(i18n.t('report:shareCard.errors.png')))
       }, 'image/png')
     })
 

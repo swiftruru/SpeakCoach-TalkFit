@@ -1,0 +1,27 @@
+{
+  "eyebrow": "Shortcuts",
+  "title": "Keyboard Shortcuts",
+  "description": "These shortcuts are tuned for desktop walkthroughs and portfolio presentations.",
+  "groups": {
+    "showcase": "Showcase Controls",
+    "playback": "Demo Playback",
+    "site": "Site Actions"
+  },
+  "items": {
+    "palette": "Open the Command Palette",
+    "demo": "Start / stop the demo",
+    "presentation": "Toggle presentation mode",
+    "fullscreen": "Toggle true fullscreen presentation",
+    "capture": "Open the capture export modal",
+    "annotations": "Toggle the notes panel",
+    "reset": "Reset the prototype",
+    "previous": "Go to the previous step",
+    "next": "Go to the next step",
+    "pause": "Pause / resume playback",
+    "escape": "Close a modal or stop the demo",
+    "help": "Open the shortcuts reference",
+    "theme": "Toggle light / dark theme",
+    "story": "Open Design Story / About",
+    "link": "Copy the current view link"
+  }
+}

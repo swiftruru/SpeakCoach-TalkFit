@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { FillerWord, PracticeGoalId, PracticePresetId, SpeedRange } from '../types'
-import { DEFAULT_FILLER_WORDS } from '../lib/fillerWords'
+import { DEFAULT_LANGUAGE, type AppLanguage } from '../i18n/config'
 import {
   applyPresetToFillerWords,
   DEFAULT_PRACTICE_PRESET_ID,
@@ -19,7 +19,7 @@ interface SettingsState {
   repeatConnectorEnabled: boolean
   hapticEnabled: boolean
   soundEnabled: boolean
-  language: string
+  language: AppLanguage
   micDeviceId: string
 
   setFillerWords: (words: FillerWord[]) => void
@@ -34,7 +34,7 @@ interface SettingsState {
   setRepeatConnectorEnabled: (v: boolean) => void
   setHapticEnabled: (v: boolean) => void
   setSoundEnabled: (v: boolean) => void
-  setLanguage: (lang: string) => void
+  setLanguage: (lang: AppLanguage) => void
   setMicDeviceId: (id: string) => void
 }
 
@@ -43,14 +43,14 @@ export const useSettingsStore = create<SettingsState>()(
     (set, get) => ({
       preset: DEFAULT_PRACTICE_PRESET_ID,
       practiceGoalId: DEFAULT_PRACTICE_GOAL_ID,
-      fillerWords: applyPresetToFillerWords(DEFAULT_FILLER_WORDS, DEFAULT_PRACTICE_PRESET_ID),
+      fillerWords: applyPresetToFillerWords([], DEFAULT_PRACTICE_PRESET_ID, DEFAULT_LANGUAGE),
       speedRange: { ...PRACTICE_PRESETS[DEFAULT_PRACTICE_PRESET_ID].speedRange },
       fillerDetectionEnabled: true,
       speedMonitoringEnabled: true,
       repeatConnectorEnabled: true,
       hapticEnabled: true,
       soundEnabled: false,
-      language: 'zh-TW',
+      language: DEFAULT_LANGUAGE,
       micDeviceId: 'default',
 
       setFillerWords: (words) => set({ fillerWords: words, preset: 'custom' }),
@@ -83,7 +83,7 @@ export const useSettingsStore = create<SettingsState>()(
         set({
           preset: presetId,
           speedRange: { ...PRACTICE_PRESETS[presetId].speedRange },
-          fillerWords: applyPresetToFillerWords(get().fillerWords, presetId),
+          fillerWords: applyPresetToFillerWords(get().fillerWords, presetId, get().language),
         }),
       setPracticeGoalId: (goalId) => set({ practiceGoalId: goalId }),
       setFillerDetectionEnabled: (v) => set({ fillerDetectionEnabled: v }),

@@ -1,28 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 export type CapturePreset = 'showcase' | 'presentation' | 'phone'
-
-const CAPTURE_PRESETS: Array<{
-  id: CapturePreset
-  title: string
-  description: string
-}> = [
-  {
-    id: 'showcase',
-    title: '作品集展示版',
-    description: '輸出目前網站主舞台，保留左側導覽、手機模擬器與右側說明。',
-  },
-  {
-    id: 'presentation',
-    title: '乾淨展示版',
-    description: '移除左側導覽與導引箭頭，保留手機模擬器與右側說明，適合 README 與簡報。',
-  },
-  {
-    id: 'phone',
-    title: '純手機版',
-    description: '只輸出 iPhone 模擬器本體，適合單張功能截圖。',
-  },
-]
 
 interface CaptureExportModalProps {
   isOpen: boolean
@@ -41,6 +20,25 @@ export function CaptureExportModal({
   onExport,
   onClose,
 }: CaptureExportModalProps) {
+  const { t } = useTranslation(['common', 'capture'])
+  const capturePresets: Array<{ id: CapturePreset; title: string; description: string }> = [
+    {
+      id: 'showcase',
+      title: t('capture:presets.showcase.title'),
+      description: t('capture:presets.showcase.description'),
+    },
+    {
+      id: 'presentation',
+      title: t('capture:presets.presentation.title'),
+      description: t('capture:presets.presentation.description'),
+    },
+    {
+      id: 'phone',
+      title: t('capture:presets.phone.title'),
+      description: t('capture:presets.phone.description'),
+    },
+  ]
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -63,17 +61,17 @@ export function CaptureExportModal({
             onClick={(event) => event.stopPropagation()}
           >
             <div className="border-b border-divider px-8 py-6">
-              <div className="mb-1 flex items-center gap-2">
-                <div className="h-3.5 w-1 rounded-full bg-accent-blue" />
-                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-blue-light">
-                  Export Capture
-                </span>
-              </div>
+                <div className="mb-1 flex items-center gap-2">
+                  <div className="h-3.5 w-1 rounded-full bg-accent-blue" />
+                  <span className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-blue-light">
+                    {t('capture:eyebrow')}
+                  </span>
+                </div>
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-bold text-text-primary">截圖 / 乾淨輸出</h2>
+                  <h2 className="text-xl font-bold text-text-primary">{t('capture:title')}</h2>
                   <p className="mt-1 text-sm text-text-secondary">
-                    選擇輸出版型後，直接下載 PNG。
+                    {t('capture:description')}
                   </p>
                 </div>
 
@@ -90,7 +88,7 @@ export function CaptureExportModal({
             </div>
 
             <div className="space-y-3 px-8 py-6">
-              {CAPTURE_PRESETS.map((preset) => {
+              {capturePresets.map((preset) => {
                 const isSelected = preset.id === selectedPreset
 
                 return (
@@ -112,14 +110,14 @@ export function CaptureExportModal({
 
             <div className="flex items-center justify-between gap-3 border-t border-divider px-8 py-5">
               <p className="text-xs leading-relaxed text-text-muted">
-                目前會移除導引箭頭、滑鼠游標與暫時性 hover 效果，讓輸出更乾淨。
+                {t('capture:footer')}
               </p>
               <button
                 onClick={onExport}
                 disabled={isExporting}
                 className="rounded-2xl border border-accent-blue/35 bg-accent-blue/12 px-4 py-2.5 text-sm font-semibold text-accent-blue-light transition-all hover:bg-accent-blue/16 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isExporting ? '輸出中...' : '下載 PNG'}
+                {isExporting ? t('capture:exporting') : t('capture:download')}
               </button>
             </div>
           </motion.div>

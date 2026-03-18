@@ -1,31 +1,28 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSettingsStore } from '../stores/settingsStore'
 import { useHistoryStore } from '../stores/historyStore'
-import { CATEGORY_COLORS, DEFAULT_FILLER_WORDS } from '../lib/fillerWords'
+import { LANGUAGE_OPTIONS } from '../i18n/config'
+import { CATEGORY_COLORS, getDefaultFillerWords } from '../lib/fillerWords'
 import {
+  getPracticePresetList,
   getPresetCategoryLabels,
-  PRACTICE_PRESET_LIST,
   type PracticePresetDefinition,
 } from '../lib/practicePresets'
 import {
-  PRACTICE_GOAL_LIST,
-  PRACTICE_GOALS,
+  getPracticeGoalList,
   type PracticeGoalDefinition,
 } from '../lib/practiceGoals'
 import type { FillerWord } from '../types'
 
-const LANGUAGES = [
-  { code: 'zh-TW', label: '繁體中文' },
-  { code: 'zh-HK', label: '粵語' },
-  { code: 'en-US', label: 'English' },
-]
-
 export function SettingsScreen() {
+  const { t, i18n } = useTranslation(['common', 'settings'])
   const settings = useSettingsStore()
   const clearAll = useHistoryStore((s) => s.clearAll)
   const [newWord, setNewWord] = useState('')
   const [showAddInput, setShowAddInput] = useState(false)
-
+  const presets = getPracticePresetList()
+  const goals = getPracticeGoalList()
 
   const handleAddWord = () => {
     if (newWord.trim()) {
@@ -38,49 +35,50 @@ export function SettingsScreen() {
   return (
     <div className="bg-gray-50 min-h-full pb-8">
       <div className="px-5 pt-5 pb-3">
-        <h2 className="text-xl font-bold text-gray-900">設定</h2>
+        <h2 className="text-xl font-bold text-gray-900">{t('common:screens.settings')}</h2>
       </div>
 
-      {/* Detection toggles */}
       <section data-annotation-id="settings-detection-toggles">
-        <SectionTitle>偵測設定</SectionTitle>
+        <SectionTitle>{t('settings:sections.detection')}</SectionTitle>
         <div className="mx-4 bg-white rounded-2xl shadow-sm divide-y divide-gray-50">
           <ToggleRow
             icon="✗"
             iconBg="bg-red-50"
-            title="贅字偵測"
-            sub="偵測填充音和連接贅詞"
+            title={t('settings:detection.filler.title')}
+            sub={t('settings:detection.filler.description')}
             value={settings.fillerDetectionEnabled}
             onChange={settings.setFillerDetectionEnabled}
           />
           <ToggleRow
             icon="📈"
             iconBg="bg-blue-50"
-            title="語速監控"
-            sub={`建議範圍 ${settings.speedRange.low}–${settings.speedRange.high} 字/分`}
+            title={t('settings:detection.speed.title')}
+            sub={t('settings:detection.speed.description', {
+              low: settings.speedRange.low,
+              high: settings.speedRange.high,
+            })}
             value={settings.speedMonitoringEnabled}
             onChange={settings.setSpeedMonitoringEnabled}
           />
           <ToggleRow
             icon="🔁"
             iconBg="bg-purple-50"
-            title="重複連接詞"
-            sub="標記連續使用相同連接詞"
+            title={t('settings:detection.repeat.title')}
+            sub={t('settings:detection.repeat.description')}
             value={settings.repeatConnectorEnabled}
             onChange={settings.setRepeatConnectorEnabled}
           />
         </div>
       </section>
 
-      {/* Practice presets */}
       <section data-annotation-id="settings-practice-presets">
-        <SectionTitle>練習情境</SectionTitle>
+        <SectionTitle>{t('settings:sections.presets')}</SectionTitle>
         <div className="mx-4 bg-white rounded-2xl shadow-sm p-4">
           <div className="flex items-start justify-between gap-3 mb-3">
             <div>
-              <p className="text-sm font-semibold text-gray-800">一鍵套用情境設定</p>
+              <p className="text-sm font-semibold text-gray-800">{t('settings:presets.title')}</p>
               <p className="text-[11px] text-gray-400 mt-1 leading-relaxed">
-                會同步調整語速區間與預設贅字類型。若你後續手動調整語速或贅字清單，系統會自動切換為自訂設定。
+                {t('settings:presets.description')}
               </p>
             </div>
             <span
@@ -90,12 +88,14 @@ export function SettingsScreen() {
                   : 'bg-blue-50 text-blue-700'
               }`}
             >
-              {settings.preset === 'custom' ? '自訂中' : '已套用'}
+              {settings.preset === 'custom'
+                ? t('settings:presets.statusCustom')
+                : t('settings:presets.statusApplied')}
             </span>
           </div>
 
           <div className="space-y-2.5">
-            {PRACTICE_PRESET_LIST.map((preset) => (
+            {presets.map((preset) => (
               <PresetCard
                 key={preset.id}
                 preset={preset}
@@ -107,28 +107,27 @@ export function SettingsScreen() {
 
           {settings.preset === 'custom' && (
             <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
-              <p className="text-[11px] font-semibold text-amber-800">目前使用自訂設定</p>
+              <p className="text-[11px] font-semibold text-amber-800">{t('settings:presets.customTitle')}</p>
               <p className="text-[11px] text-amber-700 mt-0.5 leading-relaxed">
-                重新點選任一情境卡片，即可快速回到對應的語速與贅字偵測組合。
+                {t('settings:presets.customDescription')}
               </p>
             </div>
           )}
         </div>
       </section>
 
-      {/* Practice goal */}
       <section data-annotation-id="settings-practice-goal">
-        <SectionTitle>練習目標</SectionTitle>
+        <SectionTitle>{t('settings:sections.goal')}</SectionTitle>
         <div className="mx-4 bg-white rounded-2xl shadow-sm p-4">
           <div className="mb-3">
-            <p className="text-sm font-semibold text-gray-800">每次練習先選一個目標</p>
+            <p className="text-sm font-semibold text-gray-800">{t('settings:goal.title')}</p>
             <p className="text-[11px] text-gray-400 mt-1 leading-relaxed">
-              練習中會持續顯示進度，結束後報告也會直接告訴你這次有沒有達標，以及下一輪最該先修的地方。
+              {t('settings:goal.description')}
             </p>
           </div>
 
           <div className="space-y-2.5">
-            {PRACTICE_GOAL_LIST.map((goal) => (
+            {goals.map((goal) => (
               <GoalCard
                 key={goal.id}
                 goal={goal}
@@ -140,9 +139,8 @@ export function SettingsScreen() {
         </div>
       </section>
 
-      {/* Speed range slider */}
       <section data-annotation-id="speed-range-slider">
-        <SectionTitle>語速範圍</SectionTitle>
+        <SectionTitle>{t('settings:sections.speedRange')}</SectionTitle>
         <div className="mx-4 bg-white rounded-2xl shadow-sm p-4">
           <SpeedRangeSlider
             low={settings.speedRange.low}
@@ -152,9 +150,8 @@ export function SettingsScreen() {
         </div>
       </section>
 
-      {/* Default filler words */}
       <section data-annotation-id="filler-chip-editor">
-        <SectionTitle>預設贅字清單</SectionTitle>
+        <SectionTitle>{t('settings:sections.defaultFillers')}</SectionTitle>
         <div className="mx-4 bg-white rounded-2xl shadow-sm p-4">
           <div className="flex flex-wrap gap-2">
             {settings.fillerWords.filter((fw) => fw.category !== 'custom').map((fw) => (
@@ -169,21 +166,20 @@ export function SettingsScreen() {
               onClick={() => {
                 const current = settings.fillerWords
                 const currentWords = new Set(current.map((f) => f.word))
-                const missing = DEFAULT_FILLER_WORDS.filter((f) => !currentWords.has(f.word))
+                const missing = getDefaultFillerWords(settings.language).filter((f) => !currentWords.has(f.word))
                 if (missing.length === 0) return
                 settings.setFillerWords([...current, ...missing])
               }}
               className="text-xs border border-dashed border-gray-300 text-gray-400 rounded-full px-2.5 py-1 hover:border-accent-green hover:text-accent-green transition-colors"
             >
-              ↺ 還原預設
+              {t('settings:fillers.restoreDefault')}
             </button>
           </div>
         </div>
       </section>
 
-      {/* Custom filler words */}
       <section>
-        <SectionTitle>自訂贅字清單</SectionTitle>
+        <SectionTitle>{t('settings:sections.customFillers')}</SectionTitle>
         <div className="mx-4 bg-white rounded-2xl shadow-sm p-4">
           <div className="flex flex-wrap gap-2">
             {settings.fillerWords.filter((fw) => fw.category === 'custom').map((fw) => (
@@ -201,20 +197,20 @@ export function SettingsScreen() {
                   value={newWord}
                   onChange={(e) => setNewWord(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAddWord()}
-                  placeholder="輸入贅字"
-                  className="text-xs text-gray-800 bg-white border border-gray-200 rounded-full px-2.5 py-1 w-20 outline-none focus:border-accent-blue placeholder:text-gray-400"
+                  placeholder={t('settings:fillers.placeholder')}
+                  className="text-xs text-gray-800 bg-white border border-gray-200 rounded-full px-2.5 py-1 w-24 outline-none focus:border-accent-blue placeholder:text-gray-400"
                 />
                 <button
                   onClick={handleAddWord}
                   className="text-xs text-accent-blue font-medium"
                 >
-                  加入
+                  {t('settings:fillers.add')}
                 </button>
                 <button
                   onClick={() => setShowAddInput(false)}
                   className="text-xs text-gray-400"
                 >
-                  取消
+                  {t('settings:fillers.cancel')}
                 </button>
               </div>
             ) : (
@@ -222,47 +218,47 @@ export function SettingsScreen() {
                 onClick={() => setShowAddInput(true)}
                 className="text-xs border border-dashed border-gray-300 text-gray-400 rounded-full px-2.5 py-1 hover:border-accent-blue hover:text-accent-blue transition-colors"
               >
-                + 新增
+                {t('settings:fillers.addNew')}
               </button>
             )}
           </div>
         </div>
       </section>
 
-      {/* Feedback */}
       <section data-annotation-id="settings-feedback">
-        <SectionTitle>回饋方式</SectionTitle>
+        <SectionTitle>{t('settings:sections.feedback')}</SectionTitle>
         <div className="mx-4 bg-white rounded-2xl shadow-sm divide-y divide-gray-50">
           <ToggleRow
             icon="📳"
             iconBg="bg-amber-50"
-            title="觸覺震動提醒"
-            sub="偵測到贅字時輕震提醒"
+            title={t('settings:feedback.haptic.title')}
+            sub={t('settings:feedback.haptic.description')}
             value={settings.hapticEnabled}
             onChange={settings.setHapticEnabled}
           />
           <ToggleRow
             icon="🔊"
             iconBg="bg-green-50"
-            title="音效提示"
-            sub="用輕柔音效取代震動"
+            title={t('settings:feedback.sound.title')}
+            sub={t('settings:feedback.sound.description')}
             value={settings.soundEnabled}
             onChange={settings.setSoundEnabled}
           />
         </div>
       </section>
 
-      {/* Language */}
       <section data-annotation-id="settings-language">
-        <SectionTitle>語言</SectionTitle>
+        <SectionTitle>{t('common:languageToggle.label')}</SectionTitle>
         <div className="mx-4 bg-white rounded-2xl shadow-sm divide-y divide-gray-50">
-          {LANGUAGES.map((lang) => (
+          {LANGUAGE_OPTIONS.map((lang) => (
             <button
               key={lang.code}
-              onClick={() => settings.setLanguage(lang.code)}
+              onClick={() => {
+                void i18n.changeLanguage(lang.code)
+              }}
               className="w-full flex items-center justify-between px-4 py-3.5 text-left"
             >
-              <span className="text-sm text-gray-700">{lang.label}</span>
+              <span className="text-sm text-gray-700">{t(`common:languages.${lang.code}`)}</span>
               {settings.language === lang.code && (
                 <span className="text-accent-blue text-sm">✓</span>
               )}
@@ -271,21 +267,20 @@ export function SettingsScreen() {
         </div>
       </section>
 
-      {/* Data */}
       <section>
-        <SectionTitle>資料</SectionTitle>
+        <SectionTitle>{t('settings:sections.data')}</SectionTitle>
         <div className="mx-4 bg-white rounded-2xl shadow-sm divide-y divide-gray-50">
           <button
-            onClick={() => confirm('確認清除所有練習紀錄？') && clearAll()}
+            onClick={() => window.confirm(t('settings:data.clearConfirm')) && clearAll()}
             className="w-full flex items-center gap-3 px-4 py-3.5 text-left"
           >
             <span className="w-7 h-7 rounded-xl bg-red-50 flex items-center justify-center text-sm">🗑</span>
-            <span className="text-sm text-red-500">清除所有紀錄</span>
+            <span className="text-sm text-red-500">{t('settings:data.clearAll')}</span>
           </button>
         </div>
       </section>
 
-      <p className="text-center text-xs text-gray-400 mt-6">說來話長 TalkFit v1.0</p>
+      <p className="text-center text-xs text-gray-400 mt-6">{t('settings:version', { appName: t('common:appName') })}</p>
     </div>
   )
 }
@@ -371,15 +366,17 @@ function SpeedRangeSlider({
   high: number
   onChange: (range: { low: number; high: number }) => void
 }) {
+  const { t } = useTranslation(['settings'])
+
   return (
     <div>
       <div className="flex justify-between text-xs text-gray-500 mb-3">
-        <span>偏慢門檻</span>
-        <span className="font-semibold text-accent-blue">{low} – {high} 字/分</span>
-        <span>偏快門檻</span>
+        <span>{t('settings:speedRange.slowThreshold')}</span>
+        <span className="font-semibold text-accent-blue">{t('settings:speedRange.range', { low, high })}</span>
+        <span>{t('settings:speedRange.fastThreshold')}</span>
       </div>
       <div className="mb-3">
-        <label className="text-[11px] text-gray-400 mb-1 block">偏慢門檻：{low} 字/分</label>
+        <label className="text-[11px] text-gray-400 mb-1 block">{t('settings:speedRange.slowLabel', { value: low })}</label>
         <input
           type="range"
           min={60}
@@ -391,7 +388,7 @@ function SpeedRangeSlider({
         />
       </div>
       <div>
-        <label className="text-[11px] text-gray-400 mb-1 block">偏快門檻：{high} 字/分</label>
+        <label className="text-[11px] text-gray-400 mb-1 block">{t('settings:speedRange.fastLabel', { value: high })}</label>
         <input
           type="range"
           min={low + 10}
@@ -403,9 +400,9 @@ function SpeedRangeSlider({
         />
       </div>
       <div className="flex justify-between text-[10px] text-gray-400 mt-2">
-        <span className="text-purple-500">⬤ 偏慢</span>
-        <span className="text-green-500">⬤ 適中</span>
-        <span className="text-red-500">⬤ 偏快</span>
+        <span className="text-purple-500">{t('settings:speedRange.legendSlow')}</span>
+        <span className="text-green-500">{t('settings:speedRange.legendNormal')}</span>
+        <span className="text-red-500">{t('settings:speedRange.legendFast')}</span>
       </div>
     </div>
   )
@@ -420,6 +417,7 @@ function PresetCard({
   isActive: boolean
   onClick: () => void
 }) {
+  const { t } = useTranslation(['settings'])
   const categoryLabels = getPresetCategoryLabels(preset.enabledCategories)
 
   return (
@@ -443,13 +441,16 @@ function PresetCard({
               : 'bg-white text-gray-400 border border-gray-200'
           }`}
         >
-          {isActive ? '目前使用' : '套用'}
+          {isActive ? t('settings:presets.activeBadge') : t('settings:presets.applyBadge')}
         </span>
       </div>
 
       <div className="mt-3 flex items-center gap-2 flex-wrap">
         <span className="text-[11px] font-medium text-gray-700">
-          語速 {preset.speedRange.low}–{preset.speedRange.high} 字/分
+          {t('settings:presets.speed', {
+            low: preset.speedRange.low,
+            high: preset.speedRange.high,
+          })}
         </span>
       </div>
 
@@ -480,6 +481,8 @@ function GoalCard({
   isActive: boolean
   onClick: () => void
 }) {
+  const { t } = useTranslation(['settings'])
+
   return (
     <button
       onClick={onClick}
@@ -501,7 +504,7 @@ function GoalCard({
               : 'bg-white text-gray-400 border border-gray-200'
           }`}
         >
-          {isActive ? '本次目標' : '選擇'}
+          {isActive ? t('settings:goal.activeBadge') : t('settings:goal.selectBadge')}
         </span>
       </div>
 
@@ -510,7 +513,7 @@ function GoalCard({
           isActive ? 'text-emerald-700' : 'text-gray-400'
         }`}
       >
-        {PRACTICE_GOALS[goal.id].coachHint}
+        {goal.coachHint}
       </p>
     </button>
   )

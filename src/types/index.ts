@@ -1,11 +1,11 @@
 export type Screen = 'home' | 'practice' | 'report' | 'history' | 'settings'
 
 export type FillerCategory =
-  | 'filler-sound'      // 填充音: 嗯、啊、ㄜ
-  | 'connector'         // 連接贅詞: 然後、而且、再來、接下來
-  | 'demonstrative'     // 指示贅詞: 這個、那個
-  | 'opener'            // 習慣性開場白: 老實說、我覺得、基本上、其實
-  | 'closer'            // 習慣性結尾: 你懂我意思嗎、對不對、是不是、對
+  | 'filler-sound'
+  | 'connector'
+  | 'demonstrative'
+  | 'opener'
+  | 'closer'
   | 'custom'
 
 export type PracticePresetId =
@@ -20,6 +20,7 @@ export type PracticeGoalId =
   | 'cut-top-filler'
 
 export interface FillerWord {
+  builtinId?: string
   word: string
   category: FillerCategory
   enabled: boolean
@@ -40,7 +41,7 @@ export interface TranscriptSegment {
 }
 
 export interface SpeedDataPoint {
-  time: number    // seconds
+  time: number
   wpm: number
 }
 
@@ -77,7 +78,7 @@ export interface RetryPracticeTarget {
 export interface SessionSummary {
   id: string
   title: string
-  date: string            // ISO string
+  date: string
   durationSeconds: number
   avgWpm: number
   fillerCount: number

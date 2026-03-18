@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 export interface CommandPaletteAction {
   id: string
@@ -27,6 +28,7 @@ export function CommandPaletteModal({
   actions,
   onClose,
 }: CommandPaletteModalProps) {
+  const { t } = useTranslation(['commandPalette'])
   const [query, setQuery] = useState('')
   const [activeIndex, setActiveIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement | null>(null)
@@ -139,12 +141,12 @@ export function CommandPaletteModal({
                   <div className="mb-1 flex items-center gap-2">
                     <div className="h-3.5 w-1 rounded-full bg-accent-blue" />
                     <span className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-blue-light">
-                      Quick Actions
+                      {t('commandPalette:eyebrow')}
                     </span>
                   </div>
-                  <h2 className="text-xl font-bold text-text-primary">快速操作</h2>
+                  <h2 className="text-xl font-bold text-text-primary">{t('commandPalette:title')}</h2>
                   <p className="mt-1 text-sm text-text-secondary">
-                    用關鍵字快速跳頁、切換展示狀態或執行常用操作。
+                    {t('commandPalette:description')}
                   </p>
                 </div>
 
@@ -152,7 +154,7 @@ export function CommandPaletteModal({
                   <kbd className="rounded-lg border border-divider bg-bg-card px-2 py-1 font-semibold shadow-sm">
                     ⌘K
                   </kbd>
-                  <span className="hidden md:inline">或 Ctrl+K</span>
+                  <span className="hidden md:inline">{t('commandPalette:shortcutHint')}</span>
                 </div>
               </div>
 
@@ -164,7 +166,7 @@ export function CommandPaletteModal({
                     setQuery(event.target.value)
                     setActiveIndex(0)
                   }}
-                  placeholder="搜尋畫面、示範、全螢幕、輸出畫面..."
+                  placeholder={t('commandPalette:searchPlaceholder')}
                   className="w-full rounded-2xl border border-divider bg-bg-surface px-4 py-3 text-sm text-text-primary outline-none transition-all placeholder:text-text-muted focus:border-accent-blue/40 focus:ring-4 focus:ring-accent-blue/10"
                 />
               </div>
@@ -173,9 +175,9 @@ export function CommandPaletteModal({
             <div className="max-h-[68vh] overflow-y-auto px-4 py-4 md:px-6">
               {groupedActions.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-divider bg-bg-surface px-5 py-10 text-center">
-                  <p className="text-sm font-medium text-text-primary">找不到符合的操作</p>
+                  <p className="text-sm font-medium text-text-primary">{t('commandPalette:empty.title')}</p>
                   <p className="mt-1 text-sm text-text-secondary">
-                    可以試試看搜尋「報告」、「示範」、「全螢幕」或「設定」。
+                    {t('commandPalette:empty.description')}
                   </p>
                 </div>
               ) : (

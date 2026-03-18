@@ -1,3 +1,4 @@
+import i18n from '../i18n'
 import type { ReportIssueMarker, RetryPracticeTarget, SessionSummary, SpeedRange } from '../types'
 
 function buildSnippet(report: SessionSummary, segmentIndex: number) {
@@ -14,17 +15,18 @@ export function buildRetryPracticeTarget(
   const snippet = buildSnippet(report, marker.segmentIndex)
 
   if (marker.kind === 'filler') {
+    const word = marker.fillerWord ?? marker.label
     return {
       sourceReportId: report.id,
       sourceReportTitle: report.title,
       markerId: marker.id,
       kind: 'filler',
-      label: marker.fillerWord ?? marker.label,
+      label: word,
       timestamp: marker.timestamp,
       segmentIndex: marker.segmentIndex,
       snippet,
-      prompt: `重講這段時，刻意不要說「${marker.fillerWord ?? marker.label}」，把句子一次講完整。`,
-      sessionTitle: `片段重練 · ${marker.fillerWord ?? marker.label}`,
+      prompt: i18n.t('practice:retryPractice.fillerPrompt', { word }),
+      sessionTitle: i18n.t('practice:retryPractice.fillerSessionTitle', { word }),
       recommendedDurationSeconds: 15,
     }
   }
@@ -39,8 +41,11 @@ export function buildRetryPracticeTarget(
       timestamp: marker.timestamp,
       segmentIndex: marker.segmentIndex,
       snippet,
-      prompt: `把這段再講得更俐落一點，盡量維持在 ${speedRange.low}–${speedRange.high} 字/分內。`,
-      sessionTitle: '片段重練 · 語速偏慢',
+      prompt: i18n.t('practice:retryPractice.slowPrompt', {
+        low: speedRange.low,
+        high: speedRange.high,
+      }),
+      sessionTitle: i18n.t('practice:retryPractice.slowSessionTitle'),
       recommendedDurationSeconds: 15,
     }
   }
@@ -54,8 +59,11 @@ export function buildRetryPracticeTarget(
     timestamp: marker.timestamp,
     segmentIndex: marker.segmentIndex,
     snippet,
-    prompt: `把這段放慢一點，句尾多留半拍，先穩回 ${speedRange.low}–${speedRange.high} 字/分。`,
-    sessionTitle: '片段重練 · 語速偏快',
+    prompt: i18n.t('practice:retryPractice.fastPrompt', {
+      low: speedRange.low,
+      high: speedRange.high,
+    }),
+    sessionTitle: i18n.t('practice:retryPractice.fastSessionTitle'),
     recommendedDurationSeconds: 15,
   }
 }

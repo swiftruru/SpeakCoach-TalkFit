@@ -1,4 +1,5 @@
 import { forwardRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   REPORT_SHARE_CARD_HEIGHT,
   REPORT_SHARE_CARD_WIDTH,
@@ -16,9 +17,10 @@ export const ReportShareCard = forwardRef<SVGSVGElement, ReportShareCardProps>(f
   { data, className },
   ref
 ) {
+  const { t } = useTranslation(['report'])
   const fillerRows = data.topFillers.length > 0
     ? data.topFillers
-    : [{ word: '尚無資料', count: 0, ratio: 0.2, accent: '#cbd5e1' }]
+    : [{ word: t('report:shareCard.metrics.none'), count: 0, ratio: 0.2, accent: '#cbd5e1' }]
 
   return (
     <svg
@@ -26,7 +28,7 @@ export const ReportShareCard = forwardRef<SVGSVGElement, ReportShareCardProps>(f
       viewBox={`0 0 ${REPORT_SHARE_CARD_WIDTH} ${REPORT_SHARE_CARD_HEIGHT}`}
       xmlns="http://www.w3.org/2000/svg"
       role="img"
-      aria-label="TalkFit 分享卡"
+      aria-label={t('report:shareCard.ariaLabel')}
       className={className}
       preserveAspectRatio="xMidYMin meet"
     >
@@ -69,20 +71,20 @@ export const ReportShareCard = forwardRef<SVGSVGElement, ReportShareCardProps>(f
         <g>
           <rect x="0" y="0" width="178" height="42" rx="21" fill="#dbeafe" />
           <text x="18" y="27" fontSize="18" fontWeight="700" fill="#1d4ed8">
-            TALKFIT REPORT
+            {t('report:shareCard.reportBadge')}
           </text>
 
           <text x="0" y="98" fontSize="52" fontWeight="800" fill="#0f172a">
             {data.title}
           </text>
           <text x="0" y="142" fontSize="24" fill="#64748b">
-            {data.dateLabel} ・ 練習時長 {data.durationLabel}
+            {data.dateLabel} ・ {t('report:shareCard.duration', { value: data.durationLabel })}
           </text>
 
           <g transform="translate(720 4)">
             <rect x="0" y="0" width="164" height="164" rx="34" fill="#0f172a" />
             <text x="82" y="54" textAnchor="middle" fontSize="20" fontWeight="700" fill="#cbd5e1">
-              流暢度
+              {t('report:shareCard.gradeLabel')}
             </text>
             <text x="82" y="118" textAnchor="middle" fontSize="58" fontWeight="800" fill="#ffffff">
               {data.grade}
@@ -108,7 +110,7 @@ export const ReportShareCard = forwardRef<SVGSVGElement, ReportShareCardProps>(f
         <g transform="translate(0 386)">
           <rect x="0" y="0" width="884" height="188" rx="30" fill="#0f172a" />
           <text x="34" y="46" fontSize="20" fontWeight="700" fill="#93c5fd">
-            本次重點
+            {t('report:shareCard.insightLabel')}
           </text>
           <text x="34" y="94" fontSize="40" fontWeight="800" fill="#ffffff">
             {data.insightTitle}
@@ -135,7 +137,7 @@ export const ReportShareCard = forwardRef<SVGSVGElement, ReportShareCardProps>(f
         <g transform="translate(0 620)">
           <rect x="0" y="0" width="404" height="240" rx="30" fill="#ffffff" stroke="#e5edf5" />
           <text x="28" y="42" fontSize="22" fontWeight="700" fill="#0f172a">
-            常見贅字 Top 3
+            {t('report:shareCard.topFillersTitle')}
           </text>
           {fillerRows.map((item, index) => (
             <g key={`${item.word}-${index}`} transform={`translate(28 ${78 + index * 52})`}>
@@ -143,7 +145,7 @@ export const ReportShareCard = forwardRef<SVGSVGElement, ReportShareCardProps>(f
                 {item.word}
               </text>
               <text x="318" y="20" fontSize="18" fontWeight="700" fill={item.accent} textAnchor="end">
-                {item.count} 次
+                {t('report:shareCard.countUnit', { count: item.count })}
               </text>
               <rect x="0" y="30" width="318" height="10" rx="5" fill="#e2e8f0" />
               <rect x="0" y="30" width={Math.max(38, 318 * item.ratio)} height="10" rx="5" fill={item.accent} />
@@ -154,10 +156,10 @@ export const ReportShareCard = forwardRef<SVGSVGElement, ReportShareCardProps>(f
         <g transform="translate(438 620)">
           <rect x="0" y="0" width="446" height="420" rx="30" fill="#ffffff" stroke="#e5edf5" />
           <text x="28" y="42" fontSize="22" fontWeight="700" fill="#0f172a">
-            語速節奏
+            {t('report:shareCard.paceTitle')}
           </text>
           <text x="28" y="72" fontSize="18" fill="#64748b">
-            建議區間與異常點已整理成分享卡
+            {t('report:shareCard.paceDescription')}
           </text>
 
           <rect x="26" y={data.rangeBandY} width="394" height={data.rangeBandHeight} rx="18" fill="#eff6ff" />
@@ -195,10 +197,10 @@ export const ReportShareCard = forwardRef<SVGSVGElement, ReportShareCardProps>(f
         <g transform="translate(0 1080)">
           <rect x="0" y="0" width="884" height="120" rx="30" fill="#f8fafc" stroke="#e2e8f0" />
           <text x="30" y="50" fontSize="22" fontWeight="700" fill="#0f172a">
-            說來話長 TalkFit
+            {t('report:shareCard.brandTitle')}
           </text>
           <text x="30" y="82" fontSize="20" fill="#64748b">
-            用即時語音回饋，讓演講練習更有方向。
+            {t('report:shareCard.brandBody')}
           </text>
           <text x="854" y="82" textAnchor="end" fontSize="18" fontWeight="700" fill="#2563eb">
             {data.footerNote}

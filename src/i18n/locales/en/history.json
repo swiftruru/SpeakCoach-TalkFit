@@ -1,0 +1,30 @@
+{
+  "title": "History",
+  "summary": {
+    "totalPractice": "Total Sessions",
+    "totalDuration": "Total Minutes",
+    "topFiller": "Top Filler",
+    "minutes": "min",
+    "emptyValue": "—"
+  },
+  "trend": {
+    "title": "Filler Trend",
+    "reducedSinceFirst": "{{percent}}% lower than the first session",
+    "tooltipValue": "{{count}} times",
+    "tooltipName": "Fillers"
+  },
+  "list": {
+    "title": "Practice Sessions",
+    "clearAll": "Clear All",
+    "clearConfirm": "Clear all session history?",
+    "emptyEmoji": "🎙",
+    "emptyTitle": "No practice history yet",
+    "emptyAction": "Start your first practice",
+    "countBadge": "{{count}} times",
+    "meta": {
+      "wpm": "Pace {{value}} wpm",
+      "duration": "Duration {{value}}",
+      "grade": "Grade {{value}}"
+    }
+  }
+}

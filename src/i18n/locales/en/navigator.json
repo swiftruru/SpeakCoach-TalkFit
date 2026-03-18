@@ -1,0 +1,42 @@
+{
+  "modeLabel": {
+    "demo": "Demo",
+    "guide": "Guide"
+  },
+  "completeDemo": "Full walkthrough",
+  "exploreHint": "When the demo is not playing, the site stays in free exploration mode so you can switch chapters and read notes directly.",
+  "controlsLabel": "Playback Controls",
+  "summaryLabel": "Current Focus",
+  "status": {
+    "demo": "Demo Live",
+    "explore": "Explore"
+  },
+  "callout": {
+    "demoTitle": "Showcase Hint",
+    "demoBody": "The full app demo is playing. Use previous, next, pause, and speed controls to adjust the pacing.",
+    "exploreTitle": "Free Exploration",
+    "exploreBody": "Without starting the demo, the prototype stays in free exploration mode. You can switch chapters, pin annotation cards, or share the current view."
+  },
+  "chapters": {
+    "home": {
+      "label": "Home",
+      "summary": "Start with the recent practice overview and daily reminder."
+    },
+    "practice": {
+      "label": "Practice",
+      "summary": "Focus on the live dashboard, goals, and practice feedback."
+    },
+    "report": {
+      "label": "Report",
+      "summary": "Review analysis results, jump to issues, and retry weak segments."
+    },
+    "history": {
+      "label": "History",
+      "summary": "Look back at trends and individual practice sessions."
+    },
+    "settings": {
+      "label": "Settings",
+      "summary": "Adjust presets, goals, and detection rules."
+    }
+  }
+}

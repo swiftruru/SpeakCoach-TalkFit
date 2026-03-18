@@ -1,3 +1,4 @@
+import i18n from '../i18n'
 import type { ReportIssueKind, ReportIssueMarker, SessionSummary, SpeedRange } from '../types'
 
 function clamp(value: number, min: number, max: number) {
@@ -89,7 +90,7 @@ export function buildSpeedMarkers(
     id: `speed-${speedPointIndex}-${point.time}`,
     kind: getSpeedMarkerKind(point.wpm, speedRange),
     timestamp: clamp(point.time, 0, report.durationSeconds),
-    label: `語速 ${point.wpm} 字/分`,
+    label: i18n.t('report:issues.speedLabel', { wpm: point.wpm }),
     segmentIndex: findNearestSegmentIndex(timeline, point.time),
     speedPointIndex,
   }))
@@ -99,16 +100,20 @@ export function describeReportIssue(marker: ReportIssueMarker): string {
   if (marker.kind === 'filler') {
     const current = (marker.occurrenceIndex ?? 0) + 1
     const total = marker.occurrenceCount ?? 1
-    return `${marker.label} · 第 ${current} / ${total} 次`
+    return i18n.t('report:issues.fillerOccurrence', {
+      label: marker.label,
+      current,
+      total,
+    })
   }
 
   if (marker.kind === 'speed-fast') {
-    return `${marker.label} · 語速偏快`
+    return i18n.t('report:issues.speedFast', { label: marker.label })
   }
 
   if (marker.kind === 'speed-slow') {
-    return `${marker.label} · 語速偏慢`
+    return i18n.t('report:issues.speedSlow', { label: marker.label })
   }
 
-  return `${marker.label} · 語速在建議範圍內`
+  return i18n.t('report:issues.speedNormal', { label: marker.label })
 }

@@ -1,33 +1,7 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { AnnotationItem } from './types'
 import type { Screen } from '../types'
-import { homeAnnotations } from './annotations/home'
-import { practiceAnnotations } from './annotations/practice'
-import { reportAnnotations } from './annotations/report'
-import { historyAnnotations } from './annotations/history'
-import { settingsAnnotations } from './annotations/settings'
-
-const SCREEN_ANNOTATIONS: Record<Screen, AnnotationItem[]> = {
-  home: homeAnnotations,
-  practice: practiceAnnotations,
-  report: reportAnnotations,
-  history: historyAnnotations,
-  settings: settingsAnnotations,
-}
-
-const SCREEN_LABELS: Record<Screen, string> = {
-  home: '首頁',
-  practice: '練習中',
-  report: '分析報告',
-  history: '歷史紀錄',
-  settings: '設定',
-}
-
-const TYPE_BADGE: Record<AnnotationItem['type'], { label: string; cls: string }> = {
-  feature: { label: '功能', cls: 'bg-blue-50 text-blue-600' },
-  design: { label: '設計', cls: 'bg-purple-50 text-purple-600' },
-  tech: { label: '技術', cls: 'bg-amber-50 text-amber-600' },
-}
 
 const ANNOTATIONS_PER_PAGE = 4
 
@@ -52,7 +26,23 @@ export function AnnotationPanel({
   onClearPin,
   onNavigate,
 }: AnnotationPanelProps) {
-  const annotations = SCREEN_ANNOTATIONS[screen]
+  const { t } = useTranslation(['common', 'annotation'])
+  const annotations = useMemo(() => {
+    const value = t(`annotation:items.${screen}`, { returnObjects: true })
+    return Array.isArray(value) ? (value as AnnotationItem[]) : []
+  }, [screen, t])
+  const screenLabels: Record<Screen, string> = {
+    home: t('common:screenTabs.home'),
+    practice: t('common:screenTabs.practice'),
+    report: t('common:screenTabs.report'),
+    history: t('common:screenTabs.history'),
+    settings: t('common:screenTabs.settings'),
+  }
+  const typeBadge: Record<AnnotationItem['type'], { label: string; cls: string }> = {
+    feature: { label: t('annotation:types.feature'), cls: 'bg-blue-50 text-blue-600' },
+    design: { label: t('annotation:types.design'), cls: 'bg-purple-50 text-purple-600' },
+    tech: { label: t('annotation:types.tech'), cls: 'bg-amber-50 text-amber-600' },
+  }
   const [manualPageIndexByScreen, setManualPageIndexByScreen] = useState<Record<Screen, number>>({
     home: 0,
     practice: 0,
@@ -79,7 +69,7 @@ export function AnnotationPanel({
       {/* Panel header — tab nav */}
       <div className={`flex-shrink-0 px-3 pt-3 pb-0 transition-opacity ${isSpotlightMode && activeId ? 'opacity-55' : ''}`}>
         <div className="flex flex-wrap gap-0.5">
-          {(Object.entries(SCREEN_LABELS) as [Screen, string][]).map(([id, label]) => (
+          {(Object.entries(screenLabels) as [Screen, string][]).map(([id, label]) => (
             <button
               key={id}
               onClick={() => onNavigate(id)}
@@ -106,7 +96,7 @@ export function AnnotationPanel({
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-[11px] font-semibold tracking-[0.14em] text-amber-700 uppercase dark:text-amber-200">
-                已固定說明
+                {t('annotation:pinned.label')}
               </p>
               <p className="mt-1 text-sm font-medium text-amber-900 dark:text-amber-100">
                 {pinnedItem.title}
@@ -116,7 +106,7 @@ export function AnnotationPanel({
               onClick={onClearPin}
               className="rounded-full bg-white/80 px-2.5 py-1 text-[11px] text-amber-700 transition-all hover:bg-white dark:bg-white/10 dark:text-amber-100"
             >
-              解除
+              {t('annotation:pinned.release')}
             </button>
           </div>
         </div>
@@ -128,10 +118,10 @@ export function AnnotationPanel({
           <div className="mb-3 flex items-center justify-between rounded-2xl border border-divider bg-bg-card px-3 py-2">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-text-muted">
-                說明分頁
+                {t('annotation:pagination.label')}
               </p>
               <p className="mt-0.5 text-xs text-text-secondary">
-                第 {pageIndex + 1} / {totalPages} 頁
+                {t('annotation:pagination.status', { page: pageIndex + 1, total: totalPages })}
               </p>
             </div>
             <div className="flex items-center gap-1.5">
@@ -143,7 +133,7 @@ export function AnnotationPanel({
                 disabled={pageIndex === 0 || activePageIndex !== null}
                 className="rounded-full border border-divider px-2.5 py-1 text-[11px] text-text-secondary transition-all hover:bg-bg-surface disabled:cursor-not-allowed disabled:opacity-45"
               >
-                上一頁
+                {t('common:actions.previous')}
               </button>
               <button
                 onClick={() => setManualPageIndexByScreen((current) => ({
@@ -153,7 +143,7 @@ export function AnnotationPanel({
                 disabled={pageIndex >= totalPages - 1 || activePageIndex !== null}
                 className="rounded-full border border-divider px-2.5 py-1 text-[11px] text-text-secondary transition-all hover:bg-bg-surface disabled:cursor-not-allowed disabled:opacity-45"
               >
-                下一頁
+                {t('common:actions.next')}
               </button>
             </div>
           </div>
@@ -161,7 +151,7 @@ export function AnnotationPanel({
 
         {activePageIndex !== null && totalPages > 1 && (
           <div className="mb-3 rounded-2xl border border-amber-200/70 bg-amber-50/70 px-3 py-2 text-[11px] leading-relaxed text-amber-800 dark:border-amber-400/20 dark:bg-amber-500/10 dark:text-amber-100/90">
-            目前聚焦的功能位於第 {pageIndex + 1} 頁，面板已自動切換到對應說明。
+            {t('annotation:pagination.focusHint', { page: pageIndex + 1 })}
           </div>
         )}
 
@@ -196,12 +186,12 @@ export function AnnotationPanel({
                         ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200'
                         : 'bg-bg-card2 text-text-muted hover:text-text-primary'
                     }`}
-                    title={isPinned ? '解除固定這張說明卡' : '固定這張說明卡'}
+                    title={isPinned ? t('annotation:pinButton.unpinTitle') : t('annotation:pinButton.pinTitle')}
                   >
-                    {isPinned ? '已固定' : '固定'}
+                    {isPinned ? t('annotation:pinButton.pinned') : t('annotation:pinButton.pin')}
                   </button>
-                  <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0 ${TYPE_BADGE[item.type].cls}`}>
-                    {TYPE_BADGE[item.type].label}
+                  <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0 ${typeBadge[item.type].cls}`}>
+                    {typeBadge[item.type].label}
                   </span>
                 </div>
               </div>
@@ -216,7 +206,10 @@ export function AnnotationPanel({
       {/* Footer hint */}
       <div className={`px-5 py-3 flex-shrink-0 border-t border-divider transition-opacity ${isSpotlightMode && activeId ? 'opacity-45' : ''}`}>
         <p className="text-[11px] text-text-muted">
-          說來話長 TalkFit · Made with React
+          {t('annotation:footer', {
+            appName: t('common:appName'),
+            madeWithReact: t('common:madeWithReact'),
+          })}
         </p>
       </div>
     </div>

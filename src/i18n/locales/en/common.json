@@ -1,0 +1,75 @@
+{
+  "appName": "TalkFit",
+  "appNameShort": "TalkFit",
+  "madeWithReact": "Made with React",
+  "viewOnGitHub": "View on GitHub",
+  "relativeTime": {
+    "justNow": "Just now"
+  },
+  "dates": {
+    "todayAt": "Today {{time}}",
+    "yesterdayAt": "Yesterday {{time}}"
+  },
+  "languages": {
+    "zh-TW": "Traditional Chinese",
+    "en": "English"
+  },
+  "languageToggle": {
+    "label": "Language",
+    "zh": "中文",
+    "en": "EN",
+    "switchToZh": "Switch to Chinese",
+    "switchToEn": "Switch to English"
+  },
+  "screens": {
+    "home": "Home",
+    "practice": "Practice",
+    "report": "Report",
+    "history": "History",
+    "settings": "Settings"
+  },
+  "screenTabs": {
+    "home": "Home",
+    "practice": "Practice",
+    "report": "Report",
+    "history": "History",
+    "settings": "Settings"
+  },
+  "mobile": {
+    "annotations": "Notes"
+  },
+  "actions": {
+    "close": "Close",
+    "cancel": "Cancel",
+    "skip": "Skip",
+    "previous": "Previous",
+    "next": "Next",
+    "previousStep": "Previous",
+    "nextStep": "Next",
+    "resume": "Resume",
+    "pause": "Pause",
+    "startDemo": "Start Demo",
+    "stopDemo": "Stop Demo",
+    "openAnnotations": "Show Notes",
+    "collapseAnnotations": "Hide Notes",
+    "exportCapture": "Export View",
+    "presentationMode": "Presentation Mode",
+    "endPresentation": "Exit Presentation",
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Exit Fullscreen",
+    "quickActions": "Quick Actions",
+    "designStory": "Design Story",
+    "mockData": "Mock Data",
+    "more": "More",
+    "resetPrototype": "Reset Prototype",
+    "copyLink": "View Link",
+    "themeLight": "Switch to Light Mode",
+    "themeDark": "Switch to Dark Mode"
+  },
+  "states": {
+    "enabled": "Applied",
+    "customizing": "Custom",
+    "freeExplore": "Explore",
+    "demoPlaying": "Demo"
+  }
+}

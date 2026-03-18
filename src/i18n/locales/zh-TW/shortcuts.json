@@ -1,0 +1,27 @@
+{
+  "eyebrow": "Shortcuts",
+  "title": "網站快捷鍵",
+  "description": "這些快捷鍵主要針對桌面展示與作品集操作流程設計。",
+  "groups": {
+    "showcase": "展示控制",
+    "playback": "示範播放",
+    "site": "網站操作"
+  },
+  "items": {
+    "palette": "開啟快速操作 Command Palette",
+    "demo": "開始 / 停止示範",
+    "presentation": "切換簡報模式",
+    "fullscreen": "切換真正全螢幕展示",
+    "capture": "開啟截圖 / 乾淨輸出視窗",
+    "annotations": "開關說明面板",
+    "reset": "重置原型",
+    "previous": "回到上一步",
+    "next": "前往下一步",
+    "pause": "暫停 / 繼續播放",
+    "escape": "關閉視窗或停止示範",
+    "help": "開啟快捷鍵說明",
+    "theme": "切換亮 / 暗色主題",
+    "story": "開啟設計動機 / 關於",
+    "link": "複製目前畫面連結"
+  }
+}

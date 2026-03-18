@@ -1,0 +1,123 @@
+{
+  "eyebrow": "Quick Actions",
+  "title": "快速操作",
+  "description": "用關鍵字快速跳頁、切換展示狀態或執行常用操作。",
+  "shortcutHint": "或 Ctrl+K",
+  "searchPlaceholder": "搜尋畫面、示範、全螢幕、輸出畫面...",
+  "empty": {
+    "title": "找不到符合的操作",
+    "description": "可以試試看搜尋「報告」、「示範」、「全螢幕」或「設定」。"
+  },
+  "sections": {
+    "screen": "畫面跳轉",
+    "showcase": "展示控制",
+    "tools": "資料與工具"
+  },
+  "actions": {
+    "home": {
+      "title": "前往首頁",
+      "description": "查看首頁總覽、提醒與本週數據。",
+      "keywords": ["首頁", "home", "dashboard"]
+    },
+    "practice": {
+      "title": "前往練習頁",
+      "description": "切到練習中的儀表板與逐字稿頁面。",
+      "keywords": ["練習", "practice", "錄音"]
+    },
+    "report": {
+      "title": "前往分析報告",
+      "description": "查看報告總覽、問題跳轉與分享卡。",
+      "keywords": ["報告", "report", "分享卡", "share"]
+    },
+    "history": {
+      "title": "前往歷史紀錄",
+      "description": "瀏覽歷史趨勢與練習列表。",
+      "keywords": ["紀錄", "history", "趨勢"]
+    },
+    "settings": {
+      "title": "前往設定頁",
+      "description": "調整 preset、練習目標與偵測規則。",
+      "keywords": ["設定", "settings", "preset"]
+    },
+    "demoStart": {
+      "title": "開始完整示範",
+      "description": "直接播放完整 App Demo 流程。",
+      "keywords": ["demo", "示範", "導覽"]
+    },
+    "demoStop": {
+      "title": "停止完整示範",
+      "description": "停止目前正在播放的完整 App Demo。",
+      "keywords": ["demo", "示範", "導覽", "停止"]
+    },
+    "presentationOn": {
+      "title": "進入簡報模式",
+      "description": "切換成更乾淨的展示版面，隱藏頂部工具列。",
+      "keywords": ["簡報", "presentation", "hud"]
+    },
+    "presentationOff": {
+      "title": "結束簡報模式",
+      "description": "切回一般展示版面並恢復頂部工具列。",
+      "keywords": ["簡報", "presentation", "hud", "退出"]
+    },
+    "fullscreenOn": {
+      "title": "進入全螢幕",
+      "description": "使用瀏覽器 Fullscreen API 進行真正全螢幕展示。",
+      "keywords": ["fullscreen", "全螢幕", "full screen"]
+    },
+    "fullscreenOff": {
+      "title": "退出全螢幕",
+      "description": "離開瀏覽器的全螢幕展示狀態。",
+      "keywords": ["fullscreen", "全螢幕", "full screen", "退出"]
+    },
+    "annotationsShow": {
+      "title": "展開說明面板",
+      "description": "切換右側說明面板，方便純展示或講解。",
+      "keywords": ["說明", "annotation", "panel"]
+    },
+    "annotationsHide": {
+      "title": "收合說明面板",
+      "description": "切換右側說明面板，方便純展示或講解。",
+      "keywords": ["說明", "annotation", "panel", "收合"]
+    },
+    "loadMock": {
+      "title": "載入 Mock 資料",
+      "description": "快速補齊首頁、報告與歷史頁的展示資料。",
+      "keywords": ["mock", "資料", "seed"]
+    },
+    "capture": {
+      "title": "截圖 / 乾淨輸出",
+      "description": "開啟 PNG 匯出面板，輸出作品集展示版、乾淨展示版或純手機版。",
+      "keywords": ["截圖", "輸出", "capture", "export", "png"]
+    },
+    "copyLink": {
+      "title": "複製目前畫面連結",
+      "description": "將目前畫面、主題與展示狀態複製成 permalink。",
+      "keywords": ["連結", "url", "permalink"]
+    },
+    "themeLight": {
+      "title": "切換為亮色主題",
+      "description": "切換目前網站的展示主題。",
+      "keywords": ["theme", "dark", "light", "主題"]
+    },
+    "themeDark": {
+      "title": "切換為暗色主題",
+      "description": "切換目前網站的展示主題。",
+      "keywords": ["theme", "dark", "light", "主題"]
+    },
+    "designStory": {
+      "title": "開啟設計動機 / 關於",
+      "description": "查看產品概念、作者資訊與技術細節。",
+      "keywords": ["設計動機", "關於", "about"]
+    },
+    "shortcuts": {
+      "title": "查看快捷鍵說明",
+      "description": "開啟網站快捷鍵清單。",
+      "keywords": ["快捷鍵", "keyboard", "shortcut"]
+    },
+    "reset": {
+      "title": "重置原型",
+      "description": "清除目前資料與展示狀態，回到乾淨首頁。",
+      "keywords": ["reset", "重置", "清除"]
+    }
+  }
+}

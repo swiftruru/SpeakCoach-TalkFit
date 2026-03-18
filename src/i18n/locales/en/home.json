@@ -1,0 +1,41 @@
+{
+  "greeting": {
+    "morning": "Good morning",
+    "afternoon": "Good afternoon",
+    "evening": "Good evening"
+  },
+  "trend": {
+    "noSessions": "No practice sessions yet. Start today.",
+    "improved": "Your last session improved. Keep going.",
+    "needsAttention": "Keep an eye on \"{{filler}}\". It appears most often.",
+    "average": "You average {{count}} filler words. Keep practicing to bring that down."
+  },
+  "stats": {
+    "weekPractice": "This Week",
+    "averageFillers": "Avg. Fillers",
+    "vsLastWeek": "Vs. Last Week",
+    "sessionUnit": "sessions",
+    "perSessionUnit": "/ session",
+    "improving": "Still improving",
+    "needsWork": "Needs work",
+    "insufficient": "Not enough data"
+  },
+  "weeklyChart": {
+    "title": "Daily fillers this week",
+    "tooltip": "{{count}} fillers",
+    "days": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    }
+  },
+  "tip": {
+    "title": "Today's reminder",
+    "body": "Try noticing your most frequent filler, \"{{filler}}\". Pause for a second before saying it."
+  },
+  "recordButton": "Start Practice"
+}

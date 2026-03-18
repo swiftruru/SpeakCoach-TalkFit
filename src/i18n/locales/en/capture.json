@@ -1,0 +1,22 @@
+{
+  "eyebrow": "Export Capture",
+  "title": "Capture / Clean Export",
+  "description": "Choose an output layout and download a PNG directly.",
+  "footer": "Connector arrows, the cursor, and temporary hover effects are removed to keep the export clean.",
+  "exporting": "Exporting...",
+  "download": "Download PNG",
+  "presets": {
+    "showcase": {
+      "title": "Showcase Layout",
+      "description": "Export the full website stage with the navigator, iPhone simulator, and annotation panel."
+    },
+    "presentation": {
+      "title": "Clean Presentation",
+      "description": "Remove the left navigator and connector arrows while keeping the simulator and notes panel. Ideal for README and slides."
+    },
+    "phone": {
+      "title": "Phone Only",
+      "description": "Export just the iPhone simulator frame for standalone feature screenshots."
+    }
+  }
+}

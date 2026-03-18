@@ -1,0 +1,122 @@
+{
+  "title": "Practice Report",
+  "empty": {
+    "title": "No report yet",
+    "action": "Start practice"
+  },
+  "header": {
+    "goalEyebrow": "Practice Goal",
+    "goalAchieved": "Goal Met",
+    "goalRetry": "Try Again"
+  },
+  "scoreCards": {
+    "avgWpm": "Average Pace",
+    "fillerCount": "Total Fillers",
+    "fluency": "Fluency",
+    "wpmUnit": "wpm"
+  },
+  "coaching": {
+    "title": "3 things to fix next",
+    "description": "Focus on the three changes most likely to improve the next run instead of fixing everything at once."
+  },
+  "ranking": {
+    "title": "Filler Ranking",
+    "description": "Tap the same filler again to jump through each occurrence in order",
+    "occurrence": "{{current}} / {{total}}"
+  },
+  "speedCurve": {
+    "title": "Pace Curve",
+    "description": "The blue line shows speaking pace. The shaded band marks the recommended range ({{low}}–{{high}} wpm), while only fast and slow outliers are emphasized for jumping.",
+    "tooltipValue": "{{value}} wpm",
+    "tooltipName": "Pace"
+  },
+  "transcript": {
+    "title": "Annotated Transcript",
+    "positionedAt": "Focused at {{time}}",
+    "retry": "Retry Segment",
+    "clear": "Clear",
+    "legend": {
+      "filler": "Filler",
+      "fast": "Too fast",
+      "slow": "Too slow"
+    }
+  },
+  "sharePreview": {
+    "title": "Share Card Export",
+    "description": "A dedicated share card condenses key metrics, top fillers, and pace rhythm for portfolio pages and hackathon result posts.",
+    "footer": "`PNG` works well for direct sharing. `SVG` is better for later layout edits."
+  },
+  "shareActions": {
+    "copySummary": "Copy Summary",
+    "exportJson": "Export JSON",
+    "sharePng": "Share Card PNG",
+    "shareSvg": "Share Card SVG",
+    "exporting": "Exporting…",
+    "errorFallback": "Failed to export share card"
+  },
+  "copySummaryText": {
+    "title": "{{appName}} Practice Report",
+    "date": "Date: {{value}}",
+    "duration": "Duration: {{value}}",
+    "wpm": "Pace: {{value}} wpm",
+    "fillers": "Fillers: {{value}}",
+    "grade": "Grade: {{value}}",
+    "topFiller": "Top filler: {{value}}",
+    "none": "None"
+  },
+  "issues": {
+    "speedLabel": "Pace {{wpm}} wpm",
+    "fillerOccurrence": "{{label}} · {{current}} / {{total}}",
+    "speedFast": "{{label}} · too fast",
+    "speedSlow": "{{label}} · too slow",
+    "speedNormal": "{{label}} · in range",
+    "locateAria": "{{description}}, locate in transcript"
+  },
+  "coachingTips": {
+    "topFillerTitle": "Lower “{{word}}” first",
+    "topFillerDetail": "It appeared {{count}} times in this run. Jump to those spots from the ranking and re-record them first.",
+    "speedFastTitle": "Handle the fast segments first",
+    "speedFastDetail": "{{count}} pace points are above {{high}} wpm. Slow down the sentence ending before moving on.",
+    "speedSlowTitle": "Add more sentence momentum",
+    "speedSlowDetail": "{{count}} pace points are below {{low}} wpm. Shorten pauses and avoid dragging the ending.",
+    "goalFocusTitle": "Keep the next round focused on “{{goal}}”",
+    "goalFocusSuccess": "You already met this goal. Keep it for another round with a tighter standard, or switch to a harder target.",
+    "fallbackTitle": "Retry directly from issue jumps",
+    "fallbackDetail": "Tap the filler ranking or the abnormal pace points and focus on the segment that needs the most work."
+  },
+  "shareCard": {
+    "fallbackBody": "Keep practicing and stabilize the way you speak.",
+    "defaultInsightTitle": "Keep the current speaking rhythm",
+    "defaultInsightBody": "There was no obvious filler spike this time. Keep the pace steady.",
+    "topFillerInsightTitle": "Bring down “{{word}}” first",
+    "topFillerInsightBody": "It appeared {{count}} times this round, so that should be the first speaking habit to fix.",
+    "speedFastSegment": "{{count}} fast segments",
+    "speedSlowSegment": "{{count}} slow segments",
+    "topWithSpeed": "{{body}} The pace also shows {{summary}}, so re-record the least stable segment first.",
+    "speedOnly": "The pace also shows {{summary}}. Start with the segment where the rhythm swings the most.",
+    "fallbackTitle": "Speech Practice Report",
+    "metrics": {
+      "avgWpm": "Average Pace",
+      "fillerCount": "Total Fillers",
+      "topFiller": "Top Filler",
+      "none": "None"
+    },
+    "footer": "talkfit.swift.moe · {{date}} · {{wpm}} wpm",
+    "errors": {
+      "imageLoad": "Failed to load the share card image",
+      "canvas": "Unable to create share card canvas",
+      "png": "PNG export failed"
+    },
+    "ariaLabel": "TalkFit share card",
+    "reportBadge": "TALKFIT REPORT",
+    "duration": "Duration {{value}}",
+    "gradeLabel": "Fluency",
+    "insightLabel": "Key takeaway",
+    "topFillersTitle": "Top 3 Fillers",
+    "countUnit": "{{count}} times",
+    "paceTitle": "Pace Rhythm",
+    "paceDescription": "Recommended range and outliers are condensed into this share card.",
+    "brandTitle": "TalkFit",
+    "brandBody": "Real-time speech feedback that gives practice sessions clearer direction."
+  }
+}

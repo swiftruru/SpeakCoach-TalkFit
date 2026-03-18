@@ -1,0 +1,122 @@
+{
+  "title": "練習報告",
+  "empty": {
+    "title": "尚無分析報告",
+    "action": "開始練習"
+  },
+  "header": {
+    "goalEyebrow": "本次練習目標",
+    "goalAchieved": "已達標",
+    "goalRetry": "再練一次"
+  },
+  "scoreCards": {
+    "avgWpm": "平均語速",
+    "fillerCount": "贅字總數",
+    "fluency": "流暢度",
+    "wpmUnit": "字/分"
+  },
+  "coaching": {
+    "title": "下一輪先改這 3 件事",
+    "description": "先把注意力放在最有機會立刻進步的三件事，不要一次改太多。"
+  },
+  "ranking": {
+    "title": "贅字排行榜",
+    "description": "點同一個贅字可依序跳到每一次出現的位置",
+    "occurrence": "第 {{current}} / {{total}} 次"
+  },
+  "speedCurve": {
+    "title": "語速曲線",
+    "description": "藍線為語速，灰色區域為建議範圍（{{low}}–{{high}} 字/分），僅凸顯偏快或偏慢點位供定位",
+    "tooltipValue": "{{value}} 字/分",
+    "tooltipName": "語速"
+  },
+  "transcript": {
+    "title": "逐字稿標記",
+    "positionedAt": "已定位到 {{time}}",
+    "retry": "重練這段",
+    "clear": "清除",
+    "legend": {
+      "filler": "贅字",
+      "fast": "語速過快",
+      "slow": "語速偏慢"
+    }
+  },
+  "sharePreview": {
+    "title": "分享卡匯出",
+    "description": "專用版面會整理重點指標、Top 贅字與語速節奏，適合貼到作品集與 hackathon 成果頁",
+    "footer": "`PNG` 適合直接分享；`SVG` 適合後續排版或再編修。"
+  },
+  "shareActions": {
+    "copySummary": "複製摘要",
+    "exportJson": "匯出 JSON",
+    "sharePng": "分享卡 PNG",
+    "shareSvg": "分享卡 SVG",
+    "exporting": "匯出中…",
+    "errorFallback": "分享卡匯出失敗"
+  },
+  "copySummaryText": {
+    "title": "{{appName}} 練習報告",
+    "date": "日期：{{value}}",
+    "duration": "時長：{{value}}",
+    "wpm": "語速：{{value}} 字/分",
+    "fillers": "贅字：{{value}} 次",
+    "grade": "評分：{{value}}",
+    "topFiller": "最常贅字：{{value}}",
+    "none": "無"
+  },
+  "issues": {
+    "speedLabel": "語速 {{wpm}} 字/分",
+    "fillerOccurrence": "{{label}} · 第 {{current}} / {{total}} 次",
+    "speedFast": "{{label}} · 語速偏快",
+    "speedSlow": "{{label}} · 語速偏慢",
+    "speedNormal": "{{label}} · 語速在建議範圍內",
+    "locateAria": "{{description}}，定位逐字稿"
+  },
+  "coachingTips": {
+    "topFillerTitle": "先壓低「{{word}}」",
+    "topFillerDetail": "這次共出現 {{count}} 次，先點排行榜跳到對應片段，逐段重講會最快看到效果。",
+    "speedFastTitle": "先處理偏快片段",
+    "speedFastDetail": "有 {{count}} 個語速點高於 {{high}} 字/分，先把句尾收慢，再進下一句。",
+    "speedSlowTitle": "補上句子的推進感",
+    "speedSlowDetail": "有 {{count}} 個語速點低於 {{low}} 字/分，可先縮短停頓與拉長尾音。",
+    "goalFocusTitle": "下一輪只專注「{{goal}}」",
+    "goalFocusSuccess": "這次已達成目標，下一輪可以維持同目標再壓低標準，或換更高挑戰。",
+    "fallbackTitle": "用問題片段跳轉重練",
+    "fallbackDetail": "直接點贅字排行榜或異常語速點，把注意力集中在最需要修正的片段。"
+  },
+  "shareCard": {
+    "fallbackBody": "持續練習，讓表達更穩定。",
+    "defaultInsightTitle": "維持目前的表達節奏",
+    "defaultInsightBody": "這次沒有明顯的贅字高峰，繼續把節奏穩定下來。",
+    "topFillerInsightTitle": "先把「{{word}}」降下來",
+    "topFillerInsightBody": "這次共出現 {{count}} 次，建議先修正這個最常出現的口頭禪。",
+    "speedFastSegment": "偏快 {{count}} 段",
+    "speedSlowSegment": "偏慢 {{count}} 段",
+    "topWithSpeed": "{{body}} 語速方面有 {{summary}}，可優先重錄節奏最不穩的一段。",
+    "speedOnly": "語速方面有 {{summary}}，建議先修正節奏波動最明顯的位置。",
+    "fallbackTitle": "演講練習報告",
+    "metrics": {
+      "avgWpm": "平均語速",
+      "fillerCount": "贅字總數",
+      "topFiller": "最常贅字",
+      "none": "無"
+    },
+    "footer": "talkfit.swift.moe · {{date}} · {{wpm}} 字/分",
+    "errors": {
+      "imageLoad": "分享卡圖像載入失敗",
+      "canvas": "無法建立分享卡畫布",
+      "png": "PNG 匯出失敗"
+    },
+    "ariaLabel": "TalkFit 分享卡",
+    "reportBadge": "TALKFIT REPORT",
+    "duration": "練習時長 {{value}}",
+    "gradeLabel": "流暢度",
+    "insightLabel": "本次重點",
+    "topFillersTitle": "常見贅字 Top 3",
+    "countUnit": "{{count}} 次",
+    "paceTitle": "語速節奏",
+    "paceDescription": "建議區間與異常點已整理成分享卡",
+    "brandTitle": "說來話長 TalkFit",
+    "brandBody": "用即時語音回饋，讓演講練習更有方向。"
+  }
+}

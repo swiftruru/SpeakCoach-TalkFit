@@ -82,6 +82,8 @@ TalkFit 的核心概念，就是把這些原本只能「事後懊悔」的問題
 - **全螢幕展示**：整合瀏覽器 `Fullscreen API`，可直接進入真正的全螢幕展示
 - **截圖 / 乾淨輸出**：內建 PNG 匯出面板，可輸出作品集展示版、乾淨展示版與純手機版
 - **畫面深連結**：網址會同步目前畫面狀態，可直接分享指定頁面的展示連結
+- **中英文即時切換**：整個網站包含模擬器內容、示範文案、說明卡與 Mock 資料都支援繁中 / 英文切換
+- **右上角單鍵語言切換**：頂部最右側提供單一語言切換按鈕，一鍵在繁中與英文之間即時切換
 - **一鍵重置原型**：可清除所有練習資料、目前報告與展示狀態，回到乾淨起點
 - **分享卡匯出**：透過專用 `ReportShareCard` 版型匯出 `PNG` / `SVG`，適合放進作品集、hackathon submission 或社群貼文
 - **流暢度評分**：依據贅字頻率與語速表現給出 A+ ~ D 的簡化評分
@@ -118,6 +120,7 @@ TalkFit 的核心概念，就是把這些原本只能「事後懊悔」的問題
 - **自動 Spotlight 聚焦**：桌面版 hover 或 demo 聚焦到功能區塊時，會自動壓暗其餘區域，只保留單一手機區塊與對應說明卡
 - **簡報模式**：可切換成更乾淨的展示版面，收起頂部工具列，改用右上角精簡 HUD 操作
 - **頂部按鈕分組**：`✦ 設計動機` 與 `✦ Mock 資料` 保持主層；其餘展示輔助操作收進 `展示工具` 與 `更多` 子選單，減少頂部工具列擁擠感
+- **右上角語言切換**：頂部最右側保留單一語言切換按鈕，不需要分別點 `中文` / `EN` 兩顆按鈕
 - **快速操作 Command Palette**：按 `⌘K` / `Ctrl+K` 可叫出快速操作視窗，直接跳頁或切換展示狀態
 - **截圖 / 乾淨輸出**：按 `E` 或頂部 `輸出畫面` 可下載 PNG，並提供作品集展示版、乾淨展示版與純手機版
 - **全螢幕展示**：按 `F` 或頂部 `全螢幕` 可進入瀏覽器真正的全螢幕模式
@@ -166,6 +169,7 @@ flowchart LR
 - **分析層**：練習資料經過 `buildSessionSummary`、評分邏輯、目標評估與 coaching helper，整理成可展示的摘要
 - **狀態層**：練習中狀態放在 `sessionStore`；練習結束後整理成 `reportStore` 與 `historyStore`
 - **設定層**：`settingsStore` 控制語速範圍、情境設定、練習目標、贅字清單、語言與回饋方式
+- **國際化層**：`i18next + react-i18next` 搭配 namespace locale JSON，統一管理網站外殼、模擬器內容、說明卡與示範文案
 - **展示層**：`PracticeScreen`、`ReportScreen`、`HistoryScreen`、`SettingsScreen` 各自訂閱對應 store；報告頁再透過 marker helper 串起圖表、逐字稿定位、分享卡與片段重練入口
 - **示範層**：`demoScript` 與 `sampleReplayData` 可在不開麥克風的情況下重現完整產品價值
 - **重練層**：`retryPracticeStore` 讓使用者能從報告指定單一問題片段，再帶著修正提示回到練習頁
@@ -179,6 +183,7 @@ flowchart LR
 | 框架 | React 19 + TypeScript + Vite |
 | 樣式 | Tailwind CSS + CSS Variables |
 | 狀態管理 | Zustand（含 `localStorage` 持久化） |
+| 國際化 | i18next + react-i18next + browser language detector |
 | 動畫 | Framer Motion |
 | 圖表 | Recharts |
 | 畫面輸出 | html2canvas + DOM Capture Helper |
@@ -207,6 +212,7 @@ npm run dev
 | `展示工具` | 以子選單收納 `⌘K 快速操作`、`收合 / 展開說明`、`輸出畫面`、`簡報模式`、`全螢幕` |
 | `開始示範（小螢幕）` | 小螢幕裝置可從頂部開始 / 停止示範；桌機版則改由左側浮動導覽操作 |
 | `更多` | 以子選單收納 `重置原型`、`畫面連結` 與 `亮 / 暗色切換` |
+| `右上角語言切換` | 頂部最右側的單一按鈕，可在繁中與英文之間即時切換整個網站與模擬器內容 |
 
 ---
 
@@ -224,12 +230,13 @@ src/
 │   ├── KeyboardShortcutsModal # 快捷鍵說明視窗
 │   ├── report/       # 分享卡元件與報告頁專用視覺輸出
 │   ├── shell/        # PhoneFrame、StatusBar、TabBar 等外框元件
-│   └── AboutSection  # 產品概念與設計故事區塊
+│   └── ...           # 其餘展示與外框元件
 ├── demo/             # 示範流程與示範回放資料
-├── hooks/            # 波形動畫、拖曳捲動等互動 hook
+├── hooks/            # 波形動畫等互動 hook
+├── i18n/             # i18next 設定、語言同步與各 namespace locales
 ├── stores/           # navigation、session、report、history、settings、retryPractice、annotationGuide 等狀態
-├── lib/              # 分析邏輯、評分、贅字資料、情境設定、示範資料、原型狀態、分享卡、DOM capture 與片段重練 helper
-├── annotation/       # 註解面板與各頁註解內容
+├── lib/              # 分析邏輯、評分、語系化贅字資料、情境設定、示範資料、原型狀態、分享卡、DOM capture 與片段重練 helper
+├── annotation/       # 註解面板
 └── types/            # 共用型別
 
 public/
@@ -239,6 +246,15 @@ docs/
 └── images/
     └── talkfit-live-site-report.png
 ```
+
+---
+
+## i18n 維護原則
+
+- 新增 UI 文案時，優先寫入對應 namespace locale JSON，不在 component 內直接硬編碼中英文
+- `zh-TW` 與 `en` 要一起維護；若只改其中一種語言，切換後很容易退回 key 或出現內容落差
+- 模擬器內容不只包含畫面標題，也包含 `mockData`、`demoScript`、`fillerWords`、`share card` 等資料層，新增內容時要一起檢查
+- 英文贅字偵測額外做了單字邊界判斷，避免 `like`、`right?` 這類詞在不相關字串中誤判；若新增英文 filler，請優先確認偵測規則是否仍合理
 
 ---
 
@@ -266,4 +282,5 @@ docs/
 - 套用情境設定後，若使用者手動調整語速滑桿或贅字清單，系統會自動切回 `custom`
 - 分享卡匯出不使用整頁截圖，而是獨立的 `ReportShareCard` 版型；畫面預覽與實際輸出解析度分離，匯出更穩定
 - 錄音中的練習畫面若誤觸導覽按鈕，會先跳出確認視窗，避免直接離開
+- 語言切換採 `i18next` namespace 架構；切到英文時，網站外殼、模擬器內容、示範步驟、說明卡與 mock 資料會一起切換
 - 所有練習資料都保留在瀏覽器端的 `localStorage`，不會上傳到雲端

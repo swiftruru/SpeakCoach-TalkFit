@@ -1,0 +1,123 @@
+{
+  "eyebrow": "Quick Actions",
+  "title": "Quick Actions",
+  "description": "Jump between views, change showcase states, and run common actions with keywords.",
+  "shortcutHint": "or Ctrl+K",
+  "searchPlaceholder": "Search views, demo, fullscreen, export...",
+  "empty": {
+    "title": "No matching actions",
+    "description": "Try searching for \"report\", \"demo\", \"fullscreen\", or \"settings\"."
+  },
+  "sections": {
+    "screen": "Screens",
+    "showcase": "Showcase Controls",
+    "tools": "Data & Tools"
+  },
+  "actions": {
+    "home": {
+      "title": "Go to Home",
+      "description": "View the home overview, reminder, and this week's stats.",
+      "keywords": ["home", "dashboard", "overview"]
+    },
+    "practice": {
+      "title": "Go to Practice",
+      "description": "Open the live practice dashboard and transcript screen.",
+      "keywords": ["practice", "recording", "transcript"]
+    },
+    "report": {
+      "title": "Go to Report",
+      "description": "Review the report overview, issue jumps, and share card.",
+      "keywords": ["report", "share", "ranking", "transcript"]
+    },
+    "history": {
+      "title": "Go to History",
+      "description": "Browse historical trends and the practice list.",
+      "keywords": ["history", "trend", "sessions"]
+    },
+    "settings": {
+      "title": "Go to Settings",
+      "description": "Adjust presets, practice goals, and detection rules.",
+      "keywords": ["settings", "preset", "language", "goal"]
+    },
+    "demoStart": {
+      "title": "Start Full Demo",
+      "description": "Play the complete app walkthrough immediately.",
+      "keywords": ["demo", "walkthrough", "guide"]
+    },
+    "demoStop": {
+      "title": "Stop Full Demo",
+      "description": "Stop the full app walkthrough that is currently playing.",
+      "keywords": ["demo", "walkthrough", "stop"]
+    },
+    "presentationOn": {
+      "title": "Enter Presentation Mode",
+      "description": "Switch to a cleaner showcase layout and hide the top toolbar.",
+      "keywords": ["presentation", "showcase", "hud"]
+    },
+    "presentationOff": {
+      "title": "Exit Presentation Mode",
+      "description": "Return to the standard showcase layout and restore the top toolbar.",
+      "keywords": ["presentation", "showcase", "exit"]
+    },
+    "fullscreenOn": {
+      "title": "Enter Fullscreen",
+      "description": "Use the browser Fullscreen API for a true fullscreen presentation.",
+      "keywords": ["fullscreen", "full screen", "immersive"]
+    },
+    "fullscreenOff": {
+      "title": "Exit Fullscreen",
+      "description": "Leave the browser fullscreen presentation state.",
+      "keywords": ["fullscreen", "full screen", "exit"]
+    },
+    "annotationsShow": {
+      "title": "Show Notes Panel",
+      "description": "Toggle the notes panel for cleaner presentation or guided walkthroughs.",
+      "keywords": ["notes", "annotation", "panel"]
+    },
+    "annotationsHide": {
+      "title": "Hide Notes Panel",
+      "description": "Toggle the notes panel for cleaner presentation or guided walkthroughs.",
+      "keywords": ["notes", "annotation", "panel", "hide"]
+    },
+    "loadMock": {
+      "title": "Load Mock Data",
+      "description": "Quickly fill the Home, Report, and History screens with showcase data.",
+      "keywords": ["mock", "seed", "data"]
+    },
+    "capture": {
+      "title": "Capture / Clean Export",
+      "description": "Open the PNG export panel for showcase, clean presentation, or phone-only layouts.",
+      "keywords": ["capture", "export", "png", "screenshot"]
+    },
+    "copyLink": {
+      "title": "Copy Current View Link",
+      "description": "Copy the current screen, theme, and showcase state as a permalink.",
+      "keywords": ["link", "url", "permalink"]
+    },
+    "themeLight": {
+      "title": "Switch to Light Theme",
+      "description": "Change the current website presentation theme.",
+      "keywords": ["theme", "light", "dark"]
+    },
+    "themeDark": {
+      "title": "Switch to Dark Theme",
+      "description": "Change the current website presentation theme.",
+      "keywords": ["theme", "dark", "light"]
+    },
+    "designStory": {
+      "title": "Open Design Story / About",
+      "description": "Review the product concept, author info, and technical details.",
+      "keywords": ["design story", "about", "author"]
+    },
+    "shortcuts": {
+      "title": "View Keyboard Shortcuts",
+      "description": "Open the website shortcut reference.",
+      "keywords": ["keyboard", "shortcut", "hotkey"]
+    },
+    "reset": {
+      "title": "Reset Prototype",
+      "description": "Clear current data and showcase state, then return to a clean home screen.",
+      "keywords": ["reset", "clear", "restart"]
+    }
+  }
+}

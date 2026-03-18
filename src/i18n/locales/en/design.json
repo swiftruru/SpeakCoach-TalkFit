@@ -1,0 +1,86 @@
+{
+  "tabs": {
+    "story": "Design Story",
+    "about": "About"
+  },
+  "eyebrow": {
+    "story": "Design Story",
+    "about": "About"
+  },
+  "title": {
+    "story": "Why build this app?",
+    "about": "About this prototype site"
+  },
+  "subtitle": {
+    "story": "TalkFit — a practice tool that detects filler words and speaking pace in presentations",
+    "about": "Version notes, naming rationale, author background, and implementation details"
+  },
+  "story": {
+    "ideaTitle": "The App Idea",
+    "problemLabel": "Problem",
+    "problemBody": "When people practice speeches or presentations, the hardest part is often the bad habits they cannot hear themselves. Repeating “and then” thirty times, adding “right?” to every sentence, or filling silence with constant “um”. Friends rarely point it out, and replaying your own recordings is painful, so many people only realize it after getting on stage.",
+    "solutionLabel": "Approach",
+    "solutionBody": "Open the app, tap start, and practice into your phone. The app uses on-device speech recognition to turn speech into text in real time, while analyzing pace and word habits in the background. If fillers spike or pace slips out of range, the phone gives a subtle haptic cue without breaking the speaker’s rhythm. After the session, the app produces a full analysis report that clearly shows what to improve next.",
+    "highlightsLabel": "Why it stands out",
+    "fillerCategoriesLabel": "Detected filler categories",
+    "whyJoinTitle": "Why join this event?",
+    "whyJoinLead": "I recently started learning iOS development, but I am still in the stage where I understand many concepts without being able to build everything from scratch confidently. At the same time, I often use AI tools while coding and have been curious about how AI coding actually fits into a real product workflow. Those two threads together are the main reason I wanted to join this event.",
+    "whyJoinParagraphs": [
+      "My main programming background is in web frontend, Python, and .NET, so I can transfer some of that foundation when learning a new language or framework. What I still lack is practical iOS experience and the chance to exchange ideas with other developers directly. Building something from idea to product within three days is the kind of experience self-study rarely provides.",
+      "I already have an app concept I want to test — TalkFit, a practice tool for catching filler words and unstable pace in speeches — and I want to use this chance to see whether it can become real.",
+      "I am also looking forward to meeting people who are equally excited about AI and app development, and learning through actual hands-on work together. For me, this is not only about picking up a new toolchain. It is more like opening another possible path for myself."
+    ],
+    "highlights": [
+      { "num": "01", "text": "No network calls and no token cost. Speech recognition runs with on-device Apple Intelligence." },
+      { "num": "02", "text": "Real-time feedback uses haptics, so it does not interrupt the speaker’s flow with intrusive notifications." },
+      { "num": "03", "text": "AI only handles speech-to-text. Filler detection, pace analysis, and chart logic are all implemented in the app itself." },
+      { "num": "04", "text": "History makes progress visible, which is much stronger than a vague feeling that speaking has improved." }
+    ],
+    "fillerCategories": [
+      { "label": "Filler Sounds", "words": ["um", "uh", "erm"], "tone": "red" },
+      { "label": "Connector Fillers", "words": ["and then", "also", "next up", "after that"], "tone": "amber" },
+      { "label": "Demonstratives", "words": ["this thing", "that thing"], "tone": "orange" },
+      { "label": "Habitual Openers", "words": ["honestly", "I think", "basically", "actually"], "tone": "purple" },
+      { "label": "Habitual Closers", "words": ["you know", "right?", "does that make sense?", "okay?"], "tone": "blue" }
+    ]
+  },
+  "about": {
+    "cards": [
+      {
+        "id": "name",
+        "emoji": "🪪",
+        "title": "Why the name TalkFit",
+        "body": "“Fit” suggests health, fitness, and being well-shaped. TalkFit is intended to feel like fitness training for the way you speak. The name directly communicates the idea of improving speaking habits while still sounding light, casual, and sustainable."
+      },
+      {
+        "id": "author",
+        "emoji": "🙋",
+        "title": "Author",
+        "body": "I am PAN, YU-RU (潘昱如), a student in the Department of Information Management at National Taipei University of Nursing and Health Sciences. This prototype site also serves as my workspace for organizing product thinking, interaction flow, and presentation format."
+      },
+      {
+        "id": "version",
+        "emoji": "🏷️",
+        "title": "Version",
+        "body": "This is currently the TalkFit Web Prototype / Demo Build. The website is not focused on real audio capture. Its job is to demonstrate the product flow, report logic, settings design, and interactive explanation layer in a portfolio, interview, or hackathon context."
+      }
+    ],
+    "techTitle": "Implementation Details",
+    "techDetails": [
+      "React 19 and TypeScript drive the interactive single-page prototype so UI and showcase flows can iterate quickly.",
+      "Vite handles development and build tooling while keeping the frontend prototype workflow lightweight.",
+      "Zustand manages cross-screen state such as navigation, demo flow, reports, and annotation guidance.",
+      "Framer Motion powers the site entrance animation, the in-phone app launch motion, and showcase transitions.",
+      "Recharts renders pace curves, history trends, and statistical charts so the data looks closer to a real product.",
+      "Share card export uses a dedicated layout instead of whole-page screenshots, with stable PNG and SVG output."
+    ],
+    "showcaseEyebrow": "About this showcase site",
+    "showcaseBody": "This site is not only an App UI mockup. It combines guided demo flow, contextual notes, share-card export, and interactive annotation guidance so reviewers can understand the product value and design reasoning quickly."
+  },
+  "footer": {
+    "story": "Design Story",
+    "about": "About",
+    "authorZh": "PAN, YU-RU",
+    "authorEn": "PAN, YU-RU"
+  }
+}

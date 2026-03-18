@@ -1,0 +1,53 @@
+{
+  "topbar": {
+    "showcaseTools": "Showcase Tools",
+    "moreMenu": "More",
+    "quickActions": "⌘K Quick Actions",
+    "annotationsHint": "Panel",
+    "captureHint": "PNG",
+    "presentationHint": "View",
+    "fullscreenHint": "Screen",
+    "resetHint": "Clear",
+    "shareHint": "Share",
+    "themeHint": "Theme"
+  },
+  "mobileNotice": {
+    "before": "This web prototype is best viewed in a ",
+    "highlight": "desktop browser",
+    "after": " to keep the layout complete and the annotation interactions readable."
+  },
+  "notifications": {
+    "fullscreenError": {
+      "title": "Fullscreen unavailable",
+      "body": "This browser or device does not support the Fullscreen API."
+    },
+    "mockLoaded": {
+      "title": "Mock data loaded",
+      "body": "Practice history and reports are ready for browsing."
+    },
+    "prototypeReset": {
+      "title": "Prototype reset",
+      "body": "Returned to Home and cleared all practice data and the current report."
+    },
+    "copyLinkSuccess": {
+      "title": "View link copied",
+      "body": "You can now share the current prototype view URL directly."
+    },
+    "copyLinkError": {
+      "title": "Copy failed",
+      "body": "This browser could not copy the link. Please copy the address bar manually."
+    },
+    "exportNoTarget": {
+      "title": "Export unavailable",
+      "body": "No exportable showcase area could be found right now."
+    },
+    "exportSuccess": {
+      "title": "PNG downloaded",
+      "body": "The current showcase view has been exported and is ready for README or portfolio use."
+    },
+    "exportError": {
+      "title": "Export failed",
+      "body": "This browser could not finish the export. Try the latest desktop browser instead."
+    }
+  }
+}

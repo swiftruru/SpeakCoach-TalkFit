@@ -1,0 +1,53 @@
+{
+  "topbar": {
+    "showcaseTools": "展示工具",
+    "moreMenu": "更多",
+    "quickActions": "⌘K 快速操作",
+    "annotationsHint": "面板",
+    "captureHint": "PNG",
+    "presentationHint": "展示",
+    "fullscreenHint": "視圖",
+    "resetHint": "清除資料",
+    "shareHint": "分享",
+    "themeHint": "主題"
+  },
+  "mobileNotice": {
+    "before": "此原型網頁建議於",
+    "highlight": "電腦瀏覽器",
+    "after": "操作，以確保畫面完整呈現，並獲得較佳的說明互動體驗。"
+  },
+  "notifications": {
+    "fullscreenError": {
+      "title": "無法進入全螢幕",
+      "body": "目前瀏覽器或裝置不支援 Fullscreen API。"
+    },
+    "mockLoaded": {
+      "title": "App 已新增 Mock 資料",
+      "body": "練習紀錄、分析報告已載入，可直接瀏覽各頁面。"
+    },
+    "prototypeReset": {
+      "title": "原型已重置",
+      "body": "已回到首頁，並清除所有練習資料與目前報告。"
+    },
+    "copyLinkSuccess": {
+      "title": "已複製畫面連結",
+      "body": "可以直接分享目前這個原型畫面的網址。"
+    },
+    "copyLinkError": {
+      "title": "複製失敗",
+      "body": "瀏覽器目前無法複製連結，請手動複製網址列。"
+    },
+    "exportNoTarget": {
+      "title": "無法輸出畫面",
+      "body": "目前找不到可匯出的展示區塊。"
+    },
+    "exportSuccess": {
+      "title": "PNG 已下載",
+      "body": "已輸出目前網站畫面，可直接放入 README 或作品集。"
+    },
+    "exportError": {
+      "title": "輸出失敗",
+      "body": "瀏覽器目前無法完成匯出，建議改用桌機最新版瀏覽器。"
+    }
+  }
+}

@@ -1,21 +1,15 @@
-import { DEMO_STEPS, getDemoSteps } from '../demo/demoScript'
+import { getDemoSteps } from '../demo/demoScript'
 import { useDemoStore } from '../demo/demoStore'
+import { useTranslation } from 'react-i18next'
 import { useNavigationStore } from '../stores/navigationStore'
 import type { Screen } from '../types'
-
-const CHAPTERS: Array<{ id: Screen; label: string; summary: string }> = [
-  { id: 'home', label: '首頁', summary: '先看近期練習總覽與提醒。' },
-  { id: 'practice', label: '練習', summary: '聚焦練習中的儀表、目標與回饋。' },
-  { id: 'report', label: '報告', summary: '查看分析結果、定位問題並重練。' },
-  { id: 'history', label: '紀錄', summary: '回顧趨勢與每次練習表現。' },
-  { id: 'settings', label: '設定', summary: '調整情境、目標與偵測規則。' },
-]
 
 interface PrototypeNavigatorProps {
   isSpotlightMode?: boolean
 }
 
 export function PrototypeNavigator({ isSpotlightMode = false }: PrototypeNavigatorProps) {
+  const { t } = useTranslation(['common', 'navigator'])
   const screen = useNavigationStore((s) => s.screen)
   const requestScreen = useNavigationStore((s) => s.requestScreen)
   const mode = useDemoStore((s) => s.mode)
@@ -29,14 +23,41 @@ export function PrototypeNavigator({ isSpotlightMode = false }: PrototypeNavigat
   const togglePause = useDemoStore((s) => s.togglePause)
   const playbackRate = useDemoStore((s) => s.playbackRate)
   const cyclePlaybackRate = useDemoStore((s) => s.cyclePlaybackRate)
+  const chapters: Array<{ id: Screen; label: string; summary: string }> = [
+    {
+      id: 'home',
+      label: t('navigator:chapters.home.label'),
+      summary: t('navigator:chapters.home.summary'),
+    },
+    {
+      id: 'practice',
+      label: t('navigator:chapters.practice.label'),
+      summary: t('navigator:chapters.practice.summary'),
+    },
+    {
+      id: 'report',
+      label: t('navigator:chapters.report.label'),
+      summary: t('navigator:chapters.report.summary'),
+    },
+    {
+      id: 'history',
+      label: t('navigator:chapters.history.label'),
+      summary: t('navigator:chapters.history.summary'),
+    },
+    {
+      id: 'settings',
+      label: t('navigator:chapters.settings.label'),
+      summary: t('navigator:chapters.settings.summary'),
+    },
+  ]
 
-  const chapterIndex = Math.max(0, CHAPTERS.findIndex((chapter) => chapter.id === screen))
-  const activeChapter = CHAPTERS[chapterIndex]
+  const chapterIndex = Math.max(0, chapters.findIndex((chapter) => chapter.id === screen))
+  const activeChapter = chapters[chapterIndex]
   const demoSteps = getDemoSteps(mode)
-  const currentStep = demoSteps[currentStepIndex] ?? DEMO_STEPS[0]
+  const currentStep = demoSteps[currentStepIndex] ?? demoSteps[0] ?? { title: '', description: '' }
   const progress = isDemoActive
     ? ((currentStepIndex + 1) / Math.max(demoSteps.length, 1)) * 100
-    : ((chapterIndex + 1) / CHAPTERS.length) * 100
+    : ((chapterIndex + 1) / chapters.length) * 100
   const summaryTitle = isDemoActive ? currentStep.title : activeChapter.label
   const summaryDescription = isDemoActive ? currentStep.description : activeChapter.summary
 
@@ -50,12 +71,12 @@ export function PrototypeNavigator({ isSpotlightMode = false }: PrototypeNavigat
         <div className="flex items-start justify-between gap-2">
           <div>
             <p className="text-[11px] uppercase tracking-[0.18em] text-text-muted">
-              {isDemoActive ? '示範' : '導覽'}
+              {isDemoActive ? t('navigator:modeLabel.demo') : t('navigator:modeLabel.guide')}
             </p>
             <p className="mt-1 text-xl font-semibold text-text-primary">
               {isDemoActive
                 ? `${currentStepIndex + 1} / ${Math.max(demoSteps.length, 1)}`
-                : `${chapterIndex + 1} / ${CHAPTERS.length}`}
+                : `${chapterIndex + 1} / ${chapters.length}`}
             </p>
           </div>
           <span
@@ -67,7 +88,7 @@ export function PrototypeNavigator({ isSpotlightMode = false }: PrototypeNavigat
 
         <div className="mt-4">
           <p className="text-[11px] font-semibold tracking-[0.14em] text-text-muted uppercase">
-            完整導覽
+            {t('navigator:completeDemo')}
           </p>
           <button
             onClick={() => {
@@ -85,10 +106,10 @@ export function PrototypeNavigator({ isSpotlightMode = false }: PrototypeNavigat
                 : 'border-accent-blue/30 bg-accent-blue/12 text-accent-blue-light hover:-translate-y-0.5 hover:shadow-md'
             }`}
           >
-            {isDemoActive ? '結束示範' : '開始示範'}
+            {isDemoActive ? t('common:actions.stopDemo') : t('common:actions.startDemo')}
           </button>
           <p className="mt-2 text-[11px] leading-relaxed text-text-secondary">
-            不播放示範時，現在的畫面就是自由探索模式，可直接切換章節與閱讀說明。
+            {t('navigator:exploreHint')}
           </p>
         </div>
 
@@ -97,7 +118,7 @@ export function PrototypeNavigator({ isSpotlightMode = false }: PrototypeNavigat
         {isDemoActive ? (
           <div className="mt-3">
             <p className="text-[11px] font-semibold tracking-[0.14em] text-text-muted uppercase">
-              示範控制
+              {t('navigator:controlsLabel')}
             </p>
             <div className="mt-2 grid grid-cols-2 gap-1.5">
               <button
@@ -105,20 +126,20 @@ export function PrototypeNavigator({ isSpotlightMode = false }: PrototypeNavigat
                 disabled={currentStepIndex === 0}
                 className="rounded-xl bg-bg-card px-2.5 py-2 text-[11px] text-text-secondary transition-all hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-45"
               >
-                上一步
+                {t('common:actions.previousStep')}
               </button>
               <button
                 onClick={togglePause}
                 className="rounded-xl bg-bg-card px-2.5 py-2 text-[11px] text-text-secondary transition-all hover:text-text-primary"
               >
-                {isDemoPaused ? '繼續播放' : '暫停播放'}
+                {isDemoPaused ? t('common:actions.resume') : t('common:actions.pause')}
               </button>
               <button
                 onClick={() => currentStepIndex < demoSteps.length - 1 && goToStep(currentStepIndex + 1)}
                 disabled={currentStepIndex >= demoSteps.length - 1}
                 className="rounded-xl bg-bg-card px-2.5 py-2 text-[11px] text-text-secondary transition-all hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-45"
               >
-                下一步
+                {t('common:actions.nextStep')}
               </button>
               <button
                 onClick={cyclePlaybackRate}
@@ -133,7 +154,7 @@ export function PrototypeNavigator({ isSpotlightMode = false }: PrototypeNavigat
         <div className="mt-4 h-px bg-border-divider" />
 
         <div className="mt-4 flex flex-col gap-2">
-          {CHAPTERS.map((chapter, index) => {
+          {chapters.map((chapter, index) => {
             const isActive = chapter.id === screen
             const isPassed = index < chapterIndex
             return (
@@ -176,7 +197,7 @@ export function PrototypeNavigator({ isSpotlightMode = false }: PrototypeNavigat
         <div className="flex items-start justify-between gap-2">
           <div>
             <p className="text-[11px] uppercase tracking-[0.16em] text-text-muted">
-              當前說明
+              {t('navigator:summaryLabel')}
             </p>
             <p className="mt-1 text-sm font-semibold leading-snug text-text-primary">
               {summaryTitle}
@@ -188,8 +209,8 @@ export function PrototypeNavigator({ isSpotlightMode = false }: PrototypeNavigat
                 ? 'bg-accent-amber/12 text-accent-amber'
                 : 'bg-emerald-500/12 text-emerald-600 dark:text-emerald-300'
             }`}
-          >
-            {isDemoActive ? '示範中' : '自由探索'}
+            >
+            {isDemoActive ? t('navigator:status.demo') : t('navigator:status.explore')}
           </span>
         </div>
 
@@ -208,12 +229,12 @@ export function PrototypeNavigator({ isSpotlightMode = false }: PrototypeNavigat
 
         <div className="mt-4 rounded-2xl bg-bg-card px-3 py-2.5">
           <p className="text-[11px] font-medium text-text-primary">
-            {isDemoActive ? '展示提示' : '目前為自由探索'}
+            {isDemoActive ? t('navigator:callout.demoTitle') : t('navigator:callout.exploreTitle')}
           </p>
           <p className="mt-1 text-[11px] leading-relaxed text-text-secondary">
             {isDemoActive
-              ? '目前正在播放完整 App Demo；可使用上一頁、下一頁、暫停與倍速控制調整節奏。'
-              : '不按示範時，原型網站預設就是自由探索，可直接切換章節、點註解卡或使用畫面連結。'}
+              ? t('navigator:callout.demoBody')
+              : t('navigator:callout.exploreBody')}
           </p>
         </div>
       </div>

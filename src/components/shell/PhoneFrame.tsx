@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { StatusBar } from './StatusBar'
 import { TabBar } from './TabBar'
 import { PhoneNotificationBanner } from './PhoneNotificationBanner'
@@ -31,6 +32,7 @@ const ROSE_GOLD = `linear-gradient(
 )`
 
 export function PhoneFrame({ screen, isLaunching = false, children }: PhoneFrameProps) {
+  const { t } = useTranslation(['common', 'launch'])
   const drag = useDragScroll()
   const outerR = 48  // outer frame radius
   const ringW = 4    // rose gold ring thickness
@@ -195,10 +197,10 @@ export function PhoneFrame({ screen, isLaunching = false, children }: PhoneFrame
                         className="mt-6 text-center"
                       >
                         <p className="text-[10px] uppercase tracking-[0.24em] text-slate-400">
-                          Launching
+                          {t('launch:phoneOpening')}
                         </p>
                         <p className="mt-2 text-lg font-semibold tracking-[-0.02em] text-slate-900">
-                          說來話長 TalkFit
+                          {t('common:appName')}
                         </p>
                       </motion.div>
 

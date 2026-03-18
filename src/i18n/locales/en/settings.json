@@ -1,0 +1,75 @@
+{
+  "sections": {
+    "detection": "Detection",
+    "presets": "Practice Presets",
+    "goal": "Practice Goal",
+    "speedRange": "Pace Range",
+    "defaultFillers": "Default Filler List",
+    "customFillers": "Custom Filler List",
+    "feedback": "Feedback",
+    "data": "Data"
+  },
+  "detection": {
+    "filler": {
+      "title": "Filler Detection",
+      "description": "Detect filler sounds, transition fillers, and habitual verbal padding."
+    },
+    "speed": {
+      "title": "Pace Monitoring",
+      "description": "Use {{low}}–{{high}} wpm as the recommended speaking range."
+    },
+    "repeat": {
+      "title": "Repeated Connectors",
+      "description": "Flag repeated use of the same connector in a short span."
+    }
+  },
+  "presets": {
+    "title": "Apply a scenario preset in one tap",
+    "description": "A preset syncs both the pace range and the default filler categories. If you later change pace or filler rules manually, the state switches back to Custom automatically.",
+    "statusCustom": "Custom",
+    "statusApplied": "Applied",
+    "customTitle": "Using custom settings",
+    "customDescription": "Tap a preset card again to restore its matching pace range and filler configuration.",
+    "activeBadge": "Current",
+    "applyBadge": "Apply",
+    "speed": "Pace {{low}}–{{high}} wpm"
+  },
+  "goal": {
+    "title": "Pick one goal before each session",
+    "description": "The chosen goal stays visible during practice, and the report tells you whether you met it and what to fix next.",
+    "activeBadge": "Current Goal",
+    "selectBadge": "Select"
+  },
+  "speedRange": {
+    "slowThreshold": "Slow threshold",
+    "fastThreshold": "Fast threshold",
+    "range": "{{low}} – {{high}} wpm",
+    "slowLabel": "Slow threshold: {{value}} wpm",
+    "fastLabel": "Fast threshold: {{value}} wpm",
+    "legendSlow": "⬤ Slow",
+    "legendNormal": "⬤ On pace",
+    "legendFast": "⬤ Fast"
+  },
+  "fillers": {
+    "restoreDefault": "↺ Restore defaults",
+    "placeholder": "Add a filler",
+    "add": "Add",
+    "cancel": "Cancel",
+    "addNew": "+ Add"
+  },
+  "feedback": {
+    "haptic": {
+      "title": "Haptic Alert",
+      "description": "Use a light vibration when a filler is detected."
+    },
+    "sound": {
+      "title": "Sound Alert",
+      "description": "Use a soft sound instead of vibration."
+    }
+  },
+  "data": {
+    "clearAll": "Clear all history",
+    "clearConfirm": "Clear all saved practice history?"
+  },
+  "version": "{{appName}} v1.0"
+}

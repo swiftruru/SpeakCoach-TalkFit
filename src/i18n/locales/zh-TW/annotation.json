@@ -1,0 +1,245 @@
+{
+  "types": {
+    "feature": "功能",
+    "design": "設計",
+    "tech": "技術"
+  },
+  "pinned": {
+    "label": "已固定說明",
+    "release": "解除"
+  },
+  "pinButton": {
+    "pin": "固定",
+    "pinned": "已固定",
+    "pinTitle": "固定這張說明卡",
+    "unpinTitle": "解除固定這張說明卡"
+  },
+  "pagination": {
+    "label": "說明分頁",
+    "status": "第 {{page}} / {{total}} 頁",
+    "focusHint": "目前聚焦的功能位於第 {{page}} 頁，面板已自動切換到對應說明。"
+  },
+  "footer": "{{appName}} · {{madeWithReact}}",
+  "items": {
+    "home": [
+      {
+        "id": "home-greeting",
+        "targetId": "home-greeting",
+        "title": "個人化問候",
+        "description": "根據時段顯示早安／下午好，並呈現近期練習趨勢文字（持續進步中 / 久沒練習了）。",
+        "type": "feature"
+      },
+      {
+        "id": "home-stat-cards",
+        "targetId": "home-stat-cards",
+        "title": "本週統計卡片",
+        "description": "三欄顯示：本週練習次數、平均贅字次數／場、與上週相比的進退步幅度。數字顏色依好壞自動變色。",
+        "type": "feature"
+      },
+      {
+        "id": "home-weekly-chart",
+        "targetId": "home-weekly-chart",
+        "title": "每日贅字長條圖",
+        "description": "長條圖呈現本週每天的贅字次數，一眼看出哪天練習了、表現如何。綠色代表當天有練習，灰色代表未練習。",
+        "type": "feature"
+      },
+      {
+        "id": "home-tip-card",
+        "targetId": "home-tip-card",
+        "title": "今日練習提示",
+        "description": "依據歷史紀錄動態產生建議，例如「你最常說的贅字是『然後』，今天試著意識到它」。",
+        "type": "feature"
+      },
+      {
+        "id": "home-record-btn",
+        "targetId": "home-record-btn",
+        "title": "開始練習按鈕",
+        "description": "主要行動按鈕，帶有輕觸彈跳動畫，回饋感接近原生 iOS 按鈕觸覺體驗。",
+        "type": "design"
+      }
+    ],
+    "practice": [
+      {
+        "id": "retry-practice-banner",
+        "targetId": "retry-practice-banner",
+        "title": "片段重練提示",
+        "description": "從報告頁指定問題片段後，這裡會顯示原始片段與重練提示，讓使用者不用重新找上下文，就能直接針對最需要修正的一小段再練一次。",
+        "type": "feature"
+      },
+      {
+        "id": "practice-badge",
+        "targetId": "practice-badge",
+        "title": "錄音中指示燈",
+        "description": "紅點脈衝動畫，顯示目前錄音狀態。暫停時變為靜止灰色，停止後消失。",
+        "type": "design"
+      },
+      {
+        "id": "speed-gauge",
+        "targetId": "speed-gauge",
+        "title": "語速儀表板",
+        "description": "圓弧儀表即時顯示語速（字／分鐘），依說話速度自動變色：綠色＝適中、紅色＝過快、紫色＝過慢，一眼確認說話節奏。",
+        "type": "feature"
+      },
+      {
+        "id": "live-stats",
+        "targetId": "live-stats",
+        "title": "即時統計列",
+        "description": "三欄：贅字累計次數、目前最常出現的贅字、長停頓次數（超過 2 秒的靜默）。每偵測到一次贅字，對應數字會跳動一下。",
+        "type": "feature"
+      },
+      {
+        "id": "waveform",
+        "targetId": "waveform",
+        "title": "聲波視覺化",
+        "description": "視覺化呈現麥克風收音狀態，說話時波形活躍，停頓時波形收斂，幫助使用者感知自己的發聲節奏。",
+        "type": "design"
+      },
+      {
+        "id": "live-transcript",
+        "targetId": "live-transcript",
+        "title": "即時逐字稿",
+        "description": "語音辨識結果即時串流顯示。偵測到贅字的詞彙以紅色背景標記，語速過快的段落加底線。",
+        "type": "feature"
+      },
+      {
+        "id": "recording-controls",
+        "targetId": "recording-controls",
+        "title": "錄音控制列",
+        "description": "三個按鈕：暫停／繼續、停止（結束並跳至報告）、回首頁。",
+        "type": "feature"
+      }
+    ],
+    "report": [
+      {
+        "id": "report-goal-summary",
+        "targetId": "report-goal-summary",
+        "title": "練習目標結果",
+        "description": "報告最上方直接回頭對照本次練習前設定的單一目標，告訴使用者是否達標，以及下一輪該怎麼修。這能把「練習前設定」和「練習後回顧」串成一個完整閉環。",
+        "type": "feature"
+      },
+      {
+        "id": "report-score-section",
+        "targetId": "report-score-section",
+        "title": "三項評分卡片",
+        "description": "本次練習的三個核心指標：平均語速（字／分）、贅字總數、流暢度評分（A+ ～ D）。綜合贅字頻率與語速表現自動評分。",
+        "type": "feature"
+      },
+      {
+        "id": "report-coaching-next-steps",
+        "targetId": "report-coaching-next-steps",
+        "title": "下一輪 3 件建議",
+        "description": "不是只展示數據，而是把這次報告濃縮成三個最值得先改的行動建議，避免使用者一次想改太多反而失焦。",
+        "type": "design"
+      },
+      {
+        "id": "filler-ranking",
+        "targetId": "filler-ranking",
+        "title": "贅字排行榜",
+        "description": "依出現次數排序所有贅字，橫向長度按比例縮放。前三名以警示色標記，幫助使用者識別最需改進的詞彙。",
+        "type": "feature"
+      },
+      {
+        "id": "speed-curve-chart",
+        "targetId": "speed-curve-chart",
+        "title": "語速曲線",
+        "description": "折線圖呈現整場練習的語速變化。帶狀區域標示建議範圍（預設 120–180 字／分，可在設定調整），超速時以紅點標記。",
+        "type": "feature"
+      },
+      {
+        "id": "annotated-transcript",
+        "targetId": "annotated-transcript",
+        "title": "逐字稿標記",
+        "description": "完整逐字稿，贅字以紅色背景高亮，語速過快的片段加橘色底線。點選問題後可直接定位，並從提示卡上的「重練這段」立即回到練習頁。",
+        "type": "feature"
+      },
+      {
+        "id": "report-share-preview",
+        "targetId": "report-share-preview",
+        "title": "分享卡預覽",
+        "description": "獨立設計的分享卡會整理本次評分、Top 贅字與語速節奏，版面固定，適合貼到 README、作品集與 hackathon 成果頁。",
+        "type": "design"
+      },
+      {
+        "id": "report-share-row",
+        "targetId": "report-share-row",
+        "title": "分享 / 匯出",
+        "description": "除複製摘要與匯出 JSON 外，也能輸出分享卡 PNG / SVG。自動示範只會聚焦流程，不會真的觸發下載。",
+        "type": "feature"
+      }
+    ],
+    "history": [
+      {
+        "id": "history-summary-cards",
+        "targetId": "history-summary-cards",
+        "title": "整體統計卡片",
+        "description": "累計練習次數、總練習時長、最常出現的贅字，讓使用者一眼掌握整體訓練進度。",
+        "type": "feature"
+      },
+      {
+        "id": "history-trend-chart",
+        "targetId": "history-trend-chart",
+        "title": "贅字趨勢圖",
+        "description": "折線圖呈現每次練習的贅字次數變化，讓長期進步趨勢一目了然。",
+        "type": "feature"
+      },
+      {
+        "id": "history-list",
+        "targetId": "history-list",
+        "title": "練習紀錄列表",
+        "description": "每筆紀錄顯示標題、日期、贅字次數（顏色依多寡自動變色）、語速、時長、流暢度評分。點擊可查看完整報告。",
+        "type": "feature"
+      }
+    ],
+    "settings": [
+      {
+        "id": "settings-detection-toggles",
+        "targetId": "settings-detection-toggles",
+        "title": "偵測功能開關",
+        "description": "分別控制：贅字偵測、語速監控、重複連接詞標記。關閉後該功能在練習中不作用，但歷史紀錄保留。",
+        "type": "feature"
+      },
+      {
+        "id": "settings-practice-presets",
+        "targetId": "settings-practice-presets",
+        "title": "練習情境 Preset",
+        "description": "一鍵套用不同練習情境的語速區間與預設贅字類型。若之後手動調整語速或贅字清單，系統會自動切換為「自訂」設定。",
+        "type": "feature"
+      },
+      {
+        "id": "settings-practice-goal",
+        "targetId": "settings-practice-goal",
+        "title": "練習目標",
+        "description": "每次練習可先指定一個本輪重點，例如少講贅字、穩住語速、抓掉口頭禪。練習中會持續顯示進度，報告頁也會用同一個目標回頭判斷是否達標。",
+        "type": "feature"
+      },
+      {
+        "id": "filler-chip-editor",
+        "targetId": "filler-chip-editor",
+        "title": "贅字清單",
+        "description": "分為「預設清單」與「自訂清單」兩區塊。點擊 chip 切換啟用/停用；點擊 × 刪除；「↺ 還原預設」只補回被刪除的預設詞，不影響自訂清單。",
+        "type": "feature"
+      },
+      {
+        "id": "speed-range-slider",
+        "targetId": "speed-range-slider",
+        "title": "語速範圍調整",
+        "description": "雙滑桿調整「偏慢」與「偏快」門檻（預設 120–180 字/分）。調整後立即反映在練習畫面的語速儀表板與報告的語速曲線。",
+        "type": "feature"
+      },
+      {
+        "id": "settings-feedback",
+        "targetId": "settings-feedback",
+        "title": "回饋方式",
+        "description": "觸覺震動或音效提示，於偵測到贅字時給予即時反饋。兩者可依個人偏好擇一開啟。",
+        "type": "design"
+      },
+      {
+        "id": "settings-language",
+        "targetId": "settings-language",
+        "title": "網站語言",
+        "description": "一鍵切換繁體中文與英文，包含模擬器中的介面、說明卡與展示流程文字也會同步更新。",
+        "type": "feature"
+      }
+    ]
+  }
+}

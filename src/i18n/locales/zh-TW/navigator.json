@@ -1,0 +1,42 @@
+{
+  "modeLabel": {
+    "demo": "示範",
+    "guide": "導覽"
+  },
+  "completeDemo": "完整導覽",
+  "exploreHint": "不播放示範時，現在的畫面就是自由探索模式，可直接切換章節與閱讀說明。",
+  "controlsLabel": "示範控制",
+  "summaryLabel": "當前說明",
+  "status": {
+    "demo": "示範中",
+    "explore": "自由探索"
+  },
+  "callout": {
+    "demoTitle": "展示提示",
+    "demoBody": "目前正在播放完整 App Demo；可使用上一頁、下一頁、暫停與倍速控制調整節奏。",
+    "exploreTitle": "目前為自由探索",
+    "exploreBody": "不按示範時，原型網站預設就是自由探索，可直接切換章節、點註解卡或使用畫面連結。"
+  },
+  "chapters": {
+    "home": {
+      "label": "首頁",
+      "summary": "先看近期練習總覽與提醒。"
+    },
+    "practice": {
+      "label": "練習",
+      "summary": "聚焦練習中的儀表、目標與回饋。"
+    },
+    "report": {
+      "label": "報告",
+      "summary": "查看分析結果、定位問題並重練。"
+    },
+    "history": {
+      "label": "紀錄",
+      "summary": "回顧趨勢與每次練習表現。"
+    },
+    "settings": {
+      "label": "設定",
+      "summary": "調整情境、目標與偵測規則。"
+    }
+  }
+}

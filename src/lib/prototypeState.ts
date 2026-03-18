@@ -1,6 +1,7 @@
-import { DEFAULT_FILLER_WORDS } from './fillerWords'
-import { MOCK_SESSIONS } from './mockData'
+import { getDefaultFillerWords } from './fillerWords'
+import { getMockSessions } from './mockData'
 import { DEFAULT_PRACTICE_GOAL_ID } from './practiceGoals'
+import { DEFAULT_LANGUAGE } from '../i18n/config'
 import {
   applyPresetToFillerWords,
   DEFAULT_PRACTICE_PRESET_ID,
@@ -18,8 +19,9 @@ import { useAnnotationGuideStore } from '../stores/annotationGuideStore'
 import type { Screen } from '../types'
 
 export function seedPrototypeData() {
-  useHistoryStore.setState({ sessions: MOCK_SESSIONS })
-  useReportStore.getState().setReport(MOCK_SESSIONS[0])
+  const mockSessions = getMockSessions()
+  useHistoryStore.setState({ sessions: mockSessions })
+  useReportStore.getState().setReport(mockSessions[0])
 }
 
 export function ensurePrototypeDataForScreen(screen: Screen) {
@@ -42,6 +44,8 @@ export function ensurePrototypeDataForScreen(screen: Screen) {
 }
 
 export function resetPrototypeState() {
+  const preservedLanguage = useSettingsStore.getState().language ?? DEFAULT_LANGUAGE
+
   useDemoStore.getState().stopDemo()
   useSessionStore.getState().reset()
   useRetryPracticeStore.getState().clearRetryPractice()
@@ -53,14 +57,18 @@ export function resetPrototypeState() {
   useSettingsStore.setState({
     preset: DEFAULT_PRACTICE_PRESET_ID,
     practiceGoalId: DEFAULT_PRACTICE_GOAL_ID,
-    fillerWords: applyPresetToFillerWords(DEFAULT_FILLER_WORDS, DEFAULT_PRACTICE_PRESET_ID),
+    fillerWords: applyPresetToFillerWords(
+      getDefaultFillerWords(preservedLanguage),
+      DEFAULT_PRACTICE_PRESET_ID,
+      preservedLanguage
+    ),
     speedRange: { ...PRACTICE_PRESETS[DEFAULT_PRACTICE_PRESET_ID].speedRange },
     fillerDetectionEnabled: true,
     speedMonitoringEnabled: true,
     repeatConnectorEnabled: true,
     hapticEnabled: true,
     soundEnabled: false,
-    language: 'zh-TW',
+    language: preservedLanguage,
     micDeviceId: 'default',
   })
 

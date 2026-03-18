@@ -1,0 +1,113 @@
+{
+  "sampleReplay": {
+    "title": "Sample Replay Practice",
+    "startNotification": {
+      "title": "Demo started",
+      "body": "A no-mic sample session plays first, then the walkthrough continues across each screen."
+    },
+    "completeNotification": {
+      "title": "Sample replay complete",
+      "body": "The guided tour continues into the report, home, history, and settings screens next."
+    },
+    "segments": {
+      "intro": "Hi everyone, today I'll use one minute to introduce TalkFit.",
+      "fillerUm": "um",
+      "realtime": "It helps you catch filler words and pacing issues in real time.",
+      "fillerThen": "and then",
+      "slowDown": "When you speak too fast, the app nudges you to slow down.",
+      "report": "After practice, the report organizes the filler ranking and pace curve for you."
+    }
+  },
+  "steps": {
+    "sampleReplay": {
+      "title": "Quick replay walkthrough",
+      "description": "Start with a 10-second sample session so the transcript, pace gauge, and filler alerts are visible without opening the microphone."
+    },
+    "reportGoal": {
+      "title": "Report - Goal result",
+      "description": "Check whether the practice goal was met, then use speaking pace, total fillers, and fluency score to grasp the overall result quickly."
+    },
+    "reportScore": {
+      "title": "Report - Core metrics",
+      "description": "The three score cards compress this practice into the key numbers needed for a first-glance judgment."
+    },
+    "reportCoaching": {
+      "title": "Report - Coaching advice",
+      "description": "Instead of raw numbers only, the report highlights the three fixes that matter most in the next round."
+    },
+    "reportFiller": {
+      "title": "Report - Filler ranking",
+      "description": "The filler ranking sorts the most frequent terms so the user knows which habit is worth fixing first."
+    },
+    "reportSpeed": {
+      "title": "Report - Pace curve",
+      "description": "The pace curve highlights fast or slow segments so issues are tied to specific moments rather than a single summary score."
+    },
+    "reportTranscript": {
+      "title": "Report - Transcript jump",
+      "description": "The annotated transcript marks filler words and pace anomalies so the user can jump back to the exact context."
+    },
+    "reportSharePreview": {
+      "title": "Report - Share card preview",
+      "description": "A dedicated share card packages the score, top fillers, and pace rhythm for README, portfolio, and hackathon sharing."
+    },
+    "reportExport": {
+      "title": "Report - Export PNG / SVG",
+      "description": "The walkthrough focuses on the share card export actions. The real product can export PNG and SVG, but the demo only shows the flow."
+    },
+    "historySummary": {
+      "title": "History - Overview",
+      "description": "The History screen starts with total sessions, total practice time, and the most frequent filler for a quick training recap."
+    },
+    "historyTrend": {
+      "title": "History - Trends and list",
+      "description": "The trend chart and session list confirm whether progress is steady or stuck on the same verbal habit."
+    },
+    "settingsDetection": {
+      "title": "Settings - Detection toggles",
+      "description": "Separate switches control filler detection, pace monitoring, and repeated connectors so the product does not feel locked to a single rule set."
+    },
+    "settingsPreset": {
+      "title": "Settings - Practice presets",
+      "description": "Scenario presets let the user switch between interview intro, project presentation, and demo pitch with one tap."
+    },
+    "settingsGoal": {
+      "title": "Settings - Practice goal",
+      "description": "Each practice round can focus on one goal so the live session and final report stay aligned around the same target."
+    },
+    "settingsSpeed": {
+      "title": "Settings - Pace and fillers",
+      "description": "The speaking pace range can be adjusted manually, and filler words can be enabled, disabled, added, or removed to match personal habits."
+    },
+    "settingsFillerList": {
+      "title": "Settings - Filler list",
+      "description": "Preset filler lists and custom filler lists stay separate so common defaults remain available while personal tuning stays flexible."
+    },
+    "settingsFeedback": {
+      "title": "Settings - Feedback modes",
+      "description": "Haptic and sound feedback can be switched to fit different practice situations and personal preferences."
+    },
+    "settingsLanguage": {
+      "title": "Settings - Recognition language",
+      "description": "The last step shows language switching so the walkthrough closes with detection rules, goals, feedback, and language customization together."
+    },
+    "homeSummary": {
+      "title": "Back to Home - Weekly overview",
+      "description": "The walkthrough closes on Home to compare weekly sessions, average fillers, and recent change against the overall training story."
+    },
+    "complete": {
+      "title": "Demo complete ✓",
+      "description": "The full walkthrough is finished and returns to Home. You can now switch to free exploration and inspect each screen manually."
+    }
+  },
+  "notifications": {
+    "shareExport": {
+      "title": "Share card export",
+      "body": "PNG and SVG are supported. Demo mode only shows the flow and does not trigger a real download."
+    },
+    "complete": {
+      "title": "Walkthrough complete",
+      "body": "Switch to free exploration or press Start Demo again to replay the full flow."
+    }
+  }
+}

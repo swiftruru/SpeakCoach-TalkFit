@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 interface AppLaunchOverlayProps {
   onComplete: () => void
@@ -8,6 +9,8 @@ interface AppLaunchOverlayProps {
 const LAUNCH_DURATION_MS = 1500
 
 export function AppLaunchOverlay({ onComplete }: AppLaunchOverlayProps) {
+  const { t } = useTranslation(['common', 'launch'])
+
   useEffect(() => {
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
@@ -46,7 +49,7 @@ export function AppLaunchOverlay({ onComplete }: AppLaunchOverlayProps) {
         onClick={onComplete}
         className="absolute top-5 right-5 rounded-full border border-gray-300/75 bg-white/80 px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm backdrop-blur hover:bg-white"
       >
-        略過
+        {t('common:actions.skip')}
       </button>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
@@ -70,13 +73,13 @@ export function AppLaunchOverlay({ onComplete }: AppLaunchOverlayProps) {
           className="mt-7"
         >
           <p className="text-[11px] uppercase tracking-[0.28em] text-gray-400">
-            App Prototype
+            {t('launch:eyebrow')}
           </p>
           <h1 className="mt-3 text-3xl font-bold tracking-[-0.03em] text-gray-900">
-            說來話長 TalkFit
+            {t('common:appName')}
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-gray-500">
-            演講練習的贅字與語速教練
+            {t('launch:subtitle')}
           </p>
         </motion.div>
 
@@ -87,7 +90,7 @@ export function AppLaunchOverlay({ onComplete }: AppLaunchOverlayProps) {
           className="mt-12 flex items-center gap-2 text-[11px] text-gray-400"
         >
           <span className="h-1.5 w-1.5 rounded-full bg-gray-300" />
-          <span>正在開啟原型體驗</span>
+          <span>{t('launch:opening')}</span>
         </motion.div>
       </div>
     </motion.div>

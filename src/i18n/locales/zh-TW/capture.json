@@ -1,0 +1,22 @@
+{
+  "eyebrow": "Export Capture",
+  "title": "截圖 / 乾淨輸出",
+  "description": "選擇輸出版型後，直接下載 PNG。",
+  "footer": "目前會移除導引箭頭、滑鼠游標與暫時性 hover 效果，讓輸出更乾淨。",
+  "exporting": "輸出中...",
+  "download": "下載 PNG",
+  "presets": {
+    "showcase": {
+      "title": "作品集展示版",
+      "description": "輸出目前網站主舞台，保留左側導覽、手機模擬器與右側說明。"
+    },
+    "presentation": {
+      "title": "乾淨展示版",
+      "description": "移除左側導覽與導引箭頭，保留手機模擬器與右側說明，適合 README 與簡報。"
+    },
+    "phone": {
+      "title": "純手機版",
+      "description": "只輸出 iPhone 模擬器本體，適合單張功能截圖。"
+    }
+  }
+}

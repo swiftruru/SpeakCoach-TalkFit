@@ -1,4 +1,5 @@
-import { PRACTICE_GOALS, evaluatePracticeGoal } from './practiceGoals'
+import i18n from '../i18n'
+import { evaluatePracticeGoal, getPracticeGoal } from './practiceGoals'
 import type { PracticeGoalId, SessionSummary, SpeedRange } from '../types'
 
 export interface ReportCoachingTip {
@@ -25,14 +26,14 @@ export function buildReportCoachingTips(
   const tips: ReportCoachingTip[] = []
   const topFillerCount = report.topFiller ? report.fillerCounts[report.topFiller] ?? 0 : 0
   const speedStats = getSpeedStats(report, speedRange)
-  const goal = PRACTICE_GOALS[goalId]
+  const goal = getPracticeGoal(goalId)
   const goalEvaluation = evaluatePracticeGoal(report, goalId, speedRange)
 
   if (report.topFiller && topFillerCount > 0) {
     tips.push({
       id: 'top-filler',
-      title: `先壓低「${report.topFiller}」`,
-      detail: `這次共出現 ${topFillerCount} 次，先點排行榜跳到對應片段，逐段重講會最快看到效果。`,
+      title: i18n.t('report:coachingTips.topFillerTitle', { word: report.topFiller }),
+      detail: i18n.t('report:coachingTips.topFillerDetail', { count: topFillerCount }),
       tone: 'red',
     })
   }
@@ -40,8 +41,11 @@ export function buildReportCoachingTips(
   if (speedStats.fastCount > 0) {
     tips.push({
       id: 'speed-fast',
-      title: '先處理偏快片段',
-      detail: `有 ${speedStats.fastCount} 個語速點高於 ${speedRange.high} 字/分，先把句尾收慢，再進下一句。`,
+      title: i18n.t('report:coachingTips.speedFastTitle'),
+      detail: i18n.t('report:coachingTips.speedFastDetail', {
+        count: speedStats.fastCount,
+        high: speedRange.high,
+      }),
       tone: 'amber',
     })
   }
@@ -49,17 +53,20 @@ export function buildReportCoachingTips(
   if (speedStats.slowCount > 0) {
     tips.push({
       id: 'speed-slow',
-      title: '補上句子的推進感',
-      detail: `有 ${speedStats.slowCount} 個語速點低於 ${speedRange.low} 字/分，可先縮短停頓與拉長尾音。`,
+      title: i18n.t('report:coachingTips.speedSlowTitle'),
+      detail: i18n.t('report:coachingTips.speedSlowDetail', {
+        count: speedStats.slowCount,
+        low: speedRange.low,
+      }),
       tone: 'blue',
     })
   }
 
   tips.push({
     id: 'goal-focus',
-    title: `下一輪只專注「${goal.label}」`,
+    title: i18n.t('report:coachingTips.goalFocusTitle', { goal: goal.label }),
     detail: goalEvaluation.success
-      ? `這次已達成目標，下一輪可以維持同目標再壓低標準，或換更高挑戰。`
+      ? i18n.t('report:coachingTips.goalFocusSuccess')
       : goalEvaluation.nextAction,
     tone: goalEvaluation.success ? 'green' : 'blue',
   })
@@ -67,8 +74,8 @@ export function buildReportCoachingTips(
   while (tips.length < 3) {
     tips.push({
       id: `fallback-${tips.length}`,
-      title: '用問題片段跳轉重練',
-      detail: '直接點贅字排行榜或異常語速點，把注意力集中在最需要修正的片段。',
+      title: i18n.t('report:coachingTips.fallbackTitle'),
+      detail: i18n.t('report:coachingTips.fallbackDetail'),
       tone: 'blue',
     })
   }

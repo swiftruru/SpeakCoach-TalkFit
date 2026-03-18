@@ -1,0 +1,75 @@
+{
+  "sections": {
+    "detection": "偵測設定",
+    "presets": "練習情境",
+    "goal": "練習目標",
+    "speedRange": "語速範圍",
+    "defaultFillers": "預設贅字清單",
+    "customFillers": "自訂贅字清單",
+    "feedback": "回饋方式",
+    "data": "資料"
+  },
+  "detection": {
+    "filler": {
+      "title": "贅字偵測",
+      "description": "偵測填充音和連接贅詞"
+    },
+    "speed": {
+      "title": "語速監控",
+      "description": "建議範圍 {{low}}–{{high}} 字/分"
+    },
+    "repeat": {
+      "title": "重複連接詞",
+      "description": "標記連續使用相同連接詞"
+    }
+  },
+  "presets": {
+    "title": "一鍵套用情境設定",
+    "description": "會同步調整語速區間與預設贅字類型。若你後續手動調整語速或贅字清單，系統會自動切換為自訂設定。",
+    "statusCustom": "自訂中",
+    "statusApplied": "已套用",
+    "customTitle": "目前使用自訂設定",
+    "customDescription": "重新點選任一情境卡片，即可快速回到對應的語速與贅字偵測組合。",
+    "activeBadge": "目前使用",
+    "applyBadge": "套用",
+    "speed": "語速 {{low}}–{{high}} 字/分"
+  },
+  "goal": {
+    "title": "每次練習先選一個目標",
+    "description": "練習中會持續顯示進度，結束後報告也會直接告訴你這次有沒有達標，以及下一輪最該先修的地方。",
+    "activeBadge": "本次目標",
+    "selectBadge": "選擇"
+  },
+  "speedRange": {
+    "slowThreshold": "偏慢門檻",
+    "fastThreshold": "偏快門檻",
+    "range": "{{low}} – {{high}} 字/分",
+    "slowLabel": "偏慢門檻：{{value}} 字/分",
+    "fastLabel": "偏快門檻：{{value}} 字/分",
+    "legendSlow": "⬤ 偏慢",
+    "legendNormal": "⬤ 適中",
+    "legendFast": "⬤ 偏快"
+  },
+  "fillers": {
+    "restoreDefault": "↺ 還原預設",
+    "placeholder": "輸入贅字",
+    "add": "加入",
+    "cancel": "取消",
+    "addNew": "+ 新增"
+  },
+  "feedback": {
+    "haptic": {
+      "title": "觸覺震動提醒",
+      "description": "偵測到贅字時輕震提醒"
+    },
+    "sound": {
+      "title": "音效提示",
+      "description": "用輕柔音效取代震動"
+    }
+  },
+  "data": {
+    "clearAll": "清除所有紀錄",
+    "clearConfirm": "確認清除所有練習紀錄？"
+  },
+  "version": "{{appName}} v1.0"
+}

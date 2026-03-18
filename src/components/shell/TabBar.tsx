@@ -1,4 +1,5 @@
 import { useNavigationStore } from '../../stores/navigationStore'
+import { useTranslation } from 'react-i18next'
 import type { Screen } from '../../types'
 
 const HomeIcon = ({ active }: { active: boolean }) => (
@@ -24,27 +25,28 @@ const SettingsIcon = ({ active }: { active: boolean }) => (
 )
 
 export function TabBar() {
+  const { t } = useTranslation(['common'])
   const { screen, requestScreen } = useNavigationStore()
 
   return (
     <div className="flex items-center justify-around px-2 pt-2 pb-6 bg-white/90 backdrop-blur-sm border-t border-gray-200 flex-shrink-0">
       <TabItem
         id="home"
-        label="首頁"
+        label={t('common:screens.home')}
         active={screen === 'home'}
         onClick={() => requestScreen('home')}
         icon={<HomeIcon active={screen === 'home'} />}
       />
       <TabItem
         id="history"
-        label="紀錄"
+        label={t('common:screens.history')}
         active={screen === 'history'}
         onClick={() => requestScreen('history')}
         icon={<HistoryIcon active={screen === 'history'} />}
       />
       <TabItem
         id="settings"
-        label="設定"
+        label={t('common:screens.settings')}
         active={screen === 'settings'}
         onClick={() => requestScreen('settings')}
         icon={<SettingsIcon active={screen === 'settings'} />}

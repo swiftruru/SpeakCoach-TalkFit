@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useNavigationStore } from '../stores/navigationStore'
 import { useHistoryStore } from '../stores/historyStore'
 import { useReportStore } from '../stores/reportStore'
@@ -9,6 +10,7 @@ import { fillerBadgeStyle, gradeColor } from '../lib/grading'
 import type { SessionSummary } from '../types'
 
 export function HistoryScreen() {
+  const { t } = useTranslation(['history'])
   const setScreen = useNavigationStore((s) => s.setScreen)
   const sessions = useHistoryStore((s) => s.sessions)
   const setReport = useReportStore((s) => s.setReport)
@@ -17,23 +19,21 @@ export function HistoryScreen() {
   const totalCount = sessions.length
   const totalMinutes = Math.round(sessions.reduce((s, se) => s + se.durationSeconds, 0) / 60)
 
-  // Most common filler across all sessions
   const allCounts: Record<string, number> = {}
   sessions.forEach((s) => {
     Object.entries(s.fillerCounts).forEach(([w, c]) => {
       allCounts[w] = (allCounts[w] ?? 0) + c
     })
   })
-  const topFiller = Object.entries(allCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '—'
+  const topFiller = Object.entries(allCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? t('history:summary.emptyValue')
 
-  // Trend chart data: last 10 sessions reversed (oldest first)
   const trendData = [...sessions]
     .reverse()
     .slice(-10)
     .map((s, i) => ({
       index: i + 1,
       fillerCount: s.fillerCount,
-      label: `#${sessions.length - (sessions.indexOf(s))}`,
+      label: `#${sessions.length - sessions.indexOf(s)}`,
     }))
 
   const handleViewReport = (session: SessionSummary) => {
@@ -44,29 +44,29 @@ export function HistoryScreen() {
   return (
     <div className="bg-gray-50 min-h-full pb-4">
       <div className="px-5 pt-5 pb-3">
-        <h2 className="text-xl font-bold text-gray-900">紀錄</h2>
+        <h2 className="text-xl font-bold text-gray-900">{t('history:title')}</h2>
       </div>
 
-      {/* Summary cards */}
       <div
         data-annotation-id="history-summary-cards"
         className="grid grid-cols-3 gap-2 px-4 mb-3"
       >
-        <SummaryCard label="總練習次數" value={totalCount.toString()} color="text-accent-blue" />
-        <SummaryCard label="總練習時長" value={`${totalMinutes}`} unit="分" color="text-accent-green" />
-        <SummaryCard label="最常贅字" value={topFiller} color="text-accent-amber" />
+        <SummaryCard label={t('history:summary.totalPractice')} value={totalCount.toString()} color="text-accent-blue" />
+        <SummaryCard label={t('history:summary.totalDuration')} value={`${totalMinutes}`} unit={t('history:summary.minutes')} color="text-accent-green" />
+        <SummaryCard label={t('history:summary.topFiller')} value={topFiller} color="text-accent-amber" />
       </div>
 
-      {/* Trend chart */}
       {trendData.length > 1 && (
         <div
           data-annotation-id="history-trend-chart"
           className="mx-4 mb-3 bg-white rounded-2xl p-4 shadow-sm"
         >
-          <h3 className="text-sm font-semibold text-gray-700 mb-0.5">贅字趨勢</h3>
+          <h3 className="text-sm font-semibold text-gray-700 mb-0.5">{t('history:trend.title')}</h3>
           {sessions.length >= 2 && (
             <p className="text-[10px] text-accent-green mb-2">
-              較第一次減少 {Math.max(0, Math.round(((sessions[sessions.length - 1].fillerCount - sessions[0].fillerCount) / (sessions[sessions.length - 1].fillerCount || 1)) * -100))}%
+              {t('history:trend.reducedSinceFirst', {
+                percent: Math.max(0, Math.round(((sessions[sessions.length - 1].fillerCount - sessions[0].fillerCount) / (sessions[sessions.length - 1].fillerCount || 1)) * -100)),
+              })}
             </p>
           )}
           <ResponsiveContainer width="100%" height={100}>
@@ -81,7 +81,10 @@ export function HistoryScreen() {
               <XAxis dataKey="label" tick={{ fontSize: 9, fill: '#9ca3af' }} />
               <YAxis tick={{ fontSize: 9, fill: '#9ca3af' }} />
               <Tooltip
-                formatter={(v: any) => [`${v} 次`, '贅字']}
+                formatter={(value) => [
+                  t('history:trend.tooltipValue', { count: Number(value ?? 0) }),
+                  t('history:trend.tooltipName'),
+                ]}
                 contentStyle={{ fontSize: 11, borderRadius: 8 }}
               />
               <Area
@@ -98,29 +101,28 @@ export function HistoryScreen() {
         </div>
       )}
 
-      {/* Session list */}
       <div data-annotation-id="history-list" className="px-4 space-y-2">
         <div className="flex items-center justify-between mb-1">
-          <h3 className="text-sm font-semibold text-gray-700">練習紀錄</h3>
+          <h3 className="text-sm font-semibold text-gray-700">{t('history:list.title')}</h3>
           {sessions.length > 0 && (
             <button
-              onClick={() => confirm('確認清除所有紀錄？') && clearAll()}
+              onClick={() => window.confirm(t('history:list.clearConfirm')) && clearAll()}
               className="text-[11px] text-red-400"
             >
-              清除全部
+              {t('history:list.clearAll')}
             </button>
           )}
         </div>
 
         {sessions.length === 0 ? (
           <div className="text-center py-10 text-gray-400 text-sm">
-            <p className="text-2xl mb-2">🎙</p>
-            <p>還沒有練習紀錄</p>
+            <p className="text-2xl mb-2">{t('history:list.emptyEmoji')}</p>
+            <p>{t('history:list.emptyTitle')}</p>
             <button
               onClick={() => setScreen('practice')}
               className="mt-2 text-accent-blue text-xs"
             >
-              開始第一次練習
+              {t('history:list.emptyAction')}
             </button>
           </div>
         ) : (
@@ -134,6 +136,8 @@ export function HistoryScreen() {
 }
 
 function SessionItem({ session, onClick }: { session: SessionSummary; onClick: () => void }) {
+  const { t } = useTranslation(['history'])
+
   return (
     <button
       onClick={onClick}
@@ -145,13 +149,13 @@ function SessionItem({ session, onClick }: { session: SessionSummary; onClick: (
           <p className="text-[11px] text-gray-400 mt-0.5">{formatDate(session.date)}</p>
         </div>
         <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${fillerBadgeStyle(session.fillerCount)}`}>
-          {session.fillerCount} 次
+          {t('history:list.countBadge', { count: session.fillerCount })}
         </span>
       </div>
       <div className="flex gap-3 text-[11px] text-gray-500">
-        <span>語速 <strong className="text-gray-700">{session.avgWpm} 字/分</strong></span>
-        <span>時長 <strong className="text-gray-700">{formatDuration(session.durationSeconds)}</strong></span>
-        <span>評分 <strong className={gradeColor(session.grade)}>{session.grade}</strong></span>
+        <span><strong className="text-gray-700">{t('history:list.meta.wpm', { value: session.avgWpm })}</strong></span>
+        <span><strong className="text-gray-700">{t('history:list.meta.duration', { value: formatDuration(session.durationSeconds) })}</strong></span>
+        <span><strong className={gradeColor(session.grade)}>{t('history:list.meta.grade', { value: session.grade })}</strong></span>
       </div>
     </button>
   )
