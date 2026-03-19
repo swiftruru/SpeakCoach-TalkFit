@@ -1414,7 +1414,7 @@ export default function App() {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.18 }}
           >
-        <div data-tour-target="topbar-actions" className="flex items-center gap-2 md:gap-3">
+        <div className="flex items-center gap-2 md:gap-3">
           <img src="/app-icon.png" alt="TalkFit" className="w-10 h-10 md:w-20 md:h-20 rounded-2xl object-cover flex-shrink-0 shadow-sm" />
           <div>
             <h1 className="text-sm font-semibold text-text-primary leading-none">{t('common:appName')}</h1>
@@ -1435,7 +1435,7 @@ export default function App() {
         </div>
 
         {/* Action buttons */}
-        <div className="flex items-center gap-2 md:gap-3">
+        <div data-tour-target="topbar-actions" className="flex items-center gap-2 md:gap-3">
           {/* Design story — desktop only */}
           <button
             onClick={() => setShowStoryModal(true)}

@@ -47,12 +47,12 @@ export function AppLaunchOverlay({ onComplete }: AppLaunchOverlayProps) {
     >
       <button
         onClick={onComplete}
-        className="absolute top-5 right-5 rounded-full border border-gray-300/75 bg-white/80 px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm backdrop-blur hover:bg-white"
+        className="absolute top-5 right-5 z-10 rounded-full border border-gray-300/75 bg-white/80 px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm backdrop-blur hover:bg-white"
       >
         {t('common:actions.skip')}
       </button>
 
-      <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.82, y: 18, rotate: -4 }}
           animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
