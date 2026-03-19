@@ -9,6 +9,18 @@
     "goalAchieved": "已達標",
     "goalRetry": "再練一次"
   },
+  "oneLineSummary": {
+    "eyebrow": "一句總結",
+    "fillerTitle": "先把「{{word}}」壓下來",
+    "fillerBody": "這個詞這輪共出現 {{count}} 次，先修它，整體乾淨度會最有感。",
+    "fastTitle": "先穩住語速，再看細節",
+    "fastBody": "目前有 {{count}} 個偏快點，先把句尾放慢，整體聽感就會穩很多。",
+    "slowTitle": "先把句子往前推一點",
+    "slowBody": "目前有 {{count}} 個偏慢點，先縮短停頓，節奏會更俐落。",
+    "goalRetryTitle": "先再練一輪「{{goal}}」",
+    "steadyTitle": "先守住這輪的穩定度",
+    "steadyBody": "這次沒有單一問題特別突出，先維持現在的節奏就對了。"
+  },
   "viewMode": {
     "summary": "摘要",
     "details": "詳細",

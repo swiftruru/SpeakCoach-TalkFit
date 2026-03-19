@@ -1,4 +1,10 @@
 {
+  "mode": {
+    "recommended": "推薦設定",
+    "advanced": "進階設定",
+    "recommendedDescription": "先看最常調整的項目，降低第一次進設定頁的負擔。",
+    "advancedDescription": "顯示完整設定，包含自訂贅字、回饋方式、語言與資料管理。"
+  },
   "sections": {
     "detection": "偵測設定",
     "presets": "練習情境",

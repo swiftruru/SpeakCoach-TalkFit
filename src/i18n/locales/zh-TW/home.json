@@ -47,6 +47,20 @@
     "retryBody": "直接從「{{issue}}」回去再練一輪。",
     "retryUnavailable": "最新一輪沒有明顯單一問題，先看報告會比較清楚。"
   },
+  "todayPlan": {
+    "eyebrow": "今天先做什麼",
+    "title": "直接選你現在要做的事",
+    "body": "這裡先把最常用的後續動作整理好：先回看報告，或直接回去重練上次問題。",
+    "fallbackBadge": "最近",
+    "startLabel": "快速開始",
+    "startBody": "直接開始新一輪練習。",
+    "reviewLabel": "看最近報告",
+    "reviewBody": "先看完整分析，再決定下一步。",
+    "reviewUnavailable": "還沒有最近報告，先開始一輪練習。",
+    "retryLabel": "重練上次問題",
+    "retryBody": "直接從「{{issue}}」回去再練一次。",
+    "retryUnavailable": "目前沒有明顯單一問題，先看報告會更清楚。"
+  },
   "quickResume": {
     "eyebrow": "快速續練",
     "title": "從最近一次練習接著修",

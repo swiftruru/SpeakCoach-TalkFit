@@ -182,6 +182,51 @@ export function ReportScreen() {
       },
     ]
   }, [activePracticeGoal.label, coachingTips, goalEvaluation, report, speedMarkers, speedRange.high, speedRange.low, t])
+  const oneLineSummary = useMemo(() => {
+    if (!report || !goalEvaluation) return null
+
+    const fastCount = speedMarkers.filter((marker) => marker.kind === 'speed-fast').length
+    const slowCount = speedMarkers.filter((marker) => marker.kind === 'speed-slow').length
+    const topFillerCount = report.topFiller ? report.fillerCounts[report.topFiller] ?? 0 : 0
+
+    if (report.topFiller && topFillerCount > 0) {
+      return {
+        tone: 'red' as HighlightTone,
+        title: t('report:oneLineSummary.fillerTitle', { word: report.topFiller }),
+        body: t('report:oneLineSummary.fillerBody', { count: topFillerCount }),
+      }
+    }
+
+    if (fastCount >= slowCount && fastCount > 0) {
+      return {
+        tone: 'amber' as HighlightTone,
+        title: t('report:oneLineSummary.fastTitle'),
+        body: t('report:oneLineSummary.fastBody', { count: fastCount }),
+      }
+    }
+
+    if (slowCount > 0) {
+      return {
+        tone: 'blue' as HighlightTone,
+        title: t('report:oneLineSummary.slowTitle'),
+        body: t('report:oneLineSummary.slowBody', { count: slowCount }),
+      }
+    }
+
+    if (!goalEvaluation.success) {
+      return {
+        tone: 'amber' as HighlightTone,
+        title: t('report:oneLineSummary.goalRetryTitle', { goal: activePracticeGoal.label }),
+        body: goalEvaluation.nextAction,
+      }
+    }
+
+    return {
+      tone: 'green' as HighlightTone,
+      title: t('report:oneLineSummary.steadyTitle'),
+      body: t('report:oneLineSummary.steadyBody'),
+    }
+  }, [activePracticeGoal.label, goalEvaluation, report, speedMarkers, t])
 
   const markerMap = useMemo(() => {
     const next = new Map<string, ReportIssueMarker>()
@@ -509,6 +554,21 @@ export function ReportScreen() {
             <p className="text-[11px] text-accent-blue mt-1.5 leading-relaxed">
               {goalEvaluation.nextAction}
             </p>
+          </div>
+        </div>
+      )}
+
+      {oneLineSummary && (
+        <div
+          data-annotation-id="report-one-line-summary"
+          className="mx-4 mt-4 mb-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+        >
+          <p className="text-[10px] uppercase tracking-[0.18em] text-gray-400">
+            {t('report:oneLineSummary.eyebrow')}
+          </p>
+          <div className={`mt-2 rounded-xl border px-3 py-3 ${highlightCardClass(oneLineSummary.tone)}`}>
+            <p className="text-sm font-semibold text-gray-800">{oneLineSummary.title}</p>
+            <p className="mt-1 text-[11px] leading-relaxed text-gray-600">{oneLineSummary.body}</p>
           </div>
         </div>
       )}

@@ -3,6 +3,7 @@ import type {
   TranscriptSegment,
   FillerWord,
   PracticeGoalId,
+  PracticePresetId,
   SpeedDataPoint,
   SpeedRange,
 } from '../types'
@@ -66,6 +67,7 @@ export function buildSessionSummary(
   segments: TranscriptSegment[],
   speedHistory: SpeedDataPoint[],
   options?: {
+    presetSnapshot?: PracticePresetId
     practiceGoalId?: PracticeGoalId
     speedRangeSnapshot?: SpeedRange
   }
@@ -84,6 +86,7 @@ export function buildSessionSummary(
     fillerCounts,
     topFiller: topFiller(fillerCounts),
     grade,
+    presetSnapshot: options?.presetSnapshot,
     practiceGoalId: options?.practiceGoalId,
     speedRangeSnapshot: options?.speedRangeSnapshot,
     speedHistory,

@@ -1,4 +1,10 @@
 {
+  "mode": {
+    "recommended": "Recommended",
+    "advanced": "Advanced",
+    "recommendedDescription": "Start with the settings most people adjust first so the page feels lighter.",
+    "advancedDescription": "Show the full set, including custom fillers, feedback style, language, and data management."
+  },
   "sections": {
     "detection": "Detection",
     "presets": "Practice Presets",

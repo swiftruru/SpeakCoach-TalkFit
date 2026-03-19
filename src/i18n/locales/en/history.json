@@ -62,6 +62,7 @@
     "emptyTitle": "No practice history yet",
     "emptyAction": "Start your first practice",
     "countBadge": "{{count}} times",
+    "retrySameScenario": "Practice Same Scenario",
     "meta": {
       "wpm": "Pace {{value}} wpm",
       "duration": "Duration {{value}}",

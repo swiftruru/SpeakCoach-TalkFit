@@ -9,6 +9,18 @@
     "goalAchieved": "Goal Met",
     "goalRetry": "Try Again"
   },
+  "oneLineSummary": {
+    "eyebrow": "One-line Summary",
+    "fillerTitle": "Bring down “{{word}}” first",
+    "fillerBody": "It appeared {{count}} times in this run, so reducing it will clean up the whole delivery fastest.",
+    "fastTitle": "Stabilize the pace before anything else",
+    "fastBody": "There are {{count}} fast outliers right now. Slow the sentence endings down first.",
+    "slowTitle": "Push the sentence forward a little more",
+    "slowBody": "There are {{count}} slow outliers right now. Shorter pauses will make the rhythm feel tighter.",
+    "goalRetryTitle": "Do one more round focused on “{{goal}}”",
+    "steadyTitle": "Keep this run steady first",
+    "steadyBody": "No single issue dominates this report, so keeping the current rhythm is the best next move."
+  },
   "viewMode": {
     "summary": "Summary",
     "details": "Details",

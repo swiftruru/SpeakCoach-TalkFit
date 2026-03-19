@@ -11,9 +11,15 @@ import { buildSessionSummary, formatDuration } from '../lib/speechAnalysis'
 import { evaluatePracticeGoal, getPracticeGoal } from '../lib/practiceGoals'
 import { getPracticePreset } from '../lib/practicePresets'
 import { wpmStatus, wpmColor, wpmLabel } from '../lib/grading'
+import { findPrimaryReportIssue } from '../lib/reportIssueMarkers'
+import { buildRetryPracticeTarget } from '../lib/retryPractice'
 import { useAudioLevel } from '../hooks/useAudioLevel'
 import { useDemoStore } from '../demo/demoStore'
-import type { SessionSummary, TranscriptSegment } from '../types'
+import type { RetryPracticeTarget, SessionSummary, TranscriptSegment } from '../types'
+
+interface PostStopMenuState {
+  retryTarget: RetryPracticeTarget | null
+}
 
 export function PracticeScreen() {
   const { t, i18n } = useTranslation(['common', 'practice'])
@@ -29,6 +35,7 @@ export function PracticeScreen() {
   const addHistory = useHistoryStore((s) => s.addSession)
   const settings = useSettingsStore()
   const retryTarget = useRetryPracticeStore((s) => s.target)
+  const startRetryPractice = useRetryPracticeStore((s) => s.startRetryPractice)
   const clearRetryPractice = useRetryPracticeStore((s) => s.clearRetryPractice)
   const isDemoActive = useDemoStore((s) => s.isDemoActive)
   const stopDemo = useDemoStore((s) => s.stopDemo)
@@ -42,6 +49,7 @@ export function PracticeScreen() {
   const [countdownValue, setCountdownValue] = useState<number | null>(null)
   const [isFocusMode, setIsFocusMode] = useState(Boolean(retryTarget))
   const [pendingAnalysisReport, setPendingAnalysisReport] = useState<SessionSummary | null>(null)
+  const [postStopMenu, setPostStopMenu] = useState<PostStopMenuState | null>(null)
 
   const beginRecording = useCallback(() => {
     session.reset()
@@ -66,6 +74,7 @@ export function PracticeScreen() {
       session.transcript,
       session.speedHistory,
       {
+        presetSnapshot: settings.preset,
         practiceGoalId,
         speedRangeSnapshot: practiceSpeedRange,
       }
@@ -79,7 +88,16 @@ export function PracticeScreen() {
       addHistory(nextReport)
       clearRetryPractice()
       setPendingAnalysisReport(null)
-      setScreen('report')
+      if (isDemoActive) {
+        setScreen('report')
+      } else {
+        const primaryIssue = findPrimaryReportIssue(nextReport, practiceSpeedRange)
+        setPostStopMenu({
+          retryTarget: primaryIssue
+            ? buildRetryPracticeTarget(nextReport, primaryIssue, practiceSpeedRange)
+            : null,
+        })
+      }
       analysisTimerRef.current = null
     }, retryTarget ? 1350 : 1100)
   }, [
@@ -90,10 +108,12 @@ export function PracticeScreen() {
     setRetryFeedback,
     addHistory,
     setScreen,
+    settings.preset,
     practiceGoalId,
     practiceSpeedRange,
     retryTarget,
     clearRetryPractice,
+    isDemoActive,
   ])
 
   const handlePause = useCallback(() => {
@@ -156,6 +176,23 @@ export function PracticeScreen() {
       if (analysisTimerRef.current) clearTimeout(analysisTimerRef.current)
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handlePostStopViewReport = useCallback(() => {
+    setPostStopMenu(null)
+    setScreen('report')
+  }, [setScreen])
+
+  const handlePostStopRetry = useCallback(() => {
+    if (!postStopMenu?.retryTarget) return
+    setPostStopMenu(null)
+    startRetryPractice(postStopMenu.retryTarget)
+    setScreen('practice')
+  }, [postStopMenu, setScreen, startRetryPractice])
+
+  const handlePostStopGoHome = useCallback(() => {
+    setPostStopMenu(null)
+    setScreen('home')
+  }, [setScreen])
 
   const totalFillers = Object.values(session.fillerCounts).reduce((s, v) => s + v, 0)
   const topFiller = Object.entries(session.fillerCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '—'
@@ -290,6 +327,90 @@ export function PracticeScreen() {
                     />
                   </div>
                 </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {postStopMenu && (
+          <>
+            <motion.div
+              className="absolute inset-0 z-[72] bg-black/62 backdrop-blur-[6px]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+            />
+            <motion.div
+              className="absolute inset-x-0 bottom-0 z-[80] rounded-t-[28px] border-t border-white/10 bg-[#101827] px-5 pb-6 pt-5 shadow-[0_-18px_48px_rgba(0,0,0,0.34)]"
+              initial={{ y: 28, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 28, opacity: 0 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+            >
+              <p className="text-[11px] uppercase tracking-[0.22em] text-accent-blue-light/80">
+                {t('practice:postStop.eyebrow')}
+              </p>
+              <h3 className="mt-2 text-[22px] font-semibold tracking-[-0.04em] text-white">
+                {t('practice:postStop.title')}
+              </h3>
+              <p className="mt-2 text-[13px] leading-6 text-slate-300">
+                {t('practice:postStop.body')}
+              </p>
+
+              {postStopMenu.retryTarget && (
+                <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-slate-400">
+                    {t('practice:postStop.retryEyebrow')}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-white">
+                    {postStopMenu.retryTarget.sessionTitle}
+                  </p>
+                  <p className="mt-1 text-[11px] leading-relaxed text-slate-300">
+                    {postStopMenu.retryTarget.prompt}
+                  </p>
+                </div>
+              )}
+
+              <div className="mt-5 space-y-2.5">
+                <button
+                  type="button"
+                  onClick={handlePostStopViewReport}
+                  className="flex w-full items-center justify-between rounded-2xl bg-accent-blue px-4 py-3 text-left text-white shadow-lg shadow-blue-950/25"
+                >
+                  <div>
+                    <p className="text-sm font-semibold">{t('practice:postStop.viewReport')}</p>
+                    <p className="mt-0.5 text-[11px] text-white/75">{t('practice:postStop.viewReportBody')}</p>
+                  </div>
+                  <span className="text-xl">→</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handlePostStopRetry}
+                  disabled={!postStopMenu.retryTarget}
+                  className="flex w-full items-center justify-between rounded-2xl border border-white/12 bg-white/[0.04] px-4 py-3 text-left text-white transition-colors disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  <div>
+                    <p className="text-sm font-semibold">{t('practice:postStop.retry')}</p>
+                    <p className="mt-0.5 text-[11px] text-slate-300">
+                      {postStopMenu.retryTarget
+                        ? t('practice:postStop.retryBody', { issue: postStopMenu.retryTarget.label })
+                        : t('practice:postStop.retryDisabled')}
+                    </p>
+                  </div>
+                  <span className="text-xl">↺</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handlePostStopGoHome}
+                  className="w-full rounded-2xl px-4 py-3 text-sm font-medium text-slate-300"
+                >
+                  {t('practice:postStop.goHome')}
+                </button>
               </div>
             </motion.div>
           </>

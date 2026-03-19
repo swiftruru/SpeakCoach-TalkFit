@@ -76,13 +76,13 @@ export function AnnotationPanel({
             <button
               key={id}
               onClick={() => onNavigate(id)}
-              className={`flex h-8 shrink-0 items-center justify-center whitespace-nowrap rounded-lg px-3 text-xs leading-none transition-all ${
+              className={`flex h-8 shrink-0 items-center justify-center whitespace-nowrap rounded-lg px-3 text-xs transition-all ${
                 screen === id
                   ? 'bg-accent-blue/10 text-accent-blue-light font-medium'
                   : 'text-text-muted hover:text-text-secondary hover:bg-bg-card'
               }`}
             >
-              {label}
+              <span className="inline-flex h-full items-center justify-center leading-none">{label}</span>
             </button>
           ))}
         </div>
@@ -109,9 +109,9 @@ export function AnnotationPanel({
                   [screen]: Math.max(0, manualPageIndex - 1),
                 }))}
                 disabled={pageIndex === 0 || activePageIndex !== null}
-                className="flex h-8 shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-divider px-2.5 text-[11px] leading-none text-text-secondary transition-all hover:bg-bg-surface disabled:cursor-not-allowed disabled:opacity-45"
+                className="flex h-8 shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-divider px-2.5 text-[11px] text-text-secondary transition-all hover:bg-bg-surface disabled:cursor-not-allowed disabled:opacity-45"
               >
-                {t('common:actions.previous')}
+                <span className="inline-flex h-full items-center justify-center leading-none">{t('common:actions.previous')}</span>
               </button>
               <button
                 onClick={() => setManualPageIndexByScreen((current) => ({
@@ -119,9 +119,9 @@ export function AnnotationPanel({
                   [screen]: Math.min(totalPages - 1, manualPageIndex + 1),
                 }))}
                 disabled={pageIndex >= totalPages - 1 || activePageIndex !== null}
-                className="flex h-8 shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-divider px-2.5 text-[11px] leading-none text-text-secondary transition-all hover:bg-bg-surface disabled:cursor-not-allowed disabled:opacity-45"
+                className="flex h-8 shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-divider px-2.5 text-[11px] text-text-secondary transition-all hover:bg-bg-surface disabled:cursor-not-allowed disabled:opacity-45"
               >
-                {t('common:actions.next')}
+                <span className="inline-flex h-full items-center justify-center leading-none">{t('common:actions.next')}</span>
               </button>
             </div>
           </div>
@@ -154,17 +154,19 @@ export function AnnotationPanel({
                       e.stopPropagation()
                       if (isAvailable) onTogglePin(item.targetId)
                     }}
-                    className={`flex h-6 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-2 text-[10px] leading-none transition-all ${
+                    className={`flex h-6 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-2 text-[10px] transition-all ${
                       isPinned
                         ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200'
                         : 'bg-bg-card2 text-text-muted hover:text-text-primary'
                     }`}
                     title={isPinned ? t('annotation:pinButton.unpinTitle') : t('annotation:pinButton.pinTitle')}
                   >
-                    {isPinned ? t('annotation:pinButton.pinned') : t('annotation:pinButton.pin')}
+                    <span className="inline-flex h-full items-center justify-center leading-none">
+                      {isPinned ? t('annotation:pinButton.pinned') : t('annotation:pinButton.pin')}
+                    </span>
                   </button>
-                  <span className={`flex h-6 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-2 text-[10px] font-medium leading-none ${typeBadge[item.type].cls}`}>
-                    {typeBadge[item.type].label}
+                  <span className={`flex h-6 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-2 text-[10px] font-medium ${typeBadge[item.type].cls}`}>
+                    <span className="inline-flex h-full items-center justify-center leading-none">{typeBadge[item.type].label}</span>
                   </span>
                 </div>
               </div>

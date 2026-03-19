@@ -47,6 +47,20 @@
     "retryBody": "Jump straight back into “{{issue}}”.",
     "retryUnavailable": "No single issue stands out in the latest run, so reviewing the report is the clearest next step."
   },
+  "todayPlan": {
+    "eyebrow": "What to do today",
+    "title": "Jump straight into the next action",
+    "body": "This card keeps the most useful follow-up actions together: review the latest report or jump straight back into the last issue.",
+    "fallbackBadge": "Latest",
+    "startLabel": "Quick Start",
+    "startBody": "Start a fresh practice round right away.",
+    "reviewLabel": "Review Latest Report",
+    "reviewBody": "Open the latest analysis first, then decide what to do next.",
+    "reviewUnavailable": "No recent report yet. Start a new round first.",
+    "retryLabel": "Retry Last Issue",
+    "retryBody": "Jump straight back into “{{issue}}”.",
+    "retryUnavailable": "No single issue stands out right now, so reviewing the report is the clearest next step."
+  },
   "quickResume": {
     "eyebrow": "Quick Resume",
     "title": "Pick up from your latest session",

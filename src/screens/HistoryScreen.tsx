@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { useNavigationStore } from '../stores/navigationStore'
 import { useHistoryStore } from '../stores/historyStore'
 import { useReportStore } from '../stores/reportStore'
+import { useRetryPracticeStore } from '../stores/retryPracticeStore'
+import { useSettingsStore } from '../stores/settingsStore'
 import {
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Area, AreaChart
 } from 'recharts'
@@ -15,6 +17,10 @@ export function HistoryScreen() {
   const setScreen = useNavigationStore((s) => s.setScreen)
   const sessions = useHistoryStore((s) => s.sessions)
   const setReport = useReportStore((s) => s.setReport)
+  const clearRetryPractice = useRetryPracticeStore((s) => s.clearRetryPractice)
+  const applyPreset = useSettingsStore((s) => s.applyPreset)
+  const setPracticeGoalId = useSettingsStore((s) => s.setPracticeGoalId)
+  const setSpeedRange = useSettingsStore((s) => s.setSpeedRange)
   const clearAll = useHistoryStore((s) => s.clearAll)
   const [compareIds, setCompareIds] = useState<string[]>([])
 
@@ -41,6 +47,22 @@ export function HistoryScreen() {
   const handleViewReport = (session: SessionSummary) => {
     setReport(session)
     setScreen('report')
+  }
+
+  const handleRetrySameScenario = (session: SessionSummary) => {
+    clearRetryPractice()
+
+    if (session.presetSnapshot && session.presetSnapshot !== 'custom') {
+      applyPreset(session.presetSnapshot)
+    } else if (session.speedRangeSnapshot) {
+      setSpeedRange(session.speedRangeSnapshot)
+    }
+
+    if (session.practiceGoalId) {
+      setPracticeGoalId(session.practiceGoalId)
+    }
+
+    setScreen('practice')
   }
 
   const compareSessions = useMemo(
@@ -307,6 +329,7 @@ export function HistoryScreen() {
               session={session}
               onClick={() => handleViewReport(session)}
               onToggleCompare={() => handleToggleCompare(session.id)}
+              onRetrySameScenario={() => handleRetrySameScenario(session)}
               isComparing={compareIds.includes(session.id)}
             />
           ))
@@ -320,11 +343,13 @@ function SessionItem({
   session,
   onClick,
   onToggleCompare,
+  onRetrySameScenario,
   isComparing,
 }: {
   session: SessionSummary
   onClick: () => void
   onToggleCompare: () => void
+  onRetrySameScenario: () => void
   isComparing: boolean
 }) {
   const { t } = useTranslation(['history'])
@@ -351,20 +376,32 @@ function SessionItem({
           <span><strong className={gradeColor(session.grade)}>{t('history:list.meta.grade', { value: session.grade })}</strong></span>
         </div>
       </button>
-      <button
-        type="button"
-        onClick={(event) => {
-          event.stopPropagation()
-          onToggleCompare()
-        }}
-        className={`absolute right-3 top-3 rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors ${
-          isComparing
-            ? 'bg-accent-blue/10 text-accent-blue'
-            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-        }`}
-      >
-        {isComparing ? t('history:compare.selectedButton') : t('history:compare.button')}
-      </button>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation()
+            onToggleCompare()
+          }}
+          className={`rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors ${
+            isComparing
+              ? 'bg-accent-blue/10 text-accent-blue'
+              : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+          }`}
+        >
+          {isComparing ? t('history:compare.selectedButton') : t('history:compare.button')}
+        </button>
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation()
+            onRetrySameScenario()
+          }}
+          className="rounded-full bg-blue-50 px-3 py-1.5 text-[11px] font-medium text-accent-blue transition-colors hover:bg-blue-100"
+        >
+          {t('history:list.retrySameScenario')}
+        </button>
+      </div>
     </div>
   )
 }

@@ -1,5 +1,12 @@
 import i18n, { normalizeLanguage } from '../i18n'
-import type { SessionSummary, SpeedDataPoint, TranscriptSegment } from '../types'
+import type {
+  PracticeGoalId,
+  PracticePresetId,
+  SessionSummary,
+  SpeedDataPoint,
+  TranscriptSegment,
+} from '../types'
+import { PRACTICE_PRESETS } from './practicePresets'
 
 function daysAgo(n: number): string {
   const d = new Date()
@@ -402,6 +409,23 @@ const SESSION_BLUEPRINTS = [
   { id: 'mock-1', key: 'hackathon' as const, days: 28, durationSeconds: 225, avgWpm: 178, fillerCount: 47, grade: 'C', variance: 45 },
 ]
 
+const SESSION_SNAPSHOTS: Record<
+  SessionKey,
+  {
+    presetSnapshot: Exclude<PracticePresetId, 'custom'>
+    practiceGoalId: PracticeGoalId
+  }
+> = {
+  hackathon: { presetSnapshot: 'demo-pitch', practiceGoalId: 'reduce-fillers' },
+  today: { presetSnapshot: 'project-presentation', practiceGoalId: 'reduce-fillers' },
+  interview: { presetSnapshot: 'interview-intro', practiceGoalId: 'steady-speed' },
+  reading2: { presetSnapshot: 'project-presentation', practiceGoalId: 'steady-speed' },
+  intro: { presetSnapshot: 'interview-intro', practiceGoalId: 'cut-top-filler' },
+  draft: { presetSnapshot: 'project-presentation', practiceGoalId: 'steady-speed' },
+  product: { presetSnapshot: 'demo-pitch', practiceGoalId: 'reduce-fillers' },
+  reading1: { presetSnapshot: 'project-presentation', practiceGoalId: 'steady-speed' },
+}
+
 function getLocaleContent(): Record<SessionKey, LocaleContent> {
   return normalizeLanguage(i18n.resolvedLanguage ?? i18n.language) === 'en' ? EN_CONTENT : ZH_CONTENT
 }
@@ -410,6 +434,7 @@ export function getMockSessions(): SessionSummary[] {
   const content = getLocaleContent()
 
   return SESSION_BLUEPRINTS.map((session) => ({
+    ...SESSION_SNAPSHOTS[session.key],
     id: session.id,
     title: content[session.key].title,
     date: daysAgo(session.days),
@@ -419,6 +444,7 @@ export function getMockSessions(): SessionSummary[] {
     fillerCounts: content[session.key].fillerCounts,
     topFiller: content[session.key].topFiller,
     grade: session.grade,
+    speedRangeSnapshot: { ...PRACTICE_PRESETS[SESSION_SNAPSHOTS[session.key].presetSnapshot].speedRange },
     speedHistory: makeSpeedHistory(session.durationSeconds, session.avgWpm, session.variance),
     transcript: content[session.key].transcript,
   }))

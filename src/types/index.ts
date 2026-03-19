@@ -85,6 +85,7 @@ export interface SessionSummary {
   fillerCounts: Record<string, number>
   topFiller: string | null
   grade: string           // A, A-, B+, B, C+, C, ...
+  presetSnapshot?: PracticePresetId
   practiceGoalId?: PracticeGoalId
   speedRangeSnapshot?: SpeedRange
   speedHistory: SpeedDataPoint[]

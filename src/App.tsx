@@ -923,11 +923,7 @@ export default function App() {
   const handleExportCapture = useCallback(async () => {
     const desktopStage = desktopStageRef.current
     const phoneOnly = phoneExportRef.current
-
-    const target =
-      capturePreset === 'phone'
-        ? phoneOnly
-        : desktopStage
+    const target = capturePreset === 'phone' ? phoneOnly : desktopStage
 
     if (!target) {
       showPhoneNotification({
@@ -947,6 +943,7 @@ export default function App() {
           ? { top: 28, right: 28, bottom: 52, left: 28 }
           : { top: 24, right: 24, bottom: 44, left: 24 },
         scale: capturePreset === 'phone' ? 2.4 : 2,
+        detachedRender: false,
         creditLabel: t('capture:credit.byline'),
         beforeSerialize: (clone) => {
           clone.querySelectorAll<HTMLElement>('[data-capture-role="navigator"]').forEach((node) => {

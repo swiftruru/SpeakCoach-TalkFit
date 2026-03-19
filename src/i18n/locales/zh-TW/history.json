@@ -62,6 +62,7 @@
     "emptyTitle": "還沒有練習紀錄",
     "emptyAction": "開始第一次練習",
     "countBadge": "{{count}} 次",
+    "retrySameScenario": "同情境再練",
     "meta": {
       "wpm": "語速 {{value}} 字/分",
       "duration": "時長 {{value}}",

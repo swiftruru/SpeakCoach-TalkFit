@@ -21,8 +21,10 @@ export function SettingsScreen() {
   const clearAll = useHistoryStore((s) => s.clearAll)
   const [newWord, setNewWord] = useState('')
   const [showAddInput, setShowAddInput] = useState(false)
+  const [settingsMode, setSettingsMode] = useState<'recommended' | 'advanced'>('recommended')
   const presets = getPracticePresetList()
   const goals = getPracticeGoalList()
+  const showAdvancedSections = settingsMode === 'advanced'
 
   const handleAddWord = () => {
     if (newWord.trim()) {
@@ -37,6 +39,40 @@ export function SettingsScreen() {
       <div className="px-5 pt-5 pb-3">
         <h2 className="text-xl font-bold text-gray-900">{t('common:screens.settings')}</h2>
       </div>
+
+      <section data-annotation-id="settings-mode-toggle">
+        <div className="mx-4 mb-1 rounded-2xl border border-gray-200 bg-white p-2 shadow-sm">
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setSettingsMode('recommended')}
+              className={`rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
+                settingsMode === 'recommended'
+                  ? 'bg-accent-blue text-white shadow-sm'
+                  : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+              }`}
+            >
+              {t('settings:mode.recommended')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setSettingsMode('advanced')}
+              className={`rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
+                settingsMode === 'advanced'
+                  ? 'bg-accent-blue text-white shadow-sm'
+                  : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+              }`}
+            >
+              {t('settings:mode.advanced')}
+            </button>
+          </div>
+          <p className="mt-2 px-1 text-[11px] leading-relaxed text-gray-500">
+            {settingsMode === 'recommended'
+              ? t('settings:mode.recommendedDescription')
+              : t('settings:mode.advancedDescription')}
+          </p>
+        </div>
+      </section>
 
       <section data-annotation-id="settings-detection-toggles">
         <SectionTitle>{t('settings:sections.detection')}</SectionTitle>
@@ -150,135 +186,139 @@ export function SettingsScreen() {
         </div>
       </section>
 
-      <section data-annotation-id="filler-chip-editor">
-        <SectionTitle>{t('settings:sections.defaultFillers')}</SectionTitle>
-        <div className="mx-4 bg-white rounded-2xl shadow-sm p-4">
-          <div className="flex flex-wrap gap-2">
-            {settings.fillerWords.filter((fw) => fw.category !== 'custom').map((fw) => (
-              <FillerChip
-                key={fw.word}
-                fw={fw}
-                onToggle={() => settings.toggleFillerWord(fw.word)}
-                onRemove={() => settings.removeFillerWord(fw.word)}
-              />
-            ))}
-            <button
-              onClick={() => {
-                const current = settings.fillerWords
-                const currentWords = new Set(current.map((f) => f.word))
-                const missing = getDefaultFillerWords(settings.language).filter((f) => !currentWords.has(f.word))
-                if (missing.length === 0) return
-                settings.setFillerWords([...current, ...missing])
-              }}
-              className="text-xs border border-dashed border-gray-300 text-gray-400 rounded-full px-2.5 py-1 hover:border-accent-green hover:text-accent-green transition-colors"
-            >
-              {t('settings:fillers.restoreDefault')}
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <SectionTitle>{t('settings:sections.customFillers')}</SectionTitle>
-        <div className="mx-4 bg-white rounded-2xl shadow-sm p-4">
-          <div className="flex flex-wrap gap-2">
-            {settings.fillerWords.filter((fw) => fw.category === 'custom').map((fw) => (
-              <FillerChip
-                key={fw.word}
-                fw={fw}
-                onToggle={() => settings.toggleFillerWord(fw.word)}
-                onRemove={() => settings.removeFillerWord(fw.word)}
-              />
-            ))}
-            {showAddInput ? (
-              <div className="flex items-center gap-1">
-                <input
-                  autoFocus
-                  value={newWord}
-                  onChange={(e) => setNewWord(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddWord()}
-                  placeholder={t('settings:fillers.placeholder')}
-                  className="text-xs text-gray-800 bg-white border border-gray-200 rounded-full px-2.5 py-1 w-24 outline-none focus:border-accent-blue placeholder:text-gray-400"
-                />
+      {showAdvancedSections && (
+        <>
+          <section data-annotation-id="filler-chip-editor">
+            <SectionTitle>{t('settings:sections.defaultFillers')}</SectionTitle>
+            <div className="mx-4 bg-white rounded-2xl shadow-sm p-4">
+              <div className="flex flex-wrap gap-2">
+                {settings.fillerWords.filter((fw) => fw.category !== 'custom').map((fw) => (
+                  <FillerChip
+                    key={fw.word}
+                    fw={fw}
+                    onToggle={() => settings.toggleFillerWord(fw.word)}
+                    onRemove={() => settings.removeFillerWord(fw.word)}
+                  />
+                ))}
                 <button
-                  onClick={handleAddWord}
-                  className="text-xs text-accent-blue font-medium"
+                  onClick={() => {
+                    const current = settings.fillerWords
+                    const currentWords = new Set(current.map((f) => f.word))
+                    const missing = getDefaultFillerWords(settings.language).filter((f) => !currentWords.has(f.word))
+                    if (missing.length === 0) return
+                    settings.setFillerWords([...current, ...missing])
+                  }}
+                  className="text-xs border border-dashed border-gray-300 text-gray-400 rounded-full px-2.5 py-1 hover:border-accent-green hover:text-accent-green transition-colors"
                 >
-                  {t('settings:fillers.add')}
-                </button>
-                <button
-                  onClick={() => setShowAddInput(false)}
-                  className="text-xs text-gray-400"
-                >
-                  {t('settings:fillers.cancel')}
+                  {t('settings:fillers.restoreDefault')}
                 </button>
               </div>
-            ) : (
+            </div>
+          </section>
+
+          <section>
+            <SectionTitle>{t('settings:sections.customFillers')}</SectionTitle>
+            <div className="mx-4 bg-white rounded-2xl shadow-sm p-4">
+              <div className="flex flex-wrap gap-2">
+                {settings.fillerWords.filter((fw) => fw.category === 'custom').map((fw) => (
+                  <FillerChip
+                    key={fw.word}
+                    fw={fw}
+                    onToggle={() => settings.toggleFillerWord(fw.word)}
+                    onRemove={() => settings.removeFillerWord(fw.word)}
+                  />
+                ))}
+                {showAddInput ? (
+                  <div className="flex items-center gap-1">
+                    <input
+                      autoFocus
+                      value={newWord}
+                      onChange={(e) => setNewWord(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleAddWord()}
+                      placeholder={t('settings:fillers.placeholder')}
+                      className="text-xs text-gray-800 bg-white border border-gray-200 rounded-full px-2.5 py-1 w-24 outline-none focus:border-accent-blue placeholder:text-gray-400"
+                    />
+                    <button
+                      onClick={handleAddWord}
+                      className="text-xs text-accent-blue font-medium"
+                    >
+                      {t('settings:fillers.add')}
+                    </button>
+                    <button
+                      onClick={() => setShowAddInput(false)}
+                      className="text-xs text-gray-400"
+                    >
+                      {t('settings:fillers.cancel')}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowAddInput(true)}
+                    className="text-xs border border-dashed border-gray-300 text-gray-400 rounded-full px-2.5 py-1 hover:border-accent-blue hover:text-accent-blue transition-colors"
+                  >
+                    {t('settings:fillers.addNew')}
+                  </button>
+                )}
+              </div>
+            </div>
+          </section>
+
+          <section data-annotation-id="settings-feedback">
+            <SectionTitle>{t('settings:sections.feedback')}</SectionTitle>
+            <div className="mx-4 bg-white rounded-2xl shadow-sm divide-y divide-gray-50">
+              <ToggleRow
+                icon="📳"
+                iconBg="bg-amber-50"
+                title={t('settings:feedback.haptic.title')}
+                sub={t('settings:feedback.haptic.description')}
+                value={settings.hapticEnabled}
+                onChange={settings.setHapticEnabled}
+              />
+              <ToggleRow
+                icon="🔊"
+                iconBg="bg-green-50"
+                title={t('settings:feedback.sound.title')}
+                sub={t('settings:feedback.sound.description')}
+                value={settings.soundEnabled}
+                onChange={settings.setSoundEnabled}
+              />
+            </div>
+          </section>
+
+          <section data-annotation-id="settings-language">
+            <SectionTitle>{t('common:languageToggle.label')}</SectionTitle>
+            <div className="mx-4 bg-white rounded-2xl shadow-sm divide-y divide-gray-50">
+              {LANGUAGE_OPTIONS.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => {
+                    void i18n.changeLanguage(lang.code)
+                  }}
+                  className="w-full flex items-center justify-between px-4 py-3.5 text-left"
+                >
+                  <span className="text-sm text-gray-700">{t(`common:languages.${lang.code}`)}</span>
+                  {settings.language === lang.code && (
+                    <span className="text-accent-blue text-sm">✓</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section>
+            <SectionTitle>{t('settings:sections.data')}</SectionTitle>
+            <div className="mx-4 bg-white rounded-2xl shadow-sm divide-y divide-gray-50">
               <button
-                onClick={() => setShowAddInput(true)}
-                className="text-xs border border-dashed border-gray-300 text-gray-400 rounded-full px-2.5 py-1 hover:border-accent-blue hover:text-accent-blue transition-colors"
+                onClick={() => window.confirm(t('settings:data.clearConfirm')) && clearAll()}
+                className="w-full flex items-center gap-3 px-4 py-3.5 text-left"
               >
-                {t('settings:fillers.addNew')}
+                <span className="w-7 h-7 rounded-xl bg-red-50 flex items-center justify-center text-sm">🗑</span>
+                <span className="text-sm text-red-500">{t('settings:data.clearAll')}</span>
               </button>
-            )}
-          </div>
-        </div>
-      </section>
-
-      <section data-annotation-id="settings-feedback">
-        <SectionTitle>{t('settings:sections.feedback')}</SectionTitle>
-        <div className="mx-4 bg-white rounded-2xl shadow-sm divide-y divide-gray-50">
-          <ToggleRow
-            icon="📳"
-            iconBg="bg-amber-50"
-            title={t('settings:feedback.haptic.title')}
-            sub={t('settings:feedback.haptic.description')}
-            value={settings.hapticEnabled}
-            onChange={settings.setHapticEnabled}
-          />
-          <ToggleRow
-            icon="🔊"
-            iconBg="bg-green-50"
-            title={t('settings:feedback.sound.title')}
-            sub={t('settings:feedback.sound.description')}
-            value={settings.soundEnabled}
-            onChange={settings.setSoundEnabled}
-          />
-        </div>
-      </section>
-
-      <section data-annotation-id="settings-language">
-        <SectionTitle>{t('common:languageToggle.label')}</SectionTitle>
-        <div className="mx-4 bg-white rounded-2xl shadow-sm divide-y divide-gray-50">
-          {LANGUAGE_OPTIONS.map((lang) => (
-            <button
-              key={lang.code}
-              onClick={() => {
-                void i18n.changeLanguage(lang.code)
-              }}
-              className="w-full flex items-center justify-between px-4 py-3.5 text-left"
-            >
-              <span className="text-sm text-gray-700">{t(`common:languages.${lang.code}`)}</span>
-              {settings.language === lang.code && (
-                <span className="text-accent-blue text-sm">✓</span>
-              )}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <SectionTitle>{t('settings:sections.data')}</SectionTitle>
-        <div className="mx-4 bg-white rounded-2xl shadow-sm divide-y divide-gray-50">
-          <button
-            onClick={() => window.confirm(t('settings:data.clearConfirm')) && clearAll()}
-            className="w-full flex items-center gap-3 px-4 py-3.5 text-left"
-          >
-            <span className="w-7 h-7 rounded-xl bg-red-50 flex items-center justify-center text-sm">🗑</span>
-            <span className="text-sm text-red-500">{t('settings:data.clearAll')}</span>
-          </button>
-        </div>
-      </section>
+            </div>
+          </section>
+        </>
+      )}
 
       <p className="text-center text-xs text-gray-400 mt-6">{t('settings:version', { appName: t('common:appName') })}</p>
     </div>
