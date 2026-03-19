@@ -5,6 +5,9 @@
   "footer": "目前會移除導引箭頭、滑鼠游標與暫時性 hover 效果，讓輸出更乾淨。",
   "exporting": "輸出中...",
   "download": "下載 PNG",
+  "credit": {
+    "byline": "作者｜潘昱如 PAN, YU-RU"
+  },
   "presets": {
     "showcase": {
       "title": "作品集展示版",

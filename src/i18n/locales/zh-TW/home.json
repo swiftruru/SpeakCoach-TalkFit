@@ -37,6 +37,16 @@
     "title": "今日提醒",
     "body": "試著意識到你最常說的贅字「{{filler}}」。說之前先停頓一秒，效果立竿見影。"
   },
+  "quickModes": {
+    "eyebrow": "快速模式",
+    "title": "直接選你現在要做的事",
+    "body": "不用先捲到下面找功能，這裡直接幫你整理最常用的兩個下一步。",
+    "reviewLabel": "看上次報告",
+    "reviewBody": "先回顧完整分析，再決定接下來要修哪一段。",
+    "retryLabel": "重練上次問題",
+    "retryBody": "直接從「{{issue}}」回去再練一輪。",
+    "retryUnavailable": "最新一輪沒有明顯單一問題，先看報告會比較清楚。"
+  },
   "quickResume": {
     "eyebrow": "快速續練",
     "title": "從最近一次練習接著修",

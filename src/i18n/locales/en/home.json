@@ -37,6 +37,16 @@
     "title": "Today's reminder",
     "body": "Try noticing your most frequent filler, \"{{filler}}\". Pause for a second before saying it."
   },
+  "quickModes": {
+    "eyebrow": "Quick Modes",
+    "title": "Jump straight into the next action",
+    "body": "The two most common follow-up actions stay here so you do not need to scroll for them.",
+    "reviewLabel": "Review Last Report",
+    "reviewBody": "Open the full analysis first, then decide what to fix next.",
+    "retryLabel": "Retry Last Issue",
+    "retryBody": "Jump straight back into “{{issue}}”.",
+    "retryUnavailable": "No single issue stands out in the latest run, so reviewing the report is the clearest next step."
+  },
   "quickResume": {
     "eyebrow": "Quick Resume",
     "title": "Pick up from your latest session",

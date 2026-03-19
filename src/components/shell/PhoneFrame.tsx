@@ -154,10 +154,10 @@ export function PhoneFrame({ screen, isLaunching = false, children }: PhoneFrame
                     <AnimatePresence mode="wait">
                       <motion.div
                         key={screen}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.2, ease: 'easeInOut' }}
+                        initial={{ opacity: 0, y: 10, scale: 0.985 }}
+                        animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -8, scale: 0.985 }}
+                        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
                         className="absolute inset-0 overflow-y-auto phone-scroll"
                       >
                         {children}

@@ -235,36 +235,60 @@ export function PracticeScreen() {
             />
             <motion.div
               className="absolute inset-0 z-[70] flex items-center justify-center px-6"
-              initial={{ opacity: 0, y: 12, scale: 0.98 }}
+              initial={{ opacity: 0, y: 18, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 12, scale: 0.98 }}
-              transition={{ duration: 0.22, ease: 'easeOut' }}
+              exit={{ opacity: 0, y: 18, scale: 0.97 }}
+              transition={{ duration: 0.26, ease: 'easeOut' }}
             >
-              <div className="w-full max-w-[280px] rounded-[28px] border border-white/10 bg-white/10 px-5 py-5 text-center shadow-2xl shadow-black/35">
-                <p className="text-[11px] uppercase tracking-[0.28em] text-accent-amber/80">
+              <div className="relative w-full max-w-[294px] overflow-hidden rounded-[30px] border border-white/10 bg-[#121a2b] px-5 py-6 text-center shadow-[0_20px_42px_rgba(10,18,34,0.36)]">
+                <div className="relative mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full border border-white/14 bg-white/[0.04]">
+                  <div className="absolute inset-2 rounded-full border border-white/12" />
+                  <div className="flex items-end gap-1.5">
+                    <span className="h-3.5 w-1 rounded-full bg-accent-blue-light animate-pulse" />
+                    <span className="h-6 w-1 rounded-full bg-accent-blue-light animate-pulse" style={{ animationDelay: '120ms', opacity: 0.88 }} />
+                    <span className="h-4.5 w-1 rounded-full bg-accent-blue-light animate-pulse" style={{ animationDelay: '240ms', opacity: 0.68 }} />
+                  </div>
+                </div>
+
+                <p className="text-[11px] uppercase tracking-[0.32em] text-accent-blue-light/90">
                   {t('practice:analysis.eyebrow')}
                 </p>
-                <h3 className="mt-2 text-xl font-semibold text-white">
+                <h3 className="mt-3 text-[29px] font-semibold leading-[1.08] tracking-[-0.04em] text-white">
                   {retryTarget ? t('practice:analysis.retryTitle') : t('practice:analysis.title')}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-gray-300">
+                <p className="mx-auto mt-3 max-w-[230px] text-[14px] leading-7 text-slate-200">
                   {retryTarget ? t('practice:analysis.retryBody') : t('practice:analysis.body')}
                 </p>
-                <div className="mt-4 space-y-2 text-left">
+
+                <div className="mt-5 space-y-2.5 text-left">
                   <AnalysisProgressRow
+                    indexLabel="01"
                     label={t('practice:analysis.steps.summary')}
                     active
                   />
                   <AnalysisProgressRow
+                    indexLabel="02"
                     label={t('practice:analysis.steps.patterns')}
                     active
-                    delayClass="delay-100"
+                    delayMs={120}
                   />
                   <AnalysisProgressRow
+                    indexLabel="03"
                     label={retryTarget ? t('practice:analysis.steps.retry') : t('practice:analysis.steps.coaching')}
                     active
-                    delayClass="delay-200"
+                    delayMs={240}
                   />
+                </div>
+
+                <div className="mt-5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2">
+                  <div className="h-1.5 overflow-hidden rounded-full bg-white/8">
+                    <motion.div
+                      className="h-full rounded-full bg-accent-blue"
+                      initial={{ width: '22%', opacity: 0.72 }}
+                      animate={{ width: ['22%', '100%'], opacity: [0.72, 1] }}
+                      transition={{ duration: 1.15, ease: 'easeInOut', repeat: Infinity, repeatType: 'reverse' }}
+                    />
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -344,10 +368,62 @@ export function PracticeScreen() {
         </div>
       )}
 
+      {!showPreflight && (
+        <div
+          data-annotation-id="recording-controls"
+          className="sticky top-2 z-20 mx-4 mb-4 flex items-center justify-center gap-4 rounded-[24px] border border-white/10 bg-gray-950/90 px-4 py-3 shadow-[0_10px_24px_rgba(0,0,0,0.24)] backdrop-blur-sm"
+        >
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={handlePause}
+            disabled={isDemoActive}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-800 text-gray-300 transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-35"
+          >
+            {session.isPaused ? (
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <polygon points="5,3 19,12 5,21" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <rect x="6" y="4" width="4" height="16" rx="1" />
+                <rect x="14" y="4" width="4" height="16" rx="1" />
+              </svg>
+            )}
+          </motion.button>
+
+          <motion.button
+            whileTap={{ scale: 0.92 }}
+            onClick={isDemoActive ? stopDemo : handleStop}
+            className="flex h-14 min-w-[108px] items-center justify-center gap-2 rounded-full bg-accent-red px-5 text-sm font-semibold text-white shadow-lg shadow-red-900/40"
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="white">
+              <rect x="6" y="6" width="12" height="12" rx="2" />
+            </svg>
+            <span>{t('common:actions.stop')}</span>
+          </motion.button>
+
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => {
+              if (isDemoActive) {
+                stopDemo()
+                return
+              }
+              requestScreen('home')
+            }}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-800 text-gray-300 transition-colors hover:bg-gray-700"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+            </svg>
+          </motion.button>
+        </div>
+      )}
+
       {showPreflight && (
         <div
           data-annotation-id="practice-preflight"
-          className="mx-4 mb-4 rounded-[28px] border border-white/10 bg-white/5 px-4 py-4 shadow-lg shadow-black/10"
+          className="mx-4 mb-4 rounded-[28px] border border-[#f7dce7]/18 bg-white/5 px-4 py-4 shadow-lg shadow-black/10"
         >
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -380,7 +456,7 @@ export function PracticeScreen() {
             />
           </div>
 
-          <div className="mt-3 rounded-2xl border border-white/8 bg-black/20 px-3.5 py-3">
+          <div className="mt-3 rounded-2xl border border-[#f7dce7]/16 bg-black/20 px-3.5 py-3">
             <p className="text-[11px] font-semibold text-white">{t('practice:preflight.goalHintTitle')}</p>
             <p className="mt-1 text-[11px] leading-relaxed text-gray-300">
               {activePracticeGoal.coachHint}
@@ -415,7 +491,7 @@ export function PracticeScreen() {
 
       {!showPreflight && (
         <>
-          <div className="mx-4 mb-4 rounded-2xl border border-white/10 bg-white/5 px-3.5 py-3">
+          <div className="mx-4 mb-4 rounded-2xl border border-[#f7dce7]/18 bg-white/5 px-3.5 py-3">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-[10px] uppercase tracking-[0.18em] text-gray-500">{t('practice:goalSection.title')}</p>
@@ -513,57 +589,6 @@ export function PracticeScreen() {
         </>
       )}
 
-      {!showPreflight && (
-        <div
-          data-annotation-id="recording-controls"
-          className="flex items-center justify-center gap-6 px-4"
-        >
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={handlePause}
-            disabled={isDemoActive}
-            className="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-300 hover:bg-gray-700 transition-colors disabled:opacity-35 disabled:cursor-not-allowed"
-          >
-            {session.isPaused ? (
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                <polygon points="5,3 19,12 5,21" />
-              </svg>
-            ) : (
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                <rect x="6" y="4" width="4" height="16" rx="1" />
-                <rect x="14" y="4" width="4" height="16" rx="1" />
-              </svg>
-            )}
-          </motion.button>
-
-          <motion.button
-            whileTap={{ scale: 0.92 }}
-            onClick={isDemoActive ? stopDemo : handleStop}
-            className="w-16 h-16 rounded-full bg-accent-red flex items-center justify-center shadow-lg shadow-red-900"
-          >
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="white">
-              <rect x="6" y="6" width="12" height="12" rx="2" />
-            </svg>
-          </motion.button>
-
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => {
-              if (isDemoActive) {
-                stopDemo()
-                return
-              }
-              requestScreen('home')
-            }}
-            className="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-300 hover:bg-gray-700 transition-colors"
-          >
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-            </svg>
-          </motion.button>
-        </div>
-      )}
-
       <AnimatePresence>
         {isRecordingExitConfirmOpen && (
           <>
@@ -616,7 +641,7 @@ export function PracticeScreen() {
 
 function PreflightStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/8 bg-black/15 px-3 py-3">
+    <div className="rounded-2xl border border-[#f7dce7]/16 bg-black/15 px-3 py-3">
       <p className="text-[10px] uppercase tracking-[0.14em] text-gray-500">{label}</p>
       <p className="mt-1 text-sm font-semibold text-white leading-snug">{value}</p>
     </div>
@@ -624,22 +649,39 @@ function PreflightStat({ label, value }: { label: string; value: string }) {
 }
 
 function AnalysisProgressRow({
+  indexLabel,
   label,
   active,
-  delayClass = '',
+  delayMs = 0,
 }: {
+  indexLabel: string
   label: string
   active: boolean
-  delayClass?: string
+  delayMs?: number
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-[11px] font-medium text-white">{label}</p>
-        <span className="text-[10px] text-emerald-300">{active ? '•' : ''}</span>
-      </div>
-      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
-        <div className={`h-full rounded-full bg-gradient-to-r from-accent-blue to-accent-amber animate-pulse ${delayClass}`} style={{ width: active ? '100%' : '0%' }} />
+    <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-3.5 py-3">
+      <div className="flex items-center gap-3">
+        <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] text-[10px] font-semibold tracking-[0.18em] text-slate-200">
+          {indexLabel}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[12px] font-medium tracking-[-0.01em] text-white">{label}</p>
+            <span
+              className={`h-2.5 w-2.5 flex-shrink-0 rounded-full ${active ? 'bg-accent-blue-light' : 'bg-white/16'}`}
+              style={active ? { animation: `pulse 1.6s ease-in-out ${delayMs}ms infinite` } : undefined}
+            />
+          </div>
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/8">
+            <motion.div
+              className="h-full rounded-full bg-accent-blue-light"
+              initial={{ width: '18%', opacity: 0.56 }}
+              animate={active ? { width: ['18%', '100%'], opacity: [0.56, 1] } : { width: '0%', opacity: 0 }}
+              transition={{ duration: 1.05, ease: 'easeInOut', repeat: Infinity, repeatType: 'reverse', delay: delayMs / 1000 }}
+            />
+          </div>
+        </div>
       </div>
     </div>
   )

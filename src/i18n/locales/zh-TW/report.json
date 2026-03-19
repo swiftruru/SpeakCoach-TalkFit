@@ -9,6 +9,14 @@
     "goalAchieved": "已達標",
     "goalRetry": "再練一次"
   },
+  "viewMode": {
+    "summary": "摘要",
+    "details": "詳細",
+    "summaryEyebrow": "快速摘要",
+    "summaryTitle": "先看這輪最重要的重點",
+    "summaryBody": "先用摘要模式抓到結果與下一步，需要完整數據時再切到詳細。",
+    "showDetails": "查看完整分析"
+  },
   "retryFeedback": {
     "eyebrow": "片段重練結果",
     "originalSnippet": "原始片段",

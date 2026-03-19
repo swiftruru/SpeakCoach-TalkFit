@@ -51,17 +51,17 @@
         "type": "feature"
       },
       {
-        "id": "home-quick-resume",
-        "targetId": "home-quick-resume",
-        "title": "快速續練",
-        "description": "把最近一次練習放回首頁，讓使用者可直接回看報告，或從上次最明顯的問題繼續重練。",
-        "type": "design"
-      },
-      {
         "id": "home-record-btn",
         "targetId": "home-record-btn",
         "title": "開始練習按鈕",
         "description": "主要行動按鈕，帶有輕觸彈跳動畫，回饋感接近原生 iOS 按鈕觸覺體驗。",
+        "type": "design"
+      },
+      {
+        "id": "home-quick-modes",
+        "targetId": "home-quick-modes",
+        "title": "快速模式",
+        "description": "把最常見的下一步拉到首頁上半部：直接回看上次報告，或從最新一個問題接著重練，減少往下捲動與找功能的成本。",
         "type": "design"
       }
     ],
@@ -130,6 +130,13 @@
         "title": "練習目標結果",
         "description": "報告最上方直接回頭對照本次練習前設定的單一目標，告訴使用者是否達標，以及下一輪該怎麼修。這能把「練習前設定」和「練習後回顧」串成一個完整閉環。",
         "type": "feature"
+      },
+      {
+        "id": "report-view-toggle",
+        "targetId": "report-view-toggle",
+        "title": "摘要 / 詳細切換",
+        "description": "可先用摘要模式快速掌握結果與下一步，再切到詳細模式查看圖表、逐字稿與分享卡，避免一開始資訊過多。",
+        "type": "design"
       },
       {
         "id": "report-top-highlights",

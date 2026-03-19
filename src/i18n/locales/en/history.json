@@ -28,6 +28,15 @@
     "waitingBody": "Choose one more session and the app will summarize the three most useful differences first.",
     "topFillerLabel": "Top filler shift",
     "topFillerSummary": "From “{{from}}” to “{{to}}”.",
+    "headline": {
+      "titleImproved": "This run looks steadier overall",
+      "titleNeedsWork": "This run improved in parts, with one thing to watch",
+      "fillerBetter": "{{count}} fewer fillers",
+      "fillerWorse": "{{count}} more fillers",
+      "paceSteady": "Average pace stayed steady",
+      "paceFaster": "{{count}} wpm faster",
+      "paceSlower": "{{count}} wpm slower"
+    },
     "metrics": {
       "fillers": "Fillers",
       "pace": "Pace",

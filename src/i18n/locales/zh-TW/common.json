@@ -65,7 +65,8 @@
     "resetPrototype": "重置原型",
     "copyLink": "畫面連結",
     "themeLight": "切換亮色模式",
-    "themeDark": "切換暗色模式"
+    "themeDark": "切換暗色模式",
+    "stop": "停止錄音"
   },
   "states": {
     "enabled": "已套用",

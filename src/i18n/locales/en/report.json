@@ -9,6 +9,14 @@
     "goalAchieved": "Goal Met",
     "goalRetry": "Try Again"
   },
+  "viewMode": {
+    "summary": "Summary",
+    "details": "Details",
+    "summaryEyebrow": "Quick Summary",
+    "summaryTitle": "Start with the most important takeaways",
+    "summaryBody": "Use summary mode to review the outcome and next move first, then switch to details when you want the full breakdown.",
+    "showDetails": "View Full Analysis"
+  },
   "retryFeedback": {
     "eyebrow": "Retry Result",
     "originalSnippet": "Original snippet",

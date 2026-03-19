@@ -37,6 +37,7 @@ export function ReportScreen() {
   const shareCardRef = useRef<SVGSVGElement | null>(null)
   const [shareExporting, setShareExporting] = useState<'png' | 'svg' | null>(null)
   const [shareError, setShareError] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'summary' | 'details'>('summary')
 
   const speedRange = report?.speedRangeSnapshot ?? configuredSpeedRange
   const practiceGoalId = report?.practiceGoalId ?? currentPracticeGoalId
@@ -401,6 +402,33 @@ export function ReportScreen() {
         </p>
       </div>
 
+      <div data-annotation-id="report-view-toggle" className="mx-4 mt-4 mb-3 rounded-2xl border border-gray-200 bg-white p-2 shadow-sm">
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setViewMode('summary')}
+            className={`rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
+              viewMode === 'summary'
+                ? 'bg-accent-blue text-white shadow-sm'
+                : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+            }`}
+          >
+            {t('report:viewMode.summary')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('details')}
+            className={`rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
+              viewMode === 'details'
+                ? 'bg-accent-blue text-white shadow-sm'
+                : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+            }`}
+          >
+            {t('report:viewMode.details')}
+          </button>
+        </div>
+      </div>
+
       {retryReview && retryFeedback && (
         <div
           data-annotation-id="report-retry-feedback"
@@ -510,289 +538,308 @@ export function ReportScreen() {
         </div>
       )}
 
-      {/* Score cards */}
-      <div
-        data-annotation-id="report-score-section"
-        className="grid grid-cols-3 gap-2 px-4 mb-3"
-      >
-        <ScoreCard
-          label={t('report:scoreCards.avgWpm')}
-          value={report.avgWpm.toString()}
-          unit={t('report:scoreCards.wpmUnit')}
-          color="text-accent-blue"
-          icon="📈"
-        />
-        <ScoreCard
-          label={t('report:scoreCards.fillerCount')}
-          value={report.fillerCount.toString()}
-          color={fillerCountColor(report.fillerCount)}
-          icon="✗"
-        />
-        <ScoreCard
-          label={t('report:scoreCards.fluency')}
-          value={report.grade}
-          color={gradeColor(report.grade)}
-          icon="✓"
-        />
-      </div>
-
-      {coachingTips.length > 0 && (
-        <div
-          data-annotation-id="report-coaching-next-steps"
-          className="mx-4 mb-3 bg-white rounded-2xl p-4 shadow-sm"
-        >
-          <div className="mb-3">
-            <h3 className="text-sm font-semibold text-gray-700">{t('report:coaching.title')}</h3>
-            <p className="text-[10px] text-gray-400 mt-0.5">
-              {t('report:coaching.description')}
-            </p>
+      {viewMode === 'summary' ? (
+        <div className="mx-4 mb-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+          <p className="text-[10px] uppercase tracking-[0.18em] text-gray-400">{t('report:viewMode.summaryEyebrow')}</p>
+          <h3 className="mt-1 text-sm font-semibold text-gray-800">{t('report:viewMode.summaryTitle')}</h3>
+          <p className="mt-1 text-[11px] leading-relaxed text-gray-500">
+            {t('report:viewMode.summaryBody')}
+          </p>
+          <button
+            type="button"
+            onClick={() => setViewMode('details')}
+            className="mt-3 rounded-full bg-accent-blue px-3 py-2 text-[11px] font-semibold text-white"
+          >
+            {t('report:viewMode.showDetails')}
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Score cards */}
+          <div
+            data-annotation-id="report-score-section"
+            className="grid grid-cols-3 gap-2 px-4 mb-3"
+          >
+            <ScoreCard
+              label={t('report:scoreCards.avgWpm')}
+              value={report.avgWpm.toString()}
+              unit={t('report:scoreCards.wpmUnit')}
+              color="text-accent-blue"
+              icon="📈"
+            />
+            <ScoreCard
+              label={t('report:scoreCards.fillerCount')}
+              value={report.fillerCount.toString()}
+              color={fillerCountColor(report.fillerCount)}
+              icon="✗"
+            />
+            <ScoreCard
+              label={t('report:scoreCards.fluency')}
+              value={report.grade}
+              color={gradeColor(report.grade)}
+              icon="✓"
+            />
           </div>
-          <div className="space-y-2.5">
-            {coachingTips.map((tip, index) => (
-              <div
-                key={tip.id}
-                className={`rounded-xl border px-3 py-3 ${coachingTipClass(tip.tone)}`}
-              >
-                <div className="flex items-start gap-3">
-                  <span className="w-5 h-5 rounded-full bg-white/80 text-[10px] font-bold flex items-center justify-center flex-shrink-0">
-                    {index + 1}
-                  </span>
+
+          {coachingTips.length > 0 && (
+            <div
+              data-annotation-id="report-coaching-next-steps"
+              className="mx-4 mb-3 bg-white rounded-2xl p-4 shadow-sm"
+            >
+              <div className="mb-3">
+                <h3 className="text-sm font-semibold text-gray-700">{t('report:coaching.title')}</h3>
+                <p className="text-[10px] text-gray-400 mt-0.5">
+                  {t('report:coaching.description')}
+                </p>
+              </div>
+              <div className="space-y-2.5">
+                {coachingTips.map((tip, index) => (
+                  <div
+                    key={tip.id}
+                    className={`rounded-xl border px-3 py-3 ${coachingTipClass(tip.tone)}`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="w-5 h-5 rounded-full bg-white/80 text-[10px] font-bold flex items-center justify-center flex-shrink-0">
+                        {index + 1}
+                      </span>
+                      <div>
+                        <p className="text-xs font-semibold">{tip.title}</p>
+                        <p className="text-[11px] mt-1 leading-relaxed opacity-90">{tip.detail}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Filler ranking */}
+          {sortedFillers.length > 0 && (
+            <div
+              data-annotation-id="filler-ranking"
+              className="mx-4 mb-3 bg-white rounded-2xl p-4 shadow-sm"
+            >
+              <div className="mb-3">
+                <h3 className="text-sm font-semibold text-gray-700">{t('report:ranking.title')}</h3>
+                <p className="text-[10px] text-gray-400 mt-0.5">
+                  {t('report:ranking.description')}
+                </p>
+              </div>
+              <div className="space-y-2">
+                {sortedFillers.slice(0, 6).map(([word, count], i) => {
+                  const pct = (count / maxFiller) * 100
+                  const color = i === 0 ? '#ef4444' : i <= 2 ? '#f59e0b' : '#10b981'
+                  const isActiveWord = activeMarker?.kind === 'filler' && activeMarker.fillerWord === word
+                  return (
+                    <button
+                      key={word}
+                      type="button"
+                      aria-pressed={isActiveWord}
+                      onClick={() => handleFillerClick(word)}
+                      className={`w-full flex items-center gap-2 rounded-xl px-2 py-1.5 text-left transition-colors ${isActiveWord ? 'bg-red-50 ring-1 ring-red-100' : 'hover:bg-gray-50'}`}
+                    >
+                      <span
+                        className="w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0"
+                        style={{ background: color }}
+                      >
+                        {i + 1}
+                      </span>
+                      <div className="w-16 flex-shrink-0">
+                        <span className="text-xs text-gray-700">{word}</span>
+                        {isActiveWord && activeMarker && (
+                          <p className="text-[10px] text-red-500 mt-0.5">
+                            {t('report:ranking.occurrence', {
+                              current: (activeMarker.occurrenceIndex ?? 0) + 1,
+                              total: activeMarker.occurrenceCount ?? count,
+                            })}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex-1 bg-gray-100 rounded-full h-1.5">
+                        <div
+                          className="h-1.5 rounded-full transition-all"
+                          style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${color}, ${color}88)` }}
+                        />
+                      </div>
+                      <span className="text-xs font-bold w-5 text-right" style={{ color }}>
+                        {count}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Speed curve */}
+          {report.speedHistory.length > 1 && (
+            <div
+              data-annotation-id="speed-curve-chart"
+              className="mx-4 mb-3 bg-white rounded-2xl p-4 shadow-sm"
+            >
+              <h3 className="text-sm font-semibold text-gray-700 mb-1">{t('report:speedCurve.title')}</h3>
+              <p className="text-[10px] text-gray-400 mb-2">
+                {t('report:speedCurve.description', {
+                  low: speedRange.low,
+                  high: speedRange.high,
+                })}
+              </p>
+              <ResponsiveContainer width="100%" height={120}>
+                <LineChart data={report.speedHistory} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis
+                    dataKey="time"
+                    tick={{ fontSize: 9, fill: '#9ca3af' }}
+                    tickFormatter={(value) => formatDuration(Number(value))}
+                  />
+                  <YAxis tick={{ fontSize: 9, fill: '#9ca3af' }} domain={['auto', 'auto']} />
+                  <Tooltip
+                    formatter={(value) => [
+                      t('report:speedCurve.tooltipValue', {
+                        value: Array.isArray(value) ? value.join(', ') : value ?? '—',
+                      }),
+                      t('report:speedCurve.tooltipName'),
+                    ]}
+                    labelFormatter={(label) => formatDuration(Number(label ?? 0))}
+                    contentStyle={{ fontSize: 11, borderRadius: 8 }}
+                  />
+                  <ReferenceArea
+                    y1={speedRange.low}
+                    y2={speedRange.high}
+                    fill="#f0f9ff"
+                    fillOpacity={0.6}
+                  />
+                  <ReferenceLine y={speedRange.high} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={1} />
+                  <ReferenceLine y={speedRange.low} stroke="#8b5cf6" strokeDasharray="3 3" strokeWidth={1} />
+                  <Line
+                    type="monotone"
+                    dataKey="wpm"
+                    stroke="#3b82f6"
+                    strokeWidth={2}
+                    dot={renderSpeedDot}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          {/* Annotated transcript */}
+          <div
+            data-annotation-id="annotated-transcript"
+            className="mx-4 mb-3 bg-white rounded-2xl p-4 shadow-sm"
+          >
+            <h3 className="text-sm font-semibold text-gray-700 mb-2">{t('report:transcript.title')}</h3>
+            {activeMarker && (
+              <div className={`mb-3 rounded-xl border px-3 py-2 ${markerBannerClass(activeMarker.kind)}`}>
+                <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold">{tip.title}</p>
-                    <p className="text-[11px] mt-1 leading-relaxed opacity-90">{tip.detail}</p>
+                    <p className="text-[11px] font-semibold">
+                      {t('report:transcript.positionedAt', {
+                        time: formatDuration(Math.round(activeMarker.timestamp)),
+                      })}
+                    </p>
+                    <p className="text-[11px] mt-0.5">
+                      {describeReportIssue(activeMarker)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={handleRetryPractice}
+                      className="rounded-full bg-white/85 px-2.5 py-1 text-[11px] font-semibold text-gray-700 hover:bg-white"
+                    >
+                      {t('report:transcript.retry')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveMarkerId(null)}
+                      className="text-[11px] font-medium opacity-80 hover:opacity-100"
+                    >
+                      {t('report:transcript.clear')}
+                    </button>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Filler ranking */}
-      {sortedFillers.length > 0 && (
-        <div
-          data-annotation-id="filler-ranking"
-          className="mx-4 mb-3 bg-white rounded-2xl p-4 shadow-sm"
-        >
-          <div className="mb-3">
-            <h3 className="text-sm font-semibold text-gray-700">{t('report:ranking.title')}</h3>
-            <p className="text-[10px] text-gray-400 mt-0.5">
-              {t('report:ranking.description')}
-            </p>
-          </div>
-          <div className="space-y-2">
-            {sortedFillers.slice(0, 6).map(([word, count], i) => {
-              const pct = (count / maxFiller) * 100
-              const color = i === 0 ? '#ef4444' : i <= 2 ? '#f59e0b' : '#10b981'
-              const isActiveWord = activeMarker?.kind === 'filler' && activeMarker.fillerWord === word
-              return (
-                <button
-                  key={word}
-                  type="button"
-                  aria-pressed={isActiveWord}
-                  onClick={() => handleFillerClick(word)}
-                  className={`w-full flex items-center gap-2 rounded-xl px-2 py-1.5 text-left transition-colors ${isActiveWord ? 'bg-red-50 ring-1 ring-red-100' : 'hover:bg-gray-50'}`}
-                >
-                  <span
-                    className="w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0"
-                    style={{ background: color }}
-                  >
-                    {i + 1}
-                  </span>
-                  <div className="w-16 flex-shrink-0">
-                    <span className="text-xs text-gray-700">{word}</span>
-                    {isActiveWord && activeMarker && (
-                      <p className="text-[10px] text-red-500 mt-0.5">
-                        {t('report:ranking.occurrence', {
-                          current: (activeMarker.occurrenceIndex ?? 0) + 1,
-                          total: activeMarker.occurrenceCount ?? count,
-                        })}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex-1 bg-gray-100 rounded-full h-1.5">
-                    <div
-                      className="h-1.5 rounded-full transition-all"
-                      style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${color}, ${color}88)` }}
-                    />
-                  </div>
-                  <span className="text-xs font-bold w-5 text-right" style={{ color }}>
-                    {count}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Speed curve */}
-      {report.speedHistory.length > 1 && (
-        <div
-          data-annotation-id="speed-curve-chart"
-          className="mx-4 mb-3 bg-white rounded-2xl p-4 shadow-sm"
-        >
-          <h3 className="text-sm font-semibold text-gray-700 mb-1">{t('report:speedCurve.title')}</h3>
-          <p className="text-[10px] text-gray-400 mb-2">
-            {t('report:speedCurve.description', {
-              low: speedRange.low,
-              high: speedRange.high,
-            })}
-          </p>
-          <ResponsiveContainer width="100%" height={120}>
-            <LineChart data={report.speedHistory} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis
-                dataKey="time"
-                tick={{ fontSize: 9, fill: '#9ca3af' }}
-                tickFormatter={(value) => formatDuration(Number(value))}
-              />
-              <YAxis tick={{ fontSize: 9, fill: '#9ca3af' }} domain={['auto', 'auto']} />
-              <Tooltip
-                formatter={(value) => [
-                  t('report:speedCurve.tooltipValue', {
-                    value: Array.isArray(value) ? value.join(', ') : value ?? '—',
-                  }),
-                  t('report:speedCurve.tooltipName'),
-                ]}
-                labelFormatter={(label) => formatDuration(Number(label ?? 0))}
-                contentStyle={{ fontSize: 11, borderRadius: 8 }}
-              />
-              <ReferenceArea
-                y1={speedRange.low}
-                y2={speedRange.high}
-                fill="#f0f9ff"
-                fillOpacity={0.6}
-              />
-              <ReferenceLine y={speedRange.high} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={1} />
-              <ReferenceLine y={speedRange.low} stroke="#8b5cf6" strokeDasharray="3 3" strokeWidth={1} />
-              <Line
-                type="monotone"
-                dataKey="wpm"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                dot={renderSpeedDot}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-
-      {/* Annotated transcript */}
-      <div
-        data-annotation-id="annotated-transcript"
-        className="mx-4 mb-3 bg-white rounded-2xl p-4 shadow-sm"
-      >
-        <h3 className="text-sm font-semibold text-gray-700 mb-2">{t('report:transcript.title')}</h3>
-        {activeMarker && (
-          <div className={`mb-3 rounded-xl border px-3 py-2 ${markerBannerClass(activeMarker.kind)}`}>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[11px] font-semibold">
-                  {t('report:transcript.positionedAt', {
-                    time: formatDuration(Math.round(activeMarker.timestamp)),
-                  })}
-                </p>
-                <p className="text-[11px] mt-0.5">
-                  {describeReportIssue(activeMarker)}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <button
-                  type="button"
-                  onClick={handleRetryPractice}
-                  className="rounded-full bg-white/85 px-2.5 py-1 text-[11px] font-semibold text-gray-700 hover:bg-white"
-                >
-                  {t('report:transcript.retry')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveMarkerId(null)}
-                  className="text-[11px] font-medium opacity-80 hover:opacity-100"
-                >
-                  {t('report:transcript.clear')}
-                </button>
-              </div>
+            )}
+            <div className="text-xs text-gray-700 leading-relaxed max-h-[220px] overflow-y-auto phone-scroll pr-1">
+              {report.transcript.map((seg, i) => (
+                <TranscriptBit
+                  key={i}
+                  ref={(element) => { transcriptRefs.current[i] = element }}
+                  segment={seg}
+                  isActive={activeMarker?.segmentIndex === i}
+                />
+              ))}
+            </div>
+            <div className="flex gap-3 mt-3">
+              <Legend color="bg-red-100" label={t('report:transcript.legend.filler')} />
+              <Legend lineColor="border-amber-400" label={t('report:transcript.legend.fast')} />
+              <Legend lineColor="border-purple-400 border-dashed" label={t('report:transcript.legend.slow')} />
             </div>
           </div>
-        )}
-        <div className="text-xs text-gray-700 leading-relaxed max-h-[220px] overflow-y-auto phone-scroll pr-1">
-          {report.transcript.map((seg, i) => (
-            <TranscriptBit
-              key={i}
-              ref={(element) => { transcriptRefs.current[i] = element }}
-              segment={seg}
-              isActive={activeMarker?.segmentIndex === i}
-            />
-          ))}
-        </div>
-        <div className="flex gap-3 mt-3">
-          <Legend color="bg-red-100" label={t('report:transcript.legend.filler')} />
-          <Legend lineColor="border-amber-400" label={t('report:transcript.legend.fast')} />
-          <Legend lineColor="border-purple-400 border-dashed" label={t('report:transcript.legend.slow')} />
-        </div>
-      </div>
 
-      {/* Share card preview */}
-      {shareCardData && (
-        <div data-annotation-id="report-share-preview" className="mx-4 mb-3 bg-white rounded-2xl p-4 shadow-sm">
-          <div className="mb-3">
-            <h3 className="text-sm font-semibold text-gray-700">{t('report:sharePreview.title')}</h3>
-            <p className="text-[10px] text-gray-400 mt-0.5">
-              {t('report:sharePreview.description')}
-            </p>
-          </div>
-          <div className="rounded-[28px] border border-gray-200 bg-slate-50 px-4 py-5">
-            <div className="mx-auto w-full max-w-[240px]">
-              <ReportShareCard
-                ref={shareCardRef}
-                data={shareCardData}
-                className="block w-full h-auto"
-              />
+          {/* Share card preview */}
+          {shareCardData && (
+            <div data-annotation-id="report-share-preview" className="mx-4 mb-3 bg-white rounded-2xl p-4 shadow-sm">
+              <div className="mb-3">
+                <h3 className="text-sm font-semibold text-gray-700">{t('report:sharePreview.title')}</h3>
+                <p className="text-[10px] text-gray-400 mt-0.5">
+                  {t('report:sharePreview.description')}
+                </p>
+              </div>
+              <div className="rounded-[28px] border border-gray-200 bg-slate-50 px-4 py-5">
+                <div className="mx-auto w-full max-w-[240px]">
+                  <ReportShareCard
+                    ref={shareCardRef}
+                    data={shareCardData}
+                    className="block w-full h-auto"
+                  />
+                </div>
+              </div>
+              <p className="text-[10px] text-gray-400 mt-2">
+                {t('report:sharePreview.footer')}
+              </p>
             </div>
-          </div>
-          <p className="text-[10px] text-gray-400 mt-2">
-            {t('report:sharePreview.footer')}
-          </p>
-        </div>
-      )}
+          )}
 
-      {/* Share/export */}
-      <div
-        data-annotation-id="report-share-row"
-        className="grid grid-cols-2 gap-2 mx-4"
-      >
-        <button
-          onClick={copyText}
-          className="py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 flex items-center justify-center gap-1.5 hover:bg-gray-50 transition-colors"
-        >
-          <span>📋</span> {t('report:shareActions.copySummary')}
-        </button>
-        <button
-          onClick={exportJSON}
-          className="py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 flex items-center justify-center gap-1.5 hover:bg-gray-50 transition-colors"
-        >
-          <span>⬇</span> {t('report:shareActions.exportJson')}
-        </button>
-        <button
-          onClick={() => void handleExportShareCard('png')}
-          disabled={!shareCardData || shareExporting !== null}
-          className="py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 flex items-center justify-center gap-1.5 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <span>🖼</span> {shareExporting === 'png' ? t('report:shareActions.exporting') : t('report:shareActions.sharePng')}
-        </button>
-        <button
-          onClick={() => void handleExportShareCard('svg')}
-          disabled={!shareCardData || shareExporting !== null}
-          className="py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 flex items-center justify-center gap-1.5 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <span>◇</span> {shareExporting === 'svg' ? t('report:shareActions.exporting') : t('report:shareActions.shareSvg')}
-        </button>
-      </div>
-      {shareError && (
-        <p className="mx-4 mt-2 text-[11px] text-red-500">
-          {shareError}
-        </p>
+          {/* Share/export */}
+          <div
+            data-annotation-id="report-share-row"
+            className="grid grid-cols-2 gap-2 mx-4"
+          >
+            <button
+              onClick={copyText}
+              className="py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 flex items-center justify-center gap-1.5 hover:bg-gray-50 transition-colors"
+            >
+              <span>📋</span> {t('report:shareActions.copySummary')}
+            </button>
+            <button
+              onClick={exportJSON}
+              className="py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 flex items-center justify-center gap-1.5 hover:bg-gray-50 transition-colors"
+            >
+              <span>⬇</span> {t('report:shareActions.exportJson')}
+            </button>
+            <button
+              onClick={() => void handleExportShareCard('png')}
+              disabled={!shareCardData || shareExporting !== null}
+              className="py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 flex items-center justify-center gap-1.5 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span>🖼</span> {shareExporting === 'png' ? t('report:shareActions.exporting') : t('report:shareActions.sharePng')}
+            </button>
+            <button
+              onClick={() => void handleExportShareCard('svg')}
+              disabled={!shareCardData || shareExporting !== null}
+              className="py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 flex items-center justify-center gap-1.5 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span>◇</span> {shareExporting === 'svg' ? t('report:shareActions.exporting') : t('report:shareActions.shareSvg')}
+            </button>
+          </div>
+          {shareError && (
+            <p className="mx-4 mt-2 text-[11px] text-red-500">
+              {shareError}
+            </p>
+          )}
+        </>
       )}
     </div>
   )

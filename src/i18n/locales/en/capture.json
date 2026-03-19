@@ -5,6 +5,9 @@
   "footer": "Connector arrows, the cursor, and temporary hover effects are removed to keep the export clean.",
   "exporting": "Exporting...",
   "download": "Download PNG",
+  "credit": {
+    "byline": "By PAN, YU-RU"
+  },
   "presets": {
     "showcase": {
       "title": "Showcase Layout",

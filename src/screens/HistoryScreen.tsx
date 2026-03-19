@@ -67,6 +67,32 @@ export function HistoryScreen() {
     }
   }, [compareSessions])
 
+  const compareHeadline = useMemo(() => {
+    if (!compareSummary) return null
+
+    const parts: string[] = []
+    if (compareSummary.fillerDelta < 0) {
+      parts.push(t('history:compare.headline.fillerBetter', { count: Math.abs(compareSummary.fillerDelta) }))
+    } else if (compareSummary.fillerDelta > 0) {
+      parts.push(t('history:compare.headline.fillerWorse', { count: compareSummary.fillerDelta }))
+    }
+
+    if (Math.abs(compareSummary.paceDelta) <= 5) {
+      parts.push(t('history:compare.headline.paceSteady'))
+    } else if (compareSummary.paceDelta > 0) {
+      parts.push(t('history:compare.headline.paceFaster', { count: compareSummary.paceDelta }))
+    } else {
+      parts.push(t('history:compare.headline.paceSlower', { count: Math.abs(compareSummary.paceDelta) }))
+    }
+
+    return {
+      title: compareSummary.fillerDelta <= 0
+        ? t('history:compare.headline.titleImproved')
+        : t('history:compare.headline.titleNeedsWork'),
+      body: parts.join(' · '),
+    }
+  }, [compareSummary, t])
+
   const handleToggleCompare = (sessionId: string) => {
     setCompareIds((current) => {
       if (current.includes(sessionId)) {
@@ -188,6 +214,12 @@ export function HistoryScreen() {
 
         {compareSummary ? (
           <div className="mt-4 space-y-3">
+            {compareHeadline && (
+              <div className="rounded-xl border border-sky-100 bg-sky-50 px-3 py-3">
+                <p className="text-[11px] font-semibold text-sky-700">{compareHeadline.title}</p>
+                <p className="mt-1 text-[11px] leading-relaxed text-sky-700/90">{compareHeadline.body}</p>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-2">
               <CompareSessionCard
                 label={t('history:compare.base')}

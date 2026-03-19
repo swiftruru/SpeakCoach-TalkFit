@@ -28,6 +28,15 @@
     "waitingBody": "再選一筆紀錄，系統就會整理出三個最值得先看的差異。",
     "topFillerLabel": "最常贅字變化",
     "topFillerSummary": "從「{{from}}」變成「{{to}}」。",
+    "headline": {
+      "titleImproved": "這次的整體表現更穩了",
+      "titleNeedsWork": "這次有進步，也有一個地方要留意",
+      "fillerBetter": "贅字少了 {{count}} 次",
+      "fillerWorse": "贅字多了 {{count}} 次",
+      "paceSteady": "平均語速維持穩定",
+      "paceFaster": "平均快了 {{count}} 字/分",
+      "paceSlower": "平均慢了 {{count}} 字/分"
+    },
     "metrics": {
       "fillers": "贅字",
       "pace": "語速",

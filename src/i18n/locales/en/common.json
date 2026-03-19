@@ -65,7 +65,8 @@
     "resetPrototype": "Reset Prototype",
     "copyLink": "View Link",
     "themeLight": "Switch to Light Mode",
-    "themeDark": "Switch to Dark Mode"
+    "themeDark": "Switch to Dark Mode",
+    "stop": "Stop"
   },
   "states": {
     "enabled": "Applied",

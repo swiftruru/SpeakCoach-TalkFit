@@ -51,17 +51,17 @@
         "type": "feature"
       },
       {
-        "id": "home-quick-resume",
-        "targetId": "home-quick-resume",
-        "title": "Quick Resume",
-        "description": "Brings the latest session back onto the home screen so the user can review the report or jump straight into retrying the clearest issue.",
-        "type": "design"
-      },
-      {
         "id": "home-record-btn",
         "targetId": "home-record-btn",
         "title": "Start Practice Button",
         "description": "The main call to action uses a subtle bounce so the tap feedback feels closer to an iOS control.",
+        "type": "design"
+      },
+      {
+        "id": "home-quick-modes",
+        "targetId": "home-quick-modes",
+        "title": "Quick Modes",
+        "description": "Keeps the two most common follow-up actions near the top of the home screen so users can review the latest report or retry the latest issue without scrolling.",
         "type": "design"
       }
     ],
@@ -130,6 +130,13 @@
         "title": "Goal Result",
         "description": "The report opens by comparing the session against the single goal chosen before practice, keeping setup and review tightly connected.",
         "type": "feature"
+      },
+      {
+        "id": "report-view-toggle",
+        "targetId": "report-view-toggle",
+        "title": "Summary / Details Toggle",
+        "description": "Lets the user stay in a quick summary view first, then expand the full charts, transcript, and exports only when needed.",
+        "type": "design"
       },
       {
         "id": "report-top-highlights",

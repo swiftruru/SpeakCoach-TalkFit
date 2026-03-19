@@ -113,10 +113,10 @@ export function PrototypeNavigator({ isSpotlightMode = false }: PrototypeNavigat
           </p>
         </div>
 
-        <div className="mt-4 h-px bg-border-divider" />
-
         {isDemoActive ? (
-          <div className="mt-3">
+          <>
+            <div className="mt-4 h-px bg-border-divider" />
+            <div className="mt-3">
             <p className="text-[11px] font-semibold tracking-[0.14em] text-text-muted uppercase">
               {t('navigator:controlsLabel')}
             </p>
@@ -148,7 +148,8 @@ export function PrototypeNavigator({ isSpotlightMode = false }: PrototypeNavigat
                 {playbackRate}x
               </button>
             </div>
-          </div>
+            </div>
+          </>
         ) : null}
 
         <div className="mt-4 h-px bg-border-divider" />

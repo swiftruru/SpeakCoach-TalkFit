@@ -29,13 +29,12 @@ export function AnnotationPanel({
   const { t } = useTranslation(['common', 'annotation'])
   const annotations = useMemo(() => {
     const value = t(`annotation:items.${screen}`, { returnObjects: true })
-    const localized = Array.isArray(value) ? (value as AnnotationItem[]) : []
-
-    if (!availableTargetIds?.length) return localized
-
-    const visibleTargets = new Set(availableTargetIds)
-    return localized.filter((item) => visibleTargets.has(item.targetId))
-  }, [availableTargetIds, screen, t])
+    return Array.isArray(value) ? (value as AnnotationItem[]) : []
+  }, [screen, t])
+  const visibleTargets = useMemo(
+    () => new Set((availableTargetIds?.length ?? 0) > 0 ? availableTargetIds : []),
+    [availableTargetIds]
+  )
   const screenLabels: Record<Screen, string> = {
     home: t('common:screenTabs.home'),
     practice: t('common:screenTabs.practice'),
@@ -77,7 +76,7 @@ export function AnnotationPanel({
             <button
               key={id}
               onClick={() => onNavigate(id)}
-              className={`text-xs px-3 py-1.5 rounded-lg transition-all ${
+              className={`flex h-8 shrink-0 items-center justify-center whitespace-nowrap rounded-lg px-3 text-xs leading-none transition-all ${
                 screen === id
                   ? 'bg-accent-blue/10 text-accent-blue-light font-medium'
                   : 'text-text-muted hover:text-text-secondary hover:bg-bg-card'
@@ -110,7 +109,7 @@ export function AnnotationPanel({
                   [screen]: Math.max(0, manualPageIndex - 1),
                 }))}
                 disabled={pageIndex === 0 || activePageIndex !== null}
-                className="rounded-full border border-divider px-2.5 py-1 text-[11px] text-text-secondary transition-all hover:bg-bg-surface disabled:cursor-not-allowed disabled:opacity-45"
+                className="flex h-8 shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-divider px-2.5 text-[11px] leading-none text-text-secondary transition-all hover:bg-bg-surface disabled:cursor-not-allowed disabled:opacity-45"
               >
                 {t('common:actions.previous')}
               </button>
@@ -120,7 +119,7 @@ export function AnnotationPanel({
                   [screen]: Math.min(totalPages - 1, manualPageIndex + 1),
                 }))}
                 disabled={pageIndex >= totalPages - 1 || activePageIndex !== null}
-                className="rounded-full border border-divider px-2.5 py-1 text-[11px] text-text-secondary transition-all hover:bg-bg-surface disabled:cursor-not-allowed disabled:opacity-45"
+                className="flex h-8 shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-divider px-2.5 text-[11px] leading-none text-text-secondary transition-all hover:bg-bg-surface disabled:cursor-not-allowed disabled:opacity-45"
               >
                 {t('common:actions.next')}
               </button>
@@ -131,14 +130,15 @@ export function AnnotationPanel({
         {pagedAnnotations.map((item) => {
           const isHighlighted = activeId === item.targetId
           const isPinned = pinnedId === item.targetId
+          const isAvailable = visibleTargets.size === 0 || visibleTargets.has(item.targetId)
           return (
             <div
               key={item.id}
               data-annotation-card-for={item.targetId}
-              onMouseEnter={() => onHoverItem(item.targetId)}
+              onMouseEnter={() => { if (isAvailable) onHoverItem(item.targetId) }}
               onMouseLeave={() => onHoverItem(null)}
-              onClick={() => onTogglePin(item.targetId)}
-              className={`rounded-xl p-3.5 border cursor-pointer transition-all duration-200 ${
+              onClick={() => { if (isAvailable) onTogglePin(item.targetId) }}
+              className={`rounded-xl p-3.5 border transition-all duration-200 ${isAvailable ? 'cursor-pointer' : 'cursor-not-allowed opacity-55'} ${
                 isHighlighted
                   ? 'bg-amber-50 border-amber-200 shadow-[0_12px_28px_rgba(249,115,22,0.12)] dark:bg-amber-500/10 dark:border-amber-400/30'
                   : 'bg-bg-card border-divider'
@@ -152,9 +152,9 @@ export function AnnotationPanel({
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
-                      onTogglePin(item.targetId)
+                      if (isAvailable) onTogglePin(item.targetId)
                     }}
-                    className={`rounded-full px-1.5 py-0.5 text-[10px] transition-all ${
+                    className={`flex h-6 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-2 text-[10px] leading-none transition-all ${
                       isPinned
                         ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200'
                         : 'bg-bg-card2 text-text-muted hover:text-text-primary'
@@ -163,7 +163,7 @@ export function AnnotationPanel({
                   >
                     {isPinned ? t('annotation:pinButton.pinned') : t('annotation:pinButton.pin')}
                   </button>
-                  <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0 ${typeBadge[item.type].cls}`}>
+                  <span className={`flex h-6 shrink-0 items-center justify-center whitespace-nowrap rounded-full px-2 text-[10px] font-medium leading-none ${typeBadge[item.type].cls}`}>
                     {typeBadge[item.type].label}
                   </span>
                 </div>

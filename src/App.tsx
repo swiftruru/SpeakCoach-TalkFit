@@ -943,8 +943,11 @@ export default function App() {
       await downloadElementAsPng(target, {
         fileName: `talkfit-${capturePreset}-${new Date().toISOString().slice(0, 10)}.png`,
         background: '#f8fafc',
-        padding: capturePreset === 'phone' ? 28 : 24,
+        padding: capturePreset === 'phone'
+          ? { top: 28, right: 28, bottom: 52, left: 28 }
+          : { top: 24, right: 24, bottom: 44, left: 24 },
         scale: capturePreset === 'phone' ? 2.4 : 2,
+        creditLabel: t('capture:credit.byline'),
         beforeSerialize: (clone) => {
           clone.querySelectorAll<HTMLElement>('[data-capture-role="navigator"]').forEach((node) => {
             if (capturePreset === 'presentation') {
