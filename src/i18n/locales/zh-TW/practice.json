@@ -87,6 +87,29 @@
     "demoNoMic": "示範模式中，無需麥克風",
     "prototypeNoCapture": "原型模式中，不會真的收音"
   },
+  "countdown": {
+    "title": "準備開始",
+    "subtitle": "3-2-1 後就會進入這輪練習"
+  },
+  "preflight": {
+    "eyebrow": "開始前確認",
+    "title": "先確認這輪要怎麼練",
+    "body": "開始前先看一次目標、情境與建議語速，進場會更穩。",
+    "retryBody": "這次會直接回到問題片段重練，先確認目標與節奏再開始。",
+    "liveBadge": "一般練習",
+    "retryBadge": "片段重練",
+    "goal": "本次目標",
+    "preset": "練習情境",
+    "range": "建議語速",
+    "rangeValue": "{{low}}–{{high}} 字/分",
+    "goalHintTitle": "開始前提醒",
+    "autoStart": "將自動開始 3-2-1 倒數"
+  },
+  "focusMode": {
+    "active": "關閉專注模式",
+    "inactive": "開啟專注模式",
+    "helper": "專注模式只保留這輪最需要盯住的資訊，降低干擾。"
+  },
   "session": {
     "titlePrefix": "練習 "
   },

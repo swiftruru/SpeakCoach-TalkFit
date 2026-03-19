@@ -24,7 +24,7 @@
     },
     "mockLoaded": {
       "title": "Mock data loaded",
-      "body": "Practice history and reports are ready for browsing."
+      "body": "The app jumped to the report view and preselected a retry-ready issue segment."
     },
     "prototypeReset": {
       "title": "Prototype reset",

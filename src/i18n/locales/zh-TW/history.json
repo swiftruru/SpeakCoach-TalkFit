@@ -13,6 +13,38 @@
     "tooltipValue": "{{count}} 次",
     "tooltipName": "贅字"
   },
+  "compare": {
+    "title": "快速比較",
+    "selectFirst": "先從列表中挑一筆練習紀錄加入比較。",
+    "selectSecond": "再選一筆紀錄，就能直接比較贅字、語速與時長。",
+    "ready": "已選好兩筆紀錄，可直接看這次差異。",
+    "clear": "清除比較",
+    "emptyChip": "尚未選擇比較對象",
+    "selectedChip": "比較 {{index}} · {{title}}",
+    "base": "比較 1",
+    "target": "比較 2",
+    "button": "加入比較",
+    "selectedButton": "比較中",
+    "waitingBody": "再選一筆紀錄，系統就會整理出三個最值得先看的差異。",
+    "topFillerLabel": "最常贅字變化",
+    "topFillerSummary": "從「{{from}}」變成「{{to}}」。",
+    "metrics": {
+      "fillers": "贅字",
+      "pace": "語速",
+      "duration": "時長"
+    },
+    "changes": {
+      "sameCount": "贅字數量沒有變化",
+      "fewerFillers": "少了 {{count}} 次贅字",
+      "moreFillers": "多了 {{count}} 次贅字",
+      "samePace": "平均語速維持不變",
+      "slower": "平均慢了 {{count}} 字/分",
+      "faster": "平均快了 {{count}} 字/分",
+      "sameDuration": "時長沒有變化",
+      "shorter": "縮短 {{count}} 秒",
+      "longer": "增加 {{count}} 秒"
+    }
+  },
   "list": {
     "title": "練習紀錄",
     "clearAll": "清除全部",

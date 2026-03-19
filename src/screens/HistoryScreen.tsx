@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigationStore } from '../stores/navigationStore'
 import { useHistoryStore } from '../stores/historyStore'
@@ -15,6 +16,7 @@ export function HistoryScreen() {
   const sessions = useHistoryStore((s) => s.sessions)
   const setReport = useReportStore((s) => s.setReport)
   const clearAll = useHistoryStore((s) => s.clearAll)
+  const [compareIds, setCompareIds] = useState<string[]>([])
 
   const totalCount = sessions.length
   const totalMinutes = Math.round(sessions.reduce((s, se) => s + se.durationSeconds, 0) / 60)
@@ -39,6 +41,42 @@ export function HistoryScreen() {
   const handleViewReport = (session: SessionSummary) => {
     setReport(session)
     setScreen('report')
+  }
+
+  const compareSessions = useMemo(
+    () => compareIds
+      .map((id) => sessions.find((session) => session.id === id) ?? null)
+      .filter((session): session is SessionSummary => session !== null),
+    [compareIds, sessions]
+  )
+
+  const compareSummary = useMemo(() => {
+    if (compareSessions.length < 2) return null
+
+    const [base, target] = compareSessions
+    const fillerDelta = target.fillerCount - base.fillerCount
+    const paceDelta = target.avgWpm - base.avgWpm
+    const durationDelta = target.durationSeconds - base.durationSeconds
+
+    return {
+      base,
+      target,
+      fillerDelta,
+      paceDelta,
+      durationDelta,
+    }
+  }, [compareSessions])
+
+  const handleToggleCompare = (sessionId: string) => {
+    setCompareIds((current) => {
+      if (current.includes(sessionId)) {
+        return current.filter((id) => id !== sessionId)
+      }
+      if (current.length < 2) {
+        return [...current, sessionId]
+      }
+      return [current[1], sessionId]
+    })
   }
 
   return (
@@ -101,6 +139,111 @@ export function HistoryScreen() {
         </div>
       )}
 
+      <div
+        data-annotation-id="history-quick-compare"
+        className="mx-4 mb-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-semibold text-gray-700">{t('history:compare.title')}</h3>
+            <p className="text-[10px] text-gray-400 mt-0.5">
+              {compareSessions.length < 2
+                ? t(
+                    compareSessions.length === 0
+                      ? 'history:compare.selectFirst'
+                      : 'history:compare.selectSecond'
+                  )
+                : t('history:compare.ready')}
+            </p>
+          </div>
+          {compareIds.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setCompareIds([])}
+              className="text-[11px] font-medium text-gray-400 hover:text-gray-600"
+            >
+              {t('history:compare.clear')}
+            </button>
+          )}
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          {compareSessions.length === 0 && (
+            <span className="rounded-full border border-dashed border-gray-200 px-3 py-1.5 text-[11px] text-gray-400">
+              {t('history:compare.emptyChip')}
+            </span>
+          )}
+          {compareSessions.map((session, index) => (
+            <span
+              key={session.id}
+              className="rounded-full bg-gray-100 px-3 py-1.5 text-[11px] font-medium text-gray-700"
+            >
+              {t('history:compare.selectedChip', {
+                index: index + 1,
+                title: session.title,
+              })}
+            </span>
+          ))}
+        </div>
+
+        {compareSummary ? (
+          <div className="mt-4 space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              <CompareSessionCard
+                label={t('history:compare.base')}
+                title={compareSummary.base.title}
+                meta={formatDate(compareSummary.base.date)}
+              />
+              <CompareSessionCard
+                label={t('history:compare.target')}
+                title={compareSummary.target.title}
+                meta={formatDate(compareSummary.target.date)}
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              <CompareMetricCard
+                label={t('history:compare.metrics.fillers')}
+                values={`${compareSummary.base.fillerCount} → ${compareSummary.target.fillerCount}`}
+                change={describeCountChange(compareSummary.fillerDelta, t)}
+                tone={compareSummary.fillerDelta <= 0 ? 'green' : 'red'}
+              />
+              <CompareMetricCard
+                label={t('history:compare.metrics.pace')}
+                values={`${compareSummary.base.avgWpm} → ${compareSummary.target.avgWpm}`}
+                change={describePaceChange(compareSummary.paceDelta, t)}
+                tone={Math.abs(compareSummary.paceDelta) <= 5 ? 'blue' : 'amber'}
+              />
+              <CompareMetricCard
+                label={t('history:compare.metrics.duration')}
+                values={`${formatDuration(compareSummary.base.durationSeconds)} → ${formatDuration(compareSummary.target.durationSeconds)}`}
+                change={describeDurationChange(compareSummary.durationDelta, t)}
+                tone="blue"
+              />
+            </div>
+            <div className="rounded-xl border border-gray-100 bg-gray-50 px-3 py-2.5">
+              <p className="text-[11px] font-semibold text-gray-700">
+                {t('history:compare.topFillerLabel')}
+              </p>
+              <p className="mt-1 text-[11px] leading-relaxed text-gray-500">
+                {t('history:compare.topFillerSummary', {
+                  from: compareSummary.base.topFiller ?? t('history:summary.emptyValue'),
+                  to: compareSummary.target.topFiller ?? t('history:summary.emptyValue'),
+                })}
+              </p>
+            </div>
+          </div>
+        ) : compareSessions.length === 1 ? (
+          <div className="mt-4 rounded-xl border border-dashed border-gray-200 bg-gray-50 px-3 py-3">
+            <p className="text-[11px] font-semibold text-gray-700">
+              {compareSessions[0].title}
+            </p>
+            <p className="mt-1 text-[11px] leading-relaxed text-gray-500">
+              {t('history:compare.waitingBody')}
+            </p>
+          </div>
+        ) : null}
+      </div>
+
       <div data-annotation-id="history-list" className="px-4 space-y-2">
         <div className="flex items-center justify-between mb-1">
           <h3 className="text-sm font-semibold text-gray-700">{t('history:list.title')}</h3>
@@ -127,7 +270,13 @@ export function HistoryScreen() {
           </div>
         ) : (
           sessions.map((session) => (
-            <SessionItem key={session.id} session={session} onClick={() => handleViewReport(session)} />
+            <SessionItem
+              key={session.id}
+              session={session}
+              onClick={() => handleViewReport(session)}
+              onToggleCompare={() => handleToggleCompare(session.id)}
+              isComparing={compareIds.includes(session.id)}
+            />
           ))
         )}
       </div>
@@ -135,29 +284,56 @@ export function HistoryScreen() {
   )
 }
 
-function SessionItem({ session, onClick }: { session: SessionSummary; onClick: () => void }) {
+function SessionItem({
+  session,
+  onClick,
+  onToggleCompare,
+  isComparing,
+}: {
+  session: SessionSummary
+  onClick: () => void
+  onToggleCompare: () => void
+  isComparing: boolean
+}) {
   const { t } = useTranslation(['history'])
 
   return (
-    <button
-      onClick={onClick}
-      className="w-full bg-white rounded-2xl p-3.5 shadow-sm text-left hover:shadow-md transition-shadow"
-    >
-      <div className="flex items-start justify-between mb-2">
-        <div>
-          <p className="text-sm font-semibold text-gray-800">{session.title}</p>
-          <p className="text-[11px] text-gray-400 mt-0.5">{formatDate(session.date)}</p>
+    <div className={`relative rounded-2xl bg-white p-3.5 shadow-sm transition-shadow hover:shadow-md ${isComparing ? 'ring-1 ring-accent-blue/30' : ''}`}>
+      <button
+        type="button"
+        onClick={onClick}
+        className="w-full pr-24 text-left"
+      >
+        <div className="mb-2 flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-gray-800">{session.title}</p>
+            <p className="text-[11px] text-gray-400 mt-0.5">{formatDate(session.date)}</p>
+          </div>
+          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${fillerBadgeStyle(session.fillerCount)}`}>
+            {t('history:list.countBadge', { count: session.fillerCount })}
+          </span>
         </div>
-        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${fillerBadgeStyle(session.fillerCount)}`}>
-          {t('history:list.countBadge', { count: session.fillerCount })}
-        </span>
-      </div>
-      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-gray-500">
-        <span><strong className="text-gray-700">{t('history:list.meta.wpm', { value: session.avgWpm })}</strong></span>
-        <span><strong className="text-gray-700">{t('history:list.meta.duration', { value: formatDuration(session.durationSeconds) })}</strong></span>
-        <span><strong className={gradeColor(session.grade)}>{t('history:list.meta.grade', { value: session.grade })}</strong></span>
-      </div>
-    </button>
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-gray-500">
+          <span><strong className="text-gray-700">{t('history:list.meta.wpm', { value: session.avgWpm })}</strong></span>
+          <span><strong className="text-gray-700">{t('history:list.meta.duration', { value: formatDuration(session.durationSeconds) })}</strong></span>
+          <span><strong className={gradeColor(session.grade)}>{t('history:list.meta.grade', { value: session.grade })}</strong></span>
+        </div>
+      </button>
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation()
+          onToggleCompare()
+        }}
+        className={`absolute right-3 top-3 rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors ${
+          isComparing
+            ? 'bg-accent-blue/10 text-accent-blue'
+            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+        }`}
+      >
+        {isComparing ? t('history:compare.selectedButton') : t('history:compare.button')}
+      </button>
+    </div>
   )
 }
 
@@ -173,4 +349,67 @@ function SummaryCard({ label, value, unit, color }: {
       <p className="mt-1 min-h-[1.8rem] text-[10px] leading-snug text-gray-400">{label}</p>
     </div>
   )
+}
+
+function CompareSessionCard({
+  label,
+  title,
+  meta,
+}: {
+  label: string
+  title: string
+  meta: string
+}) {
+  return (
+    <div className="rounded-xl border border-gray-100 bg-gray-50 px-3 py-3">
+      <p className="text-[10px] uppercase tracking-[0.16em] text-gray-400">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-gray-800">{title}</p>
+      <p className="mt-1 text-[11px] text-gray-500">{meta}</p>
+    </div>
+  )
+}
+
+function CompareMetricCard({
+  label,
+  values,
+  change,
+  tone,
+}: {
+  label: string
+  values: string
+  change: string
+  tone: 'red' | 'amber' | 'blue' | 'green'
+}) {
+  return (
+    <div className={`rounded-xl border px-3 py-3 ${compareMetricToneClass(tone)}`}>
+      <p className="text-[10px] uppercase tracking-[0.16em] text-gray-400">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-gray-800">{values}</p>
+      <p className="mt-1 text-[11px] leading-relaxed text-gray-600">{change}</p>
+    </div>
+  )
+}
+
+function compareMetricToneClass(tone: 'red' | 'amber' | 'blue' | 'green') {
+  if (tone === 'red') return 'border-red-100 bg-red-50'
+  if (tone === 'amber') return 'border-amber-100 bg-amber-50'
+  if (tone === 'green') return 'border-emerald-100 bg-emerald-50'
+  return 'border-sky-100 bg-sky-50'
+}
+
+function describeCountChange(delta: number, t: ReturnType<typeof useTranslation>['t']) {
+  if (delta === 0) return t('history:compare.changes.sameCount')
+  if (delta < 0) return t('history:compare.changes.fewerFillers', { count: Math.abs(delta) })
+  return t('history:compare.changes.moreFillers', { count: delta })
+}
+
+function describePaceChange(delta: number, t: ReturnType<typeof useTranslation>['t']) {
+  if (delta === 0) return t('history:compare.changes.samePace')
+  if (delta < 0) return t('history:compare.changes.slower', { count: Math.abs(delta) })
+  return t('history:compare.changes.faster', { count: delta })
+}
+
+function describeDurationChange(delta: number, t: ReturnType<typeof useTranslation>['t']) {
+  if (delta === 0) return t('history:compare.changes.sameDuration')
+  if (delta < 0) return t('history:compare.changes.shorter', { count: Math.abs(delta) })
+  return t('history:compare.changes.longer', { count: delta })
 }

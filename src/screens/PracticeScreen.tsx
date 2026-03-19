@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useMemo } from 'react'
+import { useEffect, useRef, useCallback, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { useNavigationStore } from '../stores/navigationStore'
@@ -9,6 +9,7 @@ import { useSettingsStore } from '../stores/settingsStore'
 import { useRetryPracticeStore } from '../stores/retryPracticeStore'
 import { buildSessionSummary, formatDuration } from '../lib/speechAnalysis'
 import { evaluatePracticeGoal, getPracticeGoal } from '../lib/practiceGoals'
+import { getPracticePreset } from '../lib/practicePresets'
 import { wpmStatus, wpmColor, wpmLabel } from '../lib/grading'
 import { useAudioLevel } from '../hooks/useAudioLevel'
 import { useDemoStore } from '../demo/demoStore'
@@ -34,9 +35,12 @@ export function PracticeScreen() {
   const practiceSpeedRange = settings.speedRange
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const countdownRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const preflightStartRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [countdownValue, setCountdownValue] = useState<number | null>(null)
+  const [isFocusMode, setIsFocusMode] = useState(Boolean(retryTarget))
 
-  // Start recording
-  const handleStart = useCallback(() => {
+  const beginRecording = useCallback(() => {
     session.reset()
     session.startRecording()
 
@@ -84,6 +88,42 @@ export function PracticeScreen() {
     session.pauseRecording()
   }, [session])
 
+  useEffect(() => {
+    if (countdownValue === null) return
+
+    countdownRef.current = setTimeout(() => {
+      if (countdownValue <= 1) {
+        setCountdownValue(null)
+        beginRecording()
+        return
+      }
+      setCountdownValue(countdownValue - 1)
+    }, 1000)
+
+    return () => {
+      if (countdownRef.current) {
+        clearTimeout(countdownRef.current)
+        countdownRef.current = null
+      }
+    }
+  }, [beginRecording, countdownValue])
+
+  useEffect(() => {
+    if (isDemoActive || session.isRecording || countdownValue !== null) return
+
+    preflightStartRef.current = setTimeout(() => {
+      preflightStartRef.current = null
+      setCountdownValue(3)
+    }, 450)
+
+    return () => {
+      if (preflightStartRef.current) {
+        clearTimeout(preflightStartRef.current)
+        preflightStartRef.current = null
+      }
+    }
+  }, [countdownValue, isDemoActive, session.isRecording])
+
   // External demo/replay modes drive the screen state themselves, so stop any live timer first.
   useEffect(() => {
     if (!isDemoActive) return
@@ -93,19 +133,23 @@ export function PracticeScreen() {
     }
   }, [isDemoActive])
 
-  // External demo mode drives this screen itself, so only auto-start in normal use.
+  // Keep the practice screen clean on entry when not driven by demo playback.
   useEffect(() => {
     if (isDemoActive) return
-    handleStart()
+    session.reset()
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
-      clearRetryPractice()
+      if (countdownRef.current) clearTimeout(countdownRef.current)
+      if (preflightStartRef.current) clearTimeout(preflightStartRef.current)
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalFillers = Object.values(session.fillerCounts).reduce((s, v) => s + v, 0)
   const topFiller = Object.entries(session.fillerCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '—'
   const activePracticeGoal = getPracticeGoal(settings.practiceGoalId)
+  const activePresetLabel = settings.preset === 'custom'
+    ? t('common:states.customizing')
+    : getPracticePreset(settings.preset).label
   const goalEvaluation = useMemo(
     () => evaluatePracticeGoal({
       durationSeconds: Math.max(session.elapsedSeconds, 1),
@@ -127,10 +171,44 @@ export function PracticeScreen() {
 
   const WAVE_BARS = 20
   const isRecordingActive = session.isRecording && !session.isPaused
+  const showPreflight = !isDemoActive && !session.isRecording && countdownValue === null
+  const showSecondaryPanels = !isFocusMode || isDemoActive
+  const showRetryDetails = showPreflight || !isFocusMode
   const audioLevels = useAudioLevel(isRecordingActive, WAVE_BARS, settings.micDeviceId, false)
 
   return (
     <div className="relative flex flex-col bg-gray-950 min-h-full text-white pb-4">
+      <AnimatePresence>
+        {countdownValue !== null && (
+          <>
+            <motion.div
+              className="absolute inset-0 z-40 bg-black/70 backdrop-blur-[6px]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            />
+            <motion.div
+              className="absolute inset-0 z-50 flex flex-col items-center justify-center px-6 text-center"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+            >
+              <p className="text-[11px] uppercase tracking-[0.28em] text-accent-amber/80">
+                {t('practice:countdown.title')}
+              </p>
+              <span className="mt-4 text-7xl font-black tracking-[-0.08em] text-white tabular-nums">
+                {countdownValue}
+              </span>
+              <p className="mt-3 text-sm text-gray-300">
+                {t('practice:countdown.subtitle')}
+              </p>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <div
         data-annotation-id="practice-badge"
@@ -163,6 +241,22 @@ export function PracticeScreen() {
         </span>
       </div>
 
+      {!isDemoActive && (
+        <div className="mx-4 mb-3 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setIsFocusMode((value) => !value)}
+            className={`rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors ${
+              isFocusMode
+                ? 'border-accent-amber/40 bg-amber-500/15 text-amber-100'
+                : 'border-white/10 bg-white/5 text-gray-300'
+            }`}
+          >
+            {isFocusMode ? t('practice:focusMode.active') : t('practice:focusMode.inactive')}
+          </button>
+        </div>
+      )}
+
       {/* Speed Gauge */}
       <div data-annotation-id="speed-gauge" className="flex justify-center py-4">
         <SpeedGauge
@@ -172,164 +266,240 @@ export function PracticeScreen() {
         />
       </div>
 
-      <div className="mx-4 mb-4 rounded-2xl border border-white/10 bg-white/5 px-3.5 py-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-[10px] uppercase tracking-[0.18em] text-gray-500">{t('practice:goalSection.title')}</p>
-            <p className="text-sm font-semibold text-white mt-1">{activePracticeGoal.label}</p>
-            <p className="text-[11px] text-gray-400 mt-1 leading-relaxed">
-              {activePracticeGoal.description}
-            </p>
-          </div>
-          <span className={`text-[10px] font-semibold px-2 py-1 rounded-full flex-shrink-0 ${
-            goalEvaluation.success
-              ? 'bg-emerald-500/20 text-emerald-300'
-              : 'bg-amber-500/15 text-amber-200'
-          }`}>
-            {goalEvaluation.progressLabel}
-          </span>
-        </div>
-        <p className="text-[11px] text-gray-300 mt-2">
-          {goalEvaluation.statusText}
-        </p>
-      </div>
-
-      {retryTarget && (
+      {retryTarget && !showPreflight && (
         <div
           data-annotation-id="retry-practice-banner"
           className="mx-4 mb-4 rounded-2xl border border-accent-amber/30 bg-amber-500/10 px-3.5 py-3"
         >
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-[0.18em] text-amber-200/80">{t('practice:retryBanner.title')}</p>
-              <p className="text-sm font-semibold text-white mt-1">{retryTarget.sessionTitle}</p>
-              <p className="text-[11px] text-amber-100/80 mt-1 leading-relaxed">
-                {retryTarget.prompt}
-              </p>
-            </div>
-            <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-white/10 text-amber-100 flex-shrink-0">
-              {t('practice:retryBanner.recommendedSeconds', { count: retryTarget.recommendedDurationSeconds })}
-            </span>
-          </div>
-          <div className="mt-2 rounded-xl bg-black/20 px-3 py-2">
-            <p className="text-[10px] text-amber-100/70 mb-1">{t('practice:retryBanner.originalSnippet')}</p>
-            <p className="text-[11px] text-gray-100 leading-relaxed">「{retryTarget.snippet}」</p>
-          </div>
+          <RetryPracticeBanner
+            sessionTitle={retryTarget.sessionTitle}
+            prompt={retryTarget.prompt}
+            snippet={retryTarget.snippet}
+            recommendedDurationSeconds={retryTarget.recommendedDurationSeconds}
+            showDetails={showRetryDetails}
+          />
         </div>
       )}
 
-      {/* Live stats */}
-      <div
-        data-annotation-id="live-stats"
-        className="grid grid-cols-3 gap-3 mx-4 mb-4"
-      >
-        <LiveStatCard
-          label={t('practice:liveStats.fillerCount')}
-          value={totalFillers.toString()}
-          color={totalFillers > 10 ? 'text-accent-red' : 'text-white'}
-          flash={session.lastFlashedFiller !== null}
-        />
-        <LiveStatCard label={t('practice:liveStats.topFiller')} value={topFiller} color="text-accent-amber" />
-        <LiveStatCard label={t('practice:liveStats.longPause')} value={t('practice:liveStats.none')} color="text-gray-400" />
-      </div>
+      {showPreflight && (
+        <div
+          data-annotation-id="practice-preflight"
+          className="mx-4 mb-4 rounded-[28px] border border-white/10 bg-white/5 px-4 py-4 shadow-lg shadow-black/10"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.18em] text-gray-500">{t('practice:preflight.eyebrow')}</p>
+              <h3 className="mt-1 text-lg font-semibold text-white">{t('practice:preflight.title')}</h3>
+              <p className="mt-1 text-[12px] leading-relaxed text-gray-400">
+                {retryTarget ? t('practice:preflight.retryBody') : t('practice:preflight.body')}
+              </p>
+            </div>
+            <span className="rounded-full bg-accent-blue/15 px-2.5 py-1 text-[10px] font-semibold text-accent-blue">
+              {retryTarget ? t('practice:preflight.retryBadge') : t('practice:preflight.liveBadge')}
+            </span>
+          </div>
 
-      {/* Waveform */}
-      <div
-        data-annotation-id="waveform"
-        className="mx-4 mb-3 bg-gray-900 rounded-xl px-4 py-3 flex items-center justify-center gap-0.5 h-14"
-      >
-        {audioLevels.map((level, i) => {
-          const hasSound = level > 0.04
-          const height = isRecordingActive ? Math.max(4, Math.round(level * 40)) : 4
-          return (
-            <div
-              key={i}
-              className="w-1 rounded-full flex-shrink-0"
-              style={{
-                height: `${height}px`,
-                backgroundColor: isRecordingActive
-                  ? hasSound
-                    ? `rgba(16, 185, 129, ${0.5 + level * 0.5})`  // green, opacity by level
-                    : 'rgba(55, 65, 81, 0.8)'                        // dim gray when silent
-                  : 'rgb(55, 65, 81)',
-                transition: 'height 80ms ease-out, background-color 150ms ease',
-              }}
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            <PreflightStat
+              label={t('practice:preflight.goal')}
+              value={activePracticeGoal.label}
             />
-          )
-        })}
-      </div>
+            <PreflightStat
+              label={t('practice:preflight.preset')}
+              value={activePresetLabel}
+            />
+            <PreflightStat
+              label={t('practice:preflight.range')}
+              value={t('practice:preflight.rangeValue', {
+                low: practiceSpeedRange.low,
+                high: practiceSpeedRange.high,
+              })}
+            />
+          </div>
 
-      {/* Live transcript */}
-      <div
-        data-annotation-id="live-transcript"
-        className="mx-4 mb-4 bg-gray-900 rounded-xl p-3 max-h-[100px] overflow-y-auto phone-scroll"
-      >
-        <p className="text-[11px] text-gray-500 mb-1.5">{t('practice:transcript.title')}</p>
-        <p className="text-xs text-gray-300 leading-relaxed">
-          {session.transcript.map((seg, i) => (
-            <TranscriptWord key={i} segment={seg} />
-          ))}
-          {session.transcript.length === 0 && !session.isRecording && (
-            <span className="text-gray-600">{t('practice:transcript.emptyIdle')}</span>
-          )}
-          {session.transcript.length === 0 && session.isRecording && retryTarget && (
-            <span className="text-gray-500">{t('practice:transcript.emptyRetry')}</span>
-          )}
-          {session.transcript.length === 0 && session.isRecording && !retryTarget && (
-            <span className="text-gray-500">{t('practice:transcript.emptyPrototype')}</span>
-          )}
-        </p>
-      </div>
+          <div className="mt-3 rounded-2xl border border-white/8 bg-black/20 px-3.5 py-3">
+            <p className="text-[11px] font-semibold text-white">{t('practice:preflight.goalHintTitle')}</p>
+            <p className="mt-1 text-[11px] leading-relaxed text-gray-300">
+              {activePracticeGoal.coachHint}
+            </p>
+            {retryTarget && (
+              <p className="mt-2 text-[11px] leading-relaxed text-amber-100/85">
+                {retryTarget.prompt}
+              </p>
+            )}
+          </div>
 
-      {/* Controls */}
-      <div
-        data-annotation-id="recording-controls"
-        className="flex items-center justify-center gap-6 px-4"
-      >
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={handlePause}
-          disabled={isDemoActive}
-          className="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-300 hover:bg-gray-700 transition-colors disabled:opacity-35 disabled:cursor-not-allowed"
+          {retryTarget && (
+            <div
+              data-annotation-id="retry-practice-banner"
+              className="mt-3 rounded-2xl border border-accent-amber/30 bg-amber-500/10 px-3.5 py-3"
+            >
+              <RetryPracticeBanner
+                sessionTitle={retryTarget.sessionTitle}
+                prompt={retryTarget.prompt}
+                snippet={retryTarget.snippet}
+                recommendedDurationSeconds={retryTarget.recommendedDurationSeconds}
+                showDetails
+              />
+            </div>
+          )}
+
+          <p className="mt-4 text-center text-[11px] text-gray-400">
+            {t('practice:preflight.autoStart')}
+          </p>
+        </div>
+      )}
+
+      {!showPreflight && (
+        <>
+          <div className="mx-4 mb-4 rounded-2xl border border-white/10 bg-white/5 px-3.5 py-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[10px] uppercase tracking-[0.18em] text-gray-500">{t('practice:goalSection.title')}</p>
+                <p className="text-sm font-semibold text-white mt-1">{activePracticeGoal.label}</p>
+                {!isFocusMode && (
+                  <p className="text-[11px] text-gray-400 mt-1 leading-relaxed">
+                    {activePracticeGoal.description}
+                  </p>
+                )}
+              </div>
+              <span className={`text-[10px] font-semibold px-2 py-1 rounded-full flex-shrink-0 ${
+                goalEvaluation.success
+                  ? 'bg-emerald-500/20 text-emerald-300'
+                  : 'bg-amber-500/15 text-amber-200'
+              }`}>
+                {goalEvaluation.progressLabel}
+              </span>
+            </div>
+            <p className="text-[11px] text-gray-300 mt-2">
+              {goalEvaluation.statusText}
+            </p>
+            {isFocusMode && (
+              <p className="text-[11px] text-accent-amber mt-1.5">
+                {t('practice:focusMode.helper')}
+              </p>
+            )}
+          </div>
+
+          {/* Live stats */}
+          <div
+            data-annotation-id="live-stats"
+            className="grid grid-cols-3 gap-3 mx-4 mb-4"
+          >
+            <LiveStatCard
+              label={t('practice:liveStats.fillerCount')}
+              value={totalFillers.toString()}
+              color={totalFillers > 10 ? 'text-accent-red' : 'text-white'}
+              flash={session.lastFlashedFiller !== null}
+            />
+            <LiveStatCard label={t('practice:liveStats.topFiller')} value={topFiller} color="text-accent-amber" />
+            <LiveStatCard label={t('practice:liveStats.longPause')} value={t('practice:liveStats.none')} color="text-gray-400" />
+          </div>
+        </>
+      )}
+
+      {showSecondaryPanels && (
+        <>
+          {/* Waveform */}
+          <div
+            data-annotation-id="waveform"
+            className="mx-4 mb-3 bg-gray-900 rounded-xl px-4 py-3 flex items-center justify-center gap-0.5 h-14"
+          >
+            {audioLevels.map((level, i) => {
+              const hasSound = level > 0.04
+              const height = isRecordingActive ? Math.max(4, Math.round(level * 40)) : 4
+              return (
+                <div
+                  key={i}
+                  className="w-1 rounded-full flex-shrink-0"
+                  style={{
+                    height: `${height}px`,
+                    backgroundColor: isRecordingActive
+                      ? hasSound
+                        ? `rgba(16, 185, 129, ${0.5 + level * 0.5})`
+                        : 'rgba(55, 65, 81, 0.8)'
+                      : 'rgb(55, 65, 81)',
+                    transition: 'height 80ms ease-out, background-color 150ms ease',
+                  }}
+                />
+              )
+            })}
+          </div>
+
+          {/* Live transcript */}
+          <div
+            data-annotation-id="live-transcript"
+            className="mx-4 mb-4 bg-gray-900 rounded-xl p-3 max-h-[100px] overflow-y-auto phone-scroll"
+          >
+            <p className="text-[11px] text-gray-500 mb-1.5">{t('practice:transcript.title')}</p>
+            <p className="text-xs text-gray-300 leading-relaxed">
+              {session.transcript.map((seg, i) => (
+                <TranscriptWord key={i} segment={seg} />
+              ))}
+              {session.transcript.length === 0 && !session.isRecording && (
+                <span className="text-gray-600">{t('practice:transcript.emptyIdle')}</span>
+              )}
+              {session.transcript.length === 0 && session.isRecording && retryTarget && (
+                <span className="text-gray-500">{t('practice:transcript.emptyRetry')}</span>
+              )}
+              {session.transcript.length === 0 && session.isRecording && !retryTarget && (
+                <span className="text-gray-500">{t('practice:transcript.emptyPrototype')}</span>
+              )}
+            </p>
+          </div>
+        </>
+      )}
+
+      {!showPreflight && (
+        <div
+          data-annotation-id="recording-controls"
+          className="flex items-center justify-center gap-6 px-4"
         >
-          {session.isPaused ? (
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-              <polygon points="5,3 19,12 5,21" />
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={handlePause}
+            disabled={isDemoActive}
+            className="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-300 hover:bg-gray-700 transition-colors disabled:opacity-35 disabled:cursor-not-allowed"
+          >
+            {session.isPaused ? (
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <polygon points="5,3 19,12 5,21" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <rect x="6" y="4" width="4" height="16" rx="1" />
+                <rect x="14" y="4" width="4" height="16" rx="1" />
+              </svg>
+            )}
+          </motion.button>
+
+          <motion.button
+            whileTap={{ scale: 0.92 }}
+            onClick={isDemoActive ? stopDemo : handleStop}
+            className="w-16 h-16 rounded-full bg-accent-red flex items-center justify-center shadow-lg shadow-red-900"
+          >
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="white">
+              <rect x="6" y="6" width="12" height="12" rx="2" />
             </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-              <rect x="6" y="4" width="4" height="16" rx="1" />
-              <rect x="14" y="4" width="4" height="16" rx="1" />
+          </motion.button>
+
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => {
+              if (isDemoActive) {
+                stopDemo()
+                return
+              }
+              requestScreen('home')
+            }}
+            className="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-300 hover:bg-gray-700 transition-colors"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
             </svg>
-          )}
-        </motion.button>
-
-        <motion.button
-          whileTap={{ scale: 0.92 }}
-          onClick={isDemoActive ? stopDemo : handleStop}
-          className="w-16 h-16 rounded-full bg-accent-red flex items-center justify-center shadow-lg shadow-red-900"
-        >
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="white">
-            <rect x="6" y="6" width="12" height="12" rx="2" />
-          </svg>
-        </motion.button>
-
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={() => {
-            if (isDemoActive) {
-              stopDemo()
-              return
-            }
-            requestScreen('home')
-          }}
-          className="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-300 hover:bg-gray-700 transition-colors"
-        >
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-          </svg>
-        </motion.button>
-      </div>
+          </motion.button>
+        </div>
+      )}
 
       <AnimatePresence>
         {isRecordingExitConfirmOpen && (
@@ -378,6 +548,56 @@ export function PracticeScreen() {
         )}
       </AnimatePresence>
     </div>
+  )
+}
+
+function PreflightStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-white/8 bg-black/15 px-3 py-3">
+      <p className="text-[10px] uppercase tracking-[0.14em] text-gray-500">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-white leading-snug">{value}</p>
+    </div>
+  )
+}
+
+function RetryPracticeBanner({
+  sessionTitle,
+  prompt,
+  snippet,
+  recommendedDurationSeconds,
+  showDetails,
+}: {
+  sessionTitle: string
+  prompt: string
+  snippet: string
+  recommendedDurationSeconds: number
+  showDetails: boolean
+}) {
+  const { t } = useTranslation(['practice'])
+
+  return (
+    <>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[10px] uppercase tracking-[0.18em] text-amber-200/80">{t('practice:retryBanner.title')}</p>
+          <p className="text-sm font-semibold text-white mt-1">{sessionTitle}</p>
+          {showDetails && (
+            <p className="text-[11px] text-amber-100/80 mt-1 leading-relaxed">
+              {prompt}
+            </p>
+          )}
+        </div>
+        <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-white/10 text-amber-100 flex-shrink-0">
+          {t('practice:retryBanner.recommendedSeconds', { count: recommendedDurationSeconds })}
+        </span>
+      </div>
+      {showDetails && (
+        <div className="mt-2 rounded-xl bg-black/20 px-3 py-2">
+          <p className="text-[10px] text-amber-100/70 mb-1">{t('practice:retryBanner.originalSnippet')}</p>
+          <p className="text-[11px] text-gray-100 leading-relaxed">「{snippet}」</p>
+        </div>
+      )}
+    </>
   )
 }
 

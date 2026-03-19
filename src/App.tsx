@@ -30,6 +30,7 @@ import { downloadElementAsPng } from './lib/domCapture'
 import { GUIDED_TOUR_STEPS } from './lib/guidedTourSteps'
 import { useAnnotationGuideStore } from './stores/annotationGuideStore'
 import { useGuidedTourStore } from './stores/guidedTourStore'
+import { useRetryPracticeStore } from './stores/retryPracticeStore'
 import type { Screen } from './types'
 import './index.css'
 
@@ -694,12 +695,14 @@ export default function App() {
   const handleLoadMockData = useCallback(() => {
     const mockSessions = getMockSessions()
     useHistoryStore.setState({ sessions: mockSessions })
+    useRetryPracticeStore.getState().clearRetryPractice()
     setReport(mockSessions[0])
+    setScreen('report')
     showPhoneNotification({
       title: t('app:notifications.mockLoaded.title'),
       body: t('app:notifications.mockLoaded.body'),
     })
-  }, [setReport, showPhoneNotification, t])
+  }, [setReport, setScreen, showPhoneNotification, t])
 
   const handlePhoneMouseOver = useCallback((e: React.MouseEvent) => {
     if (isGuidedTourOpen || pinnedAnnotationId || !isDesktopAnnotationsVisible) return
@@ -1849,10 +1852,6 @@ export default function App() {
                   setHoverSource('annotation')
                   setHoveredAnnotationId(null)
                 }}
-                onClearPin={() => {
-                  clearAnnotationGuide()
-                  setHoverSource(null)
-                }}
                 onNavigate={requestScreen}
               />
             </motion.div>
@@ -1937,10 +1936,6 @@ export default function App() {
                     pinAnnotationGuide(id, 'annotation')
                     setHoverSource('annotation')
                     setHoveredAnnotationId(null)
-                  }}
-                  onClearPin={() => {
-                    clearAnnotationGuide()
-                    setHoverSource(null)
                   }}
                   onNavigate={(s) => { requestScreen(s); setShowMobileAnnotations(false) }}
                 />

@@ -118,6 +118,13 @@
         "type": "feature"
       },
       {
+        "id": "report-top-highlights",
+        "targetId": "report-top-highlights",
+        "title": "本次三重點",
+        "description": "把這輪最重要的結論、主要問題與下一步放在最前面，讓使用者不用先讀完整份報告，也能立即知道接下來該怎麼修。",
+        "type": "design"
+      },
+      {
         "id": "report-score-section",
         "targetId": "report-score-section",
         "title": "三項評分卡片",
@@ -130,13 +137,6 @@
         "title": "下一輪 3 件建議",
         "description": "不是只展示數據，而是把這次報告濃縮成三個最值得先改的行動建議，避免使用者一次想改太多反而失焦。",
         "type": "design"
-      },
-      {
-        "id": "filler-ranking",
-        "targetId": "filler-ranking",
-        "title": "贅字排行榜",
-        "description": "依出現次數排序所有贅字，橫向長度按比例縮放。前三名以警示色標記，幫助使用者識別最需改進的詞彙。",
-        "type": "feature"
       },
       {
         "id": "speed-curve-chart",

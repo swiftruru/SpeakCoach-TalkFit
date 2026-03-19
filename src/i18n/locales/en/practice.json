@@ -87,6 +87,29 @@
     "demoNoMic": "Demo mode active. No microphone needed.",
     "prototypeNoCapture": "Prototype mode. No real audio is captured."
   },
+  "countdown": {
+    "title": "Get ready",
+    "subtitle": "Practice starts right after the 3-2-1 countdown."
+  },
+  "preflight": {
+    "eyebrow": "Before you start",
+    "title": "Confirm this round first",
+    "body": "Check the goal, preset, and recommended pace once before you begin.",
+    "retryBody": "This run will jump straight into retrying the problem segment. Confirm the goal and pace before you start.",
+    "liveBadge": "Practice Run",
+    "retryBadge": "Retry Run",
+    "goal": "Goal",
+    "preset": "Preset",
+    "range": "Pace Range",
+    "rangeValue": "{{low}}–{{high}} wpm",
+    "goalHintTitle": "What to focus on",
+    "autoStart": "A 3-2-1 countdown will start automatically"
+  },
+  "focusMode": {
+    "active": "Exit Focus Mode",
+    "inactive": "Enable Focus Mode",
+    "helper": "Focus mode keeps only the most important feedback on screen for this round."
+  },
   "session": {
     "titlePrefix": "Practice "
   },

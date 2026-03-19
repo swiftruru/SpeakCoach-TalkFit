@@ -62,6 +62,69 @@ export function ReportScreen() {
     () => (report ? buildReportCoachingTips(report, speedRange, practiceGoalId) : []),
     [practiceGoalId, report, speedRange]
   )
+  const topHighlights = useMemo<Array<{
+    id: string
+    label: string
+    title: string
+    body: string
+    tone: HighlightTone
+  }>>(() => {
+    if (!report || !goalEvaluation) return []
+
+    const fastCount = speedMarkers.filter((marker) => marker.kind === 'speed-fast').length
+    const slowCount = speedMarkers.filter((marker) => marker.kind === 'speed-slow').length
+    const topFillerCount = report.topFiller ? report.fillerCounts[report.topFiller] ?? 0 : 0
+
+    let focusTitle = t('report:topHighlights.focus.steadyTitle')
+    let focusBody = t('report:topHighlights.focus.steadyBody')
+    let focusTone: HighlightTone = 'blue'
+
+    if (report.topFiller && topFillerCount > 0) {
+      focusTitle = t('report:topHighlights.focus.topFillerTitle', { word: report.topFiller })
+      focusBody = t('report:topHighlights.focus.topFillerBody', { count: topFillerCount })
+      focusTone = 'red'
+    } else if (fastCount >= slowCount && fastCount > 0) {
+      focusTitle = t('report:topHighlights.focus.fastTitle')
+      focusBody = t('report:topHighlights.focus.fastBody', {
+        count: fastCount,
+        high: speedRange.high,
+      })
+      focusTone = 'amber'
+    } else if (slowCount > 0) {
+      focusTitle = t('report:topHighlights.focus.slowTitle')
+      focusBody = t('report:topHighlights.focus.slowBody', {
+        count: slowCount,
+        low: speedRange.low,
+      })
+      focusTone = 'blue'
+    }
+
+    return [
+      {
+        id: 'outcome',
+        label: t('report:topHighlights.outcome.label'),
+        title: goalEvaluation.success
+          ? t('report:topHighlights.outcome.metTitle', { goal: activePracticeGoal.label })
+          : t('report:topHighlights.outcome.retryTitle', { goal: activePracticeGoal.label }),
+        body: goalEvaluation.statusText,
+        tone: goalEvaluation.success ? 'green' : 'amber',
+      },
+      {
+        id: 'focus',
+        label: t('report:topHighlights.focus.label'),
+        title: focusTitle,
+        body: focusBody,
+        tone: focusTone,
+      },
+      {
+        id: 'next',
+        label: t('report:topHighlights.next.label'),
+        title: coachingTips[0]?.title ?? t('report:topHighlights.next.fallbackTitle'),
+        body: coachingTips[0]?.detail ?? goalEvaluation.nextAction,
+        tone: 'blue',
+      },
+    ]
+  }, [activePracticeGoal.label, coachingTips, goalEvaluation, report, speedMarkers, speedRange.high, speedRange.low, t])
 
   const markerMap = useMemo(() => {
     const next = new Map<string, ReportIssueMarker>()
@@ -95,10 +158,25 @@ export function ReportScreen() {
     () => (scopedActiveMarkerId ? markerMap.get(scopedActiveMarkerId) ?? null : null),
     [markerMap, scopedActiveMarkerId]
   )
+  const defaultMockMarkerId = useMemo(() => {
+    if (!report?.id.startsWith('mock-')) return null
+    return fillerMarkers[0]?.id
+      ?? speedMarkers.find((marker) => marker.kind !== 'speed-normal')?.id
+      ?? null
+  }, [fillerMarkers, report?.id, speedMarkers])
 
   useEffect(() => {
     transcriptRefs.current = []
   }, [report?.id])
+
+  useEffect(() => {
+    if (!report) return
+    if (!report.id.startsWith('mock-')) {
+      setActiveMarkerId(null)
+      return
+    }
+    setActiveMarkerId(defaultMockMarkerId)
+  }, [defaultMockMarkerId, report])
 
   useEffect(() => {
     if (!activeMarker || activeMarker.segmentIndex < 0) return
@@ -291,6 +369,31 @@ export function ReportScreen() {
             <p className="text-[11px] text-accent-blue mt-1.5 leading-relaxed">
               {goalEvaluation.nextAction}
             </p>
+          </div>
+        </div>
+      )}
+
+      {topHighlights.length > 0 && (
+        <div
+          data-annotation-id="report-top-highlights"
+          className="mx-4 mb-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+        >
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold text-gray-700">{t('report:topHighlights.title')}</h3>
+            <p className="text-[10px] text-gray-400 mt-0.5">
+              {t('report:topHighlights.description')}
+            </p>
+          </div>
+          <div className="space-y-2.5">
+            {topHighlights.map((item) => (
+              <HighlightCard
+                key={item.id}
+                label={item.label}
+                title={item.title}
+                body={item.body}
+                tone={item.tone}
+              />
+            ))}
           </div>
         </div>
       )}
@@ -602,6 +705,44 @@ function coachingTipClass(tone: 'red' | 'amber' | 'blue' | 'green') {
   if (tone === 'amber') return 'border-amber-100 bg-amber-50 text-amber-700'
   if (tone === 'green') return 'border-emerald-100 bg-emerald-50 text-emerald-700'
   return 'border-sky-100 bg-sky-50 text-sky-700'
+}
+
+type HighlightTone = 'red' | 'amber' | 'blue' | 'green'
+
+function highlightCardClass(tone: HighlightTone) {
+  if (tone === 'red') return 'border-red-100 bg-red-50'
+  if (tone === 'amber') return 'border-amber-100 bg-amber-50'
+  if (tone === 'green') return 'border-emerald-100 bg-emerald-50'
+  return 'border-sky-100 bg-sky-50'
+}
+
+function highlightLabelClass(tone: HighlightTone) {
+  if (tone === 'red') return 'text-red-500'
+  if (tone === 'amber') return 'text-amber-500'
+  if (tone === 'green') return 'text-emerald-500'
+  return 'text-sky-500'
+}
+
+function HighlightCard({
+  label,
+  title,
+  body,
+  tone,
+}: {
+  label: string
+  title: string
+  body: string
+  tone: HighlightTone
+}) {
+  return (
+    <div className={`rounded-xl border px-3 py-3 ${highlightCardClass(tone)}`}>
+      <p className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${highlightLabelClass(tone)}`}>
+        {label}
+      </p>
+      <p className="mt-1 text-sm font-semibold text-gray-800">{title}</p>
+      <p className="mt-1 text-[11px] leading-relaxed text-gray-600">{body}</p>
+    </div>
+  )
 }
 
 function ScoreCard({ label, value, unit, color, icon }: {

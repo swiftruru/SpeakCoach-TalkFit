@@ -9,6 +9,30 @@
     "goalAchieved": "已達標",
     "goalRetry": "再練一次"
   },
+  "topHighlights": {
+    "title": "本次三重點",
+    "description": "先看這輪最重要的結論、主要問題與下一步，再決定要不要往下看完整圖表。",
+    "outcome": {
+      "label": "本次結論",
+      "metTitle": "「{{goal}}」已達標",
+      "retryTitle": "「{{goal}}」建議再練一次"
+    },
+    "focus": {
+      "label": "最需要注意",
+      "topFillerTitle": "先處理「{{word}}」",
+      "topFillerBody": "這個詞本輪共出現 {{count}} 次，先壓低它最有感。",
+      "fastTitle": "先壓住偏快片段",
+      "fastBody": "有 {{count}} 個點高於 {{high}} 字/分，先把句尾節奏放慢。",
+      "slowTitle": "先補上偏慢段落",
+      "slowBody": "有 {{count}} 個點低於 {{low}} 字/分，避免尾音拖太長。",
+      "steadyTitle": "先維持現在的節奏",
+      "steadyBody": "這輪沒有單一問題特別突出，可以先保持穩定。"
+    },
+    "next": {
+      "label": "下一步",
+      "fallbackTitle": "維持目前的改善方向"
+    }
+  },
   "scoreCards": {
     "avgWpm": "平均語速",
     "fillerCount": "贅字總數",

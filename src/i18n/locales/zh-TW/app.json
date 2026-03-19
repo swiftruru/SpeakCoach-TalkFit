@@ -24,7 +24,7 @@
     },
     "mockLoaded": {
       "title": "App 已新增 Mock 資料",
-      "body": "練習紀錄、分析報告已載入，可直接瀏覽各頁面。"
+      "body": "已切到分析報告，並預設帶出可直接重練的問題片段。"
     },
     "prototypeReset": {
       "title": "原型已重置",

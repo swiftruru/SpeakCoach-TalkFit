@@ -9,6 +9,30 @@
     "goalAchieved": "Goal Met",
     "goalRetry": "Try Again"
   },
+  "topHighlights": {
+    "title": "Top 3 Takeaways",
+    "description": "Start with the outcome, the main issue, and the next move before digging into the full charts.",
+    "outcome": {
+      "label": "Outcome",
+      "metTitle": "“{{goal}}” is on track",
+      "retryTitle": "“{{goal}}” needs one more round"
+    },
+    "focus": {
+      "label": "Watch first",
+      "topFillerTitle": "Fix “{{word}}” first",
+      "topFillerBody": "It showed up {{count}} times in this run, so reducing it will have the fastest payoff.",
+      "fastTitle": "Slow down the fast segments first",
+      "fastBody": "{{count}} points are above {{high}} wpm. Start by easing the sentence endings.",
+      "slowTitle": "Tighten the slower segments",
+      "slowBody": "{{count}} points are below {{low}} wpm. Avoid letting the ending drag.",
+      "steadyTitle": "Keep the current rhythm",
+      "steadyBody": "No single issue dominates this run, so stability is the main job now."
+    },
+    "next": {
+      "label": "Next move",
+      "fallbackTitle": "Keep the current improvement path"
+    }
+  },
   "scoreCards": {
     "avgWpm": "Average Pace",
     "fillerCount": "Total Fillers",

@@ -12,7 +12,6 @@ interface AnnotationPanelProps {
   isSpotlightMode?: boolean
   onHoverItem: (id: string | null) => void
   onTogglePin: (id: string) => void
-  onClearPin: () => void
   onNavigate: (screen: Screen) => void
 }
 
@@ -23,7 +22,6 @@ export function AnnotationPanel({
   isSpotlightMode = false,
   onHoverItem,
   onTogglePin,
-  onClearPin,
   onNavigate,
 }: AnnotationPanelProps) {
   const { t } = useTranslation(['common', 'annotation'])
@@ -50,7 +48,6 @@ export function AnnotationPanel({
     history: 0,
     settings: 0,
   })
-  const pinnedItem = annotations.find((item) => item.targetId === pinnedId)
   const totalPages = Math.max(1, Math.ceil(annotations.length / ANNOTATIONS_PER_PAGE))
   const activeItemIndex = activeId
     ? annotations.findIndex((item) => item.targetId === activeId)
@@ -87,31 +84,6 @@ export function AnnotationPanel({
 
       <div className="w-full h-px bg-border-divider flex-shrink-0 mt-2" />
 
-      {pinnedItem && (
-        <div
-          className={`mx-4 mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2.5 transition-opacity dark:border-amber-400/30 dark:bg-amber-500/10 ${
-            isSpotlightMode && activeId && !pinnedId ? 'opacity-55' : ''
-          }`}
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-[11px] font-semibold tracking-[0.14em] text-amber-700 uppercase dark:text-amber-200">
-                {t('annotation:pinned.label')}
-              </p>
-              <p className="mt-1 text-sm font-medium text-amber-900 dark:text-amber-100">
-                {pinnedItem.title}
-              </p>
-            </div>
-            <button
-              onClick={onClearPin}
-              className="rounded-full bg-white/80 px-2.5 py-1 text-[11px] text-amber-700 transition-all hover:bg-white dark:bg-white/10 dark:text-amber-100"
-            >
-              {t('annotation:pinned.release')}
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Annotation list */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2 phone-scroll">
         {totalPages > 1 && (
@@ -146,12 +118,6 @@ export function AnnotationPanel({
                 {t('common:actions.next')}
               </button>
             </div>
-          </div>
-        )}
-
-        {activePageIndex !== null && totalPages > 1 && (
-          <div className="mb-3 rounded-2xl border border-amber-200/70 bg-amber-50/70 px-3 py-2 text-[11px] leading-relaxed text-amber-800 dark:border-amber-400/20 dark:bg-amber-500/10 dark:text-amber-100/90">
-            {t('annotation:pagination.focusHint', { page: pageIndex + 1 })}
           </div>
         )}
 

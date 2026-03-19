@@ -13,6 +13,38 @@
     "tooltipValue": "{{count}} times",
     "tooltipName": "Fillers"
   },
+  "compare": {
+    "title": "Quick Compare",
+    "selectFirst": "Pick one session from the list to start a comparison.",
+    "selectSecond": "Pick one more session to compare fillers, pace, and duration instantly.",
+    "ready": "Two sessions are selected. Review the main differences first.",
+    "clear": "Clear Compare",
+    "emptyChip": "No sessions selected yet",
+    "selectedChip": "Compare {{index}} · {{title}}",
+    "base": "Compare 1",
+    "target": "Compare 2",
+    "button": "Compare",
+    "selectedButton": "Selected",
+    "waitingBody": "Choose one more session and the app will summarize the three most useful differences first.",
+    "topFillerLabel": "Top filler shift",
+    "topFillerSummary": "From “{{from}}” to “{{to}}”.",
+    "metrics": {
+      "fillers": "Fillers",
+      "pace": "Pace",
+      "duration": "Duration"
+    },
+    "changes": {
+      "sameCount": "Filler count stayed the same",
+      "fewerFillers": "{{count}} fewer fillers",
+      "moreFillers": "{{count}} more fillers",
+      "samePace": "Average pace stayed the same",
+      "slower": "{{count}} wpm slower",
+      "faster": "{{count}} wpm faster",
+      "sameDuration": "Duration stayed the same",
+      "shorter": "{{count}}s shorter",
+      "longer": "{{count}}s longer"
+    }
+  },
   "list": {
     "title": "Practice Sessions",
     "clearAll": "Clear All",

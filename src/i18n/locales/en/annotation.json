@@ -118,6 +118,13 @@
         "type": "feature"
       },
       {
+        "id": "report-top-highlights",
+        "targetId": "report-top-highlights",
+        "title": "Top 3 Takeaways",
+        "description": "This block surfaces the outcome, the main issue, and the next move first so the user can understand the report before reading every chart.",
+        "type": "design"
+      },
+      {
         "id": "report-score-section",
         "targetId": "report-score-section",
         "title": "Three Score Cards",
@@ -130,13 +137,6 @@
         "title": "Next 3 Actions",
         "description": "Instead of stopping at raw numbers, the report distills the session into the three fixes worth tackling first.",
         "type": "design"
-      },
-      {
-        "id": "filler-ranking",
-        "targetId": "filler-ranking",
-        "title": "Filler Ranking",
-        "description": "All fillers are sorted by occurrence count with proportional bars so the user can see which speaking habit deserves attention first.",
-        "type": "feature"
       },
       {
         "id": "speed-curve-chart",
