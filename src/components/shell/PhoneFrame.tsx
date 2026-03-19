@@ -116,41 +116,6 @@ export function PhoneFrame({ screen, isLaunching = false, children }: PhoneFrame
                     onMouseUp={onMouseUp}
                     onMouseLeave={onMouseLeave}
                   >
-                    {/* Ripples */}
-                    {ripples.map((r) => (
-                      <div
-                        key={r.id}
-                        data-capture-ignore
-                        className="phone-ripple pointer-events-none absolute rounded-full"
-                        style={{
-                          width: 80, height: 80,
-                          left: r.x, top: r.y,
-                          background: 'rgba(255,255,255,0.35)',
-                        }}
-                      />
-                    ))}
-
-                    {/* Custom touch-point cursor */}
-                    {cursor.visible && (
-                      <div
-                        data-capture-ignore
-                        className="pointer-events-none absolute z-50 rounded-full transition-[width,height,opacity] duration-100"
-                        style={{
-                          width: cursor.pressed ? 58 : 48,
-                          height: cursor.pressed ? 58 : 48,
-                          left: cursor.x,
-                          top: cursor.y,
-                          transform: 'translate(-50%, -50%)',
-                          background: cursor.pressed
-                            ? 'rgba(255,255,255,0.38)'
-                            : 'rgba(255,255,255,0.22)',
-                          border: cursor.pressed
-                            ? '1.5px solid rgba(255,255,255,0.9)'
-                            : '1.5px solid rgba(255,255,255,0.7)',
-                          boxShadow: '0 2px 16px rgba(0,0,0,0.22)',
-                        }}
-                      />
-                    )}
                     <AnimatePresence mode="wait">
                       <motion.div
                         key={screen}
@@ -163,6 +128,44 @@ export function PhoneFrame({ screen, isLaunching = false, children }: PhoneFrame
                         {children}
                       </motion.div>
                     </AnimatePresence>
+
+                    <div className="pointer-events-none absolute inset-0 z-[120]">
+                      {ripples.map((r) => (
+                        <div
+                          key={r.id}
+                          data-capture-ignore
+                          className="phone-ripple absolute rounded-full"
+                          style={{
+                            width: 80,
+                            height: 80,
+                            left: r.x,
+                            top: r.y,
+                            background: 'rgba(255,255,255,0.35)',
+                          }}
+                        />
+                      ))}
+
+                      {cursor.visible && (
+                        <div
+                          data-capture-ignore
+                          className="absolute rounded-full transition-[width,height,opacity] duration-100"
+                          style={{
+                            width: cursor.pressed ? 58 : 48,
+                            height: cursor.pressed ? 58 : 48,
+                            left: cursor.x,
+                            top: cursor.y,
+                            transform: 'translate(-50%, -50%)',
+                            background: cursor.pressed
+                              ? 'rgba(255,255,255,0.38)'
+                              : 'rgba(255,255,255,0.22)',
+                            border: cursor.pressed
+                              ? '1.5px solid rgba(255,255,255,0.9)'
+                              : '1.5px solid rgba(255,255,255,0.7)',
+                            boxShadow: '0 2px 16px rgba(0,0,0,0.22)',
+                          }}
+                        />
+                      )}
+                    </div>
                   </div>
 
                   <TabBar />

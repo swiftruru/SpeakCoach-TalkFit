@@ -599,7 +599,10 @@ export function ReportScreen() {
       )}
 
       {viewMode === 'summary' ? (
-        <div className="mx-4 mb-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div
+          data-annotation-id="report-summary-mode-card"
+          className="mx-4 mb-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+        >
           <p className="text-[10px] uppercase tracking-[0.18em] text-gray-400">{t('report:viewMode.summaryEyebrow')}</p>
           <h3 className="mt-1 text-sm font-semibold text-gray-800">{t('report:viewMode.summaryTitle')}</h3>
           <p className="mt-1 text-[11px] leading-relaxed text-gray-500">

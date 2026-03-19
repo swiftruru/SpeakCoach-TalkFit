@@ -121,6 +121,13 @@
         "title": "Recording Controls",
         "description": "Three controls cover pause and resume, stop with report generation, and exit back to the Home screen.",
         "type": "feature"
+      },
+      {
+        "id": "practice-goal-progress",
+        "targetId": "practice-goal-progress",
+        "title": "Goal Progress Card",
+        "description": "While recording, this card keeps the chosen practice goal and current progress visible so the user can tell in the moment whether they are moving toward the target instead of waiting for the final report.",
+        "type": "feature"
       }
     ],
     "report": [
@@ -139,10 +146,24 @@
         "type": "design"
       },
       {
+        "id": "report-one-line-summary",
+        "targetId": "report-one-line-summary",
+        "title": "One-Line Summary",
+        "description": "Surfaces the single issue worth fixing first, such as the most repeated filler or a pace imbalance, so the user understands the top priority before reading the full report.",
+        "type": "design"
+      },
+      {
         "id": "report-top-highlights",
         "targetId": "report-top-highlights",
         "title": "Top 3 Takeaways",
         "description": "This block surfaces the outcome, the main issue, and the next move first so the user can understand the report before reading every chart.",
+        "type": "design"
+      },
+      {
+        "id": "report-summary-mode-card",
+        "targetId": "report-summary-mode-card",
+        "title": "Quick Summary Card",
+        "description": "In summary mode, this card tells the user to absorb the key takeaways first, then expand into the full analysis only when they need the score cards, charts, transcript, and share exports.",
         "type": "design"
       },
       {
@@ -158,6 +179,13 @@
         "title": "Next 3 Actions",
         "description": "Instead of stopping at raw numbers, the report distills the session into the three fixes worth tackling first.",
         "type": "design"
+      },
+      {
+        "id": "filler-ranking",
+        "targetId": "filler-ranking",
+        "title": "Filler Ranking",
+        "description": "Ranks the most repeated fillers by count so the user can see which habit deserves attention first. Selecting a filler jumps through each occurrence in the transcript one by one.",
+        "type": "feature"
       },
       {
         "id": "speed-curve-chart",
@@ -226,6 +254,13 @@
       }
     ],
     "settings": [
+      {
+        "id": "settings-mode-toggle",
+        "targetId": "settings-mode-toggle",
+        "title": "Recommended / Advanced Toggle",
+        "description": "Splits the settings screen into a lighter recommended layer and a deeper advanced layer so first-time users see the most common controls first, then opt into finer tuning only when needed.",
+        "type": "design"
+      },
       {
         "id": "settings-detection-toggles",
         "targetId": "settings-detection-toggles",

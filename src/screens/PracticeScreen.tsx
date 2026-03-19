@@ -141,7 +141,7 @@ export function PracticeScreen() {
   }, [beginRecording, countdownValue])
 
   useEffect(() => {
-    if (pendingAnalysisReport || isDemoActive || session.isRecording || countdownValue !== null) return
+    if (pendingAnalysisReport || postStopMenu || isDemoActive || session.isRecording || countdownValue !== null) return
 
     preflightStartRef.current = setTimeout(() => {
       preflightStartRef.current = null
@@ -154,7 +154,23 @@ export function PracticeScreen() {
         preflightStartRef.current = null
       }
     }
-  }, [countdownValue, isDemoActive, pendingAnalysisReport, session.isRecording])
+  }, [countdownValue, isDemoActive, pendingAnalysisReport, postStopMenu, session.isRecording])
+
+  useEffect(() => {
+    if (!postStopMenu) return
+
+    if (preflightStartRef.current) {
+      clearTimeout(preflightStartRef.current)
+      preflightStartRef.current = null
+    }
+
+    if (countdownRef.current) {
+      clearTimeout(countdownRef.current)
+      countdownRef.current = null
+    }
+
+    setCountdownValue(null)
+  }, [postStopMenu])
 
   // External demo/replay modes drive the screen state themselves, so stop any live timer first.
   useEffect(() => {
@@ -221,7 +237,7 @@ export function PracticeScreen() {
 
   const WAVE_BARS = 20
   const isRecordingActive = session.isRecording && !session.isPaused
-  const showPreflight = !pendingAnalysisReport && !isDemoActive && !session.isRecording && countdownValue === null
+  const showPreflight = !pendingAnalysisReport && !postStopMenu && !isDemoActive && !session.isRecording && countdownValue === null
   const showSecondaryPanels = !isFocusMode || isDemoActive
   const showRetryDetails = showPreflight || !isFocusMode
   const audioLevels = useAudioLevel(isRecordingActive, WAVE_BARS, settings.micDeviceId, false)
@@ -612,7 +628,10 @@ export function PracticeScreen() {
 
       {!showPreflight && (
         <>
-          <div className="mx-4 mb-4 rounded-2xl border border-[#f7dce7]/18 bg-white/5 px-3.5 py-3">
+          <div
+            data-annotation-id="practice-goal-progress"
+            className="mx-4 mb-4 rounded-2xl border border-[#f7dce7]/18 bg-white/5 px-3.5 py-3"
+          >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-[10px] uppercase tracking-[0.18em] text-gray-500">{t('practice:goalSection.title')}</p>

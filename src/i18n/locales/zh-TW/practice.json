@@ -104,6 +104,18 @@
       "retry": "比對重練前後差異"
     }
   },
+  "postStop": {
+    "eyebrow": "練習完成",
+    "title": "這輪錄音已經整理好了",
+    "body": "你可以先查看完整報告，或直接從最值得先修的問題再練一次。",
+    "retryEyebrow": "建議先修",
+    "viewReport": "查看完整報告",
+    "viewReportBody": "直接進入分析結果，查看圖表、逐字稿與建議。",
+    "retry": "立刻重練",
+    "retryBody": "先針對「{{issue}}」再練一次，趁記憶還在時馬上修正。",
+    "retryDisabled": "這輪暫時沒有明確的重練目標。",
+    "goHome": "回首頁"
+  },
   "preflight": {
     "eyebrow": "開始前確認",
     "title": "先確認這輪要怎麼練",

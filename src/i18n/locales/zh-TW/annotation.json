@@ -121,6 +121,13 @@
         "title": "錄音控制列",
         "description": "三個按鈕：暫停／繼續、停止（結束並跳至報告）、回首頁。",
         "type": "feature"
+      },
+      {
+        "id": "practice-goal-progress",
+        "targetId": "practice-goal-progress",
+        "title": "本次目標進度卡",
+        "description": "錄音中會持續顯示這輪選定的練習目標、目前進度與是否接近達標。這讓使用者不用等到結束看報告，練習當下就知道自己有沒有往正確方向修正。",
+        "type": "feature"
       }
     ],
     "report": [
@@ -139,10 +146,24 @@
         "type": "design"
       },
       {
+        "id": "report-one-line-summary",
+        "targetId": "report-one-line-summary",
+        "title": "一句總結",
+        "description": "先用一句話指出這次最該優先修的問題，例如最常出現的贅字或語速失衡，讓使用者在還沒往下看完整報告前，就先知道最值得先改的是什麼。",
+        "type": "design"
+      },
+      {
         "id": "report-top-highlights",
         "targetId": "report-top-highlights",
         "title": "本次三重點",
         "description": "把這輪最重要的結論、主要問題與下一步放在最前面，讓使用者不用先讀完整份報告，也能立即知道接下來該怎麼修。",
+        "type": "design"
+      },
+      {
+        "id": "report-summary-mode-card",
+        "targetId": "report-summary-mode-card",
+        "title": "快速摘要卡",
+        "description": "摘要模式下會先用這張卡提醒使用者：先看完上面的重點整理，若要查看評分卡、圖表、逐字稿與分享卡，再切到完整分析，避免一開始資訊量過重。",
         "type": "design"
       },
       {
@@ -158,6 +179,13 @@
         "title": "下一輪 3 件建議",
         "description": "不是只展示數據，而是把這次報告濃縮成三個最值得先改的行動建議，避免使用者一次想改太多反而失焦。",
         "type": "design"
+      },
+      {
+        "id": "filler-ranking",
+        "targetId": "filler-ranking",
+        "title": "贅字排行榜",
+        "description": "把最常出現的贅字依次數排序，方便快速看出這輪最需要先處理的口頭禪。點選其中一個詞，會依序跳到它在逐字稿中的每一次出現位置。",
+        "type": "feature"
       },
       {
         "id": "speed-curve-chart",
@@ -226,6 +254,13 @@
       }
     ],
     "settings": [
+      {
+        "id": "settings-mode-toggle",
+        "targetId": "settings-mode-toggle",
+        "title": "推薦 / 進階切換",
+        "description": "先把設定頁分成「推薦設定」與「進階設定」兩層。第一次進來可先看最常調整的核心項目，需要更細的控制時再切到進階，避免一開始被太多選項淹沒。",
+        "type": "design"
+      },
       {
         "id": "settings-detection-toggles",
         "targetId": "settings-detection-toggles",

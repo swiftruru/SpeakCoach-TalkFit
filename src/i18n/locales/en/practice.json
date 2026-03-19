@@ -104,6 +104,18 @@
       "retry": "Comparing retry progress"
     }
   },
+  "postStop": {
+    "eyebrow": "Practice Complete",
+    "title": "This recording is ready",
+    "body": "You can open the full report now, or retry the highest-priority issue right away while it is still fresh.",
+    "retryEyebrow": "Suggested Retry",
+    "viewReport": "View Full Report",
+    "viewReportBody": "Jump straight into the analysis, charts, transcript, and coaching tips.",
+    "retry": "Retry Now",
+    "retryBody": "Practice “{{issue}}” again first so you can correct it while the context is still fresh.",
+    "retryDisabled": "There is no clear retry target for this round yet.",
+    "goHome": "Back to Home"
+  },
   "preflight": {
     "eyebrow": "Before you start",
     "title": "Confirm this round first",
