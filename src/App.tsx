@@ -139,6 +139,7 @@ export default function App() {
   const [showMobileAnnotations, setShowMobileAnnotations] = useState(
     () => new URLSearchParams(window.location.search).get('panel') === 'open'
   )
+  const [availableAnnotationIds, setAvailableAnnotationIds] = useState<string[]>([])
   const appRootRef = useRef<HTMLDivElement | null>(null)
   const desktopStageRef = useRef<HTMLDivElement | null>(null)
   const navigatorStickyRef = useRef<HTMLDivElement | null>(null)
@@ -164,6 +165,7 @@ export default function App() {
     document.addEventListener('fullscreenchange', handleFullscreenChange)
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
   }, [])
+
   const sessions = useHistoryStore((s) => s.sessions)
   const report = useReportStore((s) => s.report)
   const setReport = useReportStore((s) => s.setReport)
@@ -186,6 +188,53 @@ export default function App() {
   const setDemoMode = useDemoStore((s) => s.setMode)
   const demoMode = useDemoStore((s) => s.mode)
   const currentStepIndex = useDemoStore((s) => s.currentStepIndex)
+
+  useEffect(() => {
+    const stage = phoneStageRef.current
+    if (!stage) return
+
+    let frame = 0
+
+    const collect = () => {
+      window.cancelAnimationFrame(frame)
+      frame = window.requestAnimationFrame(() => {
+        const ids = Array.from(stage.querySelectorAll('[data-annotation-id]'))
+          .map((element) => element.getAttribute('data-annotation-id'))
+          .filter((value): value is string => Boolean(value))
+
+        const uniqueIds = Array.from(new Set(ids))
+        setAvailableAnnotationIds((current) => (
+          current.length === uniqueIds.length
+          && current.every((id, index) => id === uniqueIds[index])
+            ? current
+            : uniqueIds
+        ))
+      })
+    }
+
+    collect()
+
+    const mutationObserver = new MutationObserver(collect)
+    mutationObserver.observe(stage, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ['data-annotation-id'],
+    })
+
+    const resizeObserver = new ResizeObserver(collect)
+    resizeObserver.observe(stage)
+
+    window.addEventListener('resize', collect)
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+      mutationObserver.disconnect()
+      resizeObserver.disconnect()
+      window.removeEventListener('resize', collect)
+    }
+  }, [screen, report?.id])
+
   const goToStep = useDemoStore((s) => s.goToStep)
   useLiveDemo()
   const currentGuidedTourStep = GUIDED_TOUR_STEPS[guidedTourStepIndex] ?? GUIDED_TOUR_STEPS[0]
@@ -536,6 +585,7 @@ export default function App() {
     const annotationCard = stage?.querySelector(
       `[data-annotation-card-for="${activeAnnotationId}"]`
     ) as HTMLElement | null
+    const phoneScroller = phoneStageRef.current?.querySelector('.phone-scroll') as HTMLElement | null
 
     const resizeObserver = new ResizeObserver(() => {
       updateHoverConnector()
@@ -545,12 +595,14 @@ export default function App() {
     if (phoneTarget) resizeObserver.observe(phoneTarget)
     if (annotationCard) resizeObserver.observe(annotationCard)
 
+    phoneScroller?.addEventListener('scroll', handleReposition, { passive: true })
     window.addEventListener('resize', handleReposition)
     window.addEventListener('scroll', handleReposition, true)
 
     return () => {
       window.cancelAnimationFrame(frame)
       resizeObserver.disconnect()
+      phoneScroller?.removeEventListener('scroll', handleReposition)
       window.removeEventListener('resize', handleReposition)
       window.removeEventListener('scroll', handleReposition, true)
     }
@@ -1835,6 +1887,7 @@ export default function App() {
                 screen={screen}
                 activeId={activeAnnotationId}
                 pinnedId={pinnedAnnotationId}
+                availableTargetIds={availableAnnotationIds}
                 isSpotlightMode={isSpotlightActive}
                 onHoverItem={(id) => {
                   if (pinnedAnnotationId) return
@@ -1920,6 +1973,7 @@ export default function App() {
                 screen={screen}
                 activeId={activeAnnotationId}
                 pinnedId={pinnedAnnotationId}
+                availableTargetIds={availableAnnotationIds}
                 isSpotlightMode={isSpotlightActive}
                 onHoverItem={(id) => {
                   if (pinnedAnnotationId) return

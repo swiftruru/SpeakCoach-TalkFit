@@ -91,6 +91,19 @@
     "title": "Get ready",
     "subtitle": "Practice starts right after the 3-2-1 countdown."
   },
+  "analysis": {
+    "eyebrow": "Analyzing",
+    "title": "Preparing this session report",
+    "body": "Pace, fillers, and transcript details are being condensed into the next report view.",
+    "retryTitle": "Reviewing this retry result",
+    "retryBody": "This compares the retry against the original issue before showing the updated feedback.",
+    "steps": {
+      "summary": "Summarizing this round",
+      "patterns": "Checking pace and fillers",
+      "coaching": "Preparing next-step coaching",
+      "retry": "Comparing retry progress"
+    }
+  },
   "preflight": {
     "eyebrow": "Before you start",
     "title": "Confirm this round first",

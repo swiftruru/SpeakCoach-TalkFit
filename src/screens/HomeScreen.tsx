@@ -3,9 +3,13 @@ import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { useNavigationStore } from '../stores/navigationStore'
 import { useHistoryStore } from '../stores/historyStore'
+import { useReportStore } from '../stores/reportStore'
+import { useRetryPracticeStore } from '../stores/retryPracticeStore'
 import { useSettingsStore } from '../stores/settingsStore'
 import { BarChart, Bar, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import { normalizeLanguage } from '../i18n'
+import { findPrimaryReportIssue } from '../lib/reportIssueMarkers'
+import { buildRetryPracticeTarget } from '../lib/retryPractice'
 
 function getGreeting(t: (key: string) => string) {
   const h = new Date().getHours()
@@ -75,7 +79,10 @@ function buildWeeklyData(
 export function HomeScreen() {
   const { t, i18n } = useTranslation(['home', 'common', 'demo'])
   const setScreen = useNavigationStore((s) => s.setScreen)
+  const setReport = useReportStore((s) => s.setReport)
+  const startRetryPractice = useRetryPracticeStore((s) => s.startRetryPractice)
   const sessions = useHistoryStore((s) => s.sessions)
+  const speedRange = useSettingsStore((s) => s.speedRange)
   const fillerWords = useSettingsStore((s) => s.fillerWords)
   const currentLanguage = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language)
   const [referenceNow] = useState(() => Date.now())
@@ -105,6 +112,23 @@ export function HomeScreen() {
   const weeklyData = buildWeeklyData(sessions, t)
   const tipFiller =
     sessions[0]?.topFiller ?? fillerWords.find((word) => word.enabled)?.word ?? t('demo:sampleReplay.segments.fillerThen')
+  const latestSession = sessions[0] ?? null
+  const latestSessionSpeedRange = latestSession?.speedRangeSnapshot ?? speedRange
+  const latestPrimaryIssue = latestSession
+    ? findPrimaryReportIssue(latestSession, latestSessionSpeedRange)
+    : null
+
+  const handleResumeRetry = () => {
+    if (!latestSession || !latestPrimaryIssue) return
+    startRetryPractice(buildRetryPracticeTarget(latestSession, latestPrimaryIssue, latestSessionSpeedRange))
+    setScreen('practice')
+  }
+
+  const handleOpenLatestReport = () => {
+    if (!latestSession) return
+    setReport(latestSession)
+    setScreen('report')
+  }
 
   return (
     <div className="bg-gray-50 min-h-full pb-2">
@@ -185,6 +209,56 @@ export function HomeScreen() {
           {t('home:tip.body', { filler: tipFiller })}
         </p>
       </div>
+
+      {latestSession && (
+        <div data-annotation-id="home-quick-resume" className="mx-4 mb-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-accent-blue">
+                {t('home:quickResume.eyebrow')}
+              </p>
+              <h3 className="mt-1 text-sm font-semibold text-gray-800">
+                {t('home:quickResume.title')}
+              </h3>
+              <p className="mt-1 text-[11px] leading-relaxed text-gray-500">
+                {t('home:quickResume.body', {
+                  title: latestSession.title,
+                  filler: latestSession.topFiller ?? t('home:quickResume.noTopFiller'),
+                })}
+              </p>
+            </div>
+            <span className="rounded-full bg-gray-100 px-2 py-1 text-[10px] font-semibold text-gray-500">
+              {latestSession.grade}
+            </span>
+          </div>
+
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={handleOpenLatestReport}
+              className="rounded-2xl border border-gray-200 px-3 py-3 text-left transition-colors hover:bg-gray-50"
+            >
+              <p className="text-[11px] font-semibold text-gray-700">{t('home:quickResume.reviewLabel')}</p>
+              <p className="mt-1 text-[11px] leading-relaxed text-gray-500">
+                {t('home:quickResume.reviewBody')}
+              </p>
+            </button>
+            <button
+              type="button"
+              onClick={handleResumeRetry}
+              disabled={!latestPrimaryIssue}
+              className="rounded-2xl border border-blue-100 bg-blue-50 px-3 py-3 text-left transition-colors hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-55"
+            >
+              <p className="text-[11px] font-semibold text-accent-blue">{t('home:quickResume.retryLabel')}</p>
+              <p className="mt-1 text-[11px] leading-relaxed text-blue-700/80">
+                {latestPrimaryIssue
+                  ? t('home:quickResume.retryBody', { issue: latestPrimaryIssue.label })
+                  : t('home:quickResume.retryUnavailable')}
+              </p>
+            </button>
+          </div>
+        </div>
+      )}
 
       <div data-annotation-id="home-record-btn" className="px-4">
         <motion.button

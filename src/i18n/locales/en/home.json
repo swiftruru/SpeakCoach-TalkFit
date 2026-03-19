@@ -37,5 +37,16 @@
     "title": "Today's reminder",
     "body": "Try noticing your most frequent filler, \"{{filler}}\". Pause for a second before saying it."
   },
+  "quickResume": {
+    "eyebrow": "Quick Resume",
+    "title": "Pick up from your latest session",
+    "body": "Your latest session was “{{title}}”. The clearest issue to revisit now is “{{filler}}”. Review the report or jump straight into a retry.",
+    "noTopFiller": "current pace",
+    "reviewLabel": "Review Last Report",
+    "reviewBody": "Open the latest report first, then decide what to retry.",
+    "retryLabel": "Retry the last issue",
+    "retryBody": "Jump straight back into “{{issue}}” for the quickest follow-up.",
+    "retryUnavailable": "No single issue stands out in the latest session, so start by reviewing the report."
+  },
   "recordButton": "Start Practice"
 }

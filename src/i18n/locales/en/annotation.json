@@ -51,6 +51,13 @@
         "type": "feature"
       },
       {
+        "id": "home-quick-resume",
+        "targetId": "home-quick-resume",
+        "title": "Quick Resume",
+        "description": "Brings the latest session back onto the home screen so the user can review the report or jump straight into retrying the clearest issue.",
+        "type": "design"
+      },
+      {
         "id": "home-record-btn",
         "targetId": "home-record-btn",
         "title": "Start Practice Button",
@@ -60,11 +67,11 @@
     ],
     "practice": [
       {
-        "id": "retry-practice-banner",
-        "targetId": "retry-practice-banner",
-        "title": "Retry Segment Banner",
-        "description": "After selecting an issue in the report, this banner brings back the original snippet and retry prompt so the user can re-record the exact segment that needs work.",
-        "type": "feature"
+        "id": "practice-preflight",
+        "targetId": "practice-preflight",
+        "title": "Preflight Card",
+        "description": "Before practice begins, this card briefly summarizes the goal, preset, pace range, and retry focus, then hands off to the automatic 3-2-1 countdown.",
+        "type": "design"
       },
       {
         "id": "practice-badge",
@@ -85,6 +92,13 @@
         "targetId": "live-stats",
         "title": "Live Stats Row",
         "description": "Shows total fillers, the most repeated filler so far, and long pauses over two seconds. The counters react when a new issue is detected.",
+        "type": "feature"
+      },
+      {
+        "id": "retry-practice-banner",
+        "targetId": "retry-practice-banner",
+        "title": "Retry Segment Banner",
+        "description": "After selecting an issue in the report, this banner brings back the original snippet and retry prompt so the user can re-record the exact segment that needs work.",
         "type": "feature"
       },
       {
@@ -165,6 +179,13 @@
         "title": "Share / Export",
         "description": "Alongside summary copy and JSON export, the report can export a dedicated share card as PNG or SVG. Demo mode only highlights the flow and does not trigger a real download.",
         "type": "feature"
+      },
+      {
+        "id": "report-retry-feedback",
+        "targetId": "report-retry-feedback",
+        "title": "Retry Result",
+        "description": "When a report comes from a retry run, this card immediately tells the user whether the new take improved and offers a quick way to retry again or continue reading the report.",
+        "type": "design"
       }
     ],
     "history": [
@@ -181,6 +202,13 @@
         "title": "Filler Trend Chart",
         "description": "Tracks filler counts across sessions so longer-term improvement is easy to spot.",
         "type": "feature"
+      },
+      {
+        "id": "history-quick-compare",
+        "targetId": "history-quick-compare",
+        "title": "Quick Compare",
+        "description": "Two saved sessions can be compared side by side so users can immediately see changes in fillers, pace, duration, and their most repeated habit.",
+        "type": "design"
       },
       {
         "id": "history-list",

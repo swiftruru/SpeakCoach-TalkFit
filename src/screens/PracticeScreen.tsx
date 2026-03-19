@@ -13,7 +13,7 @@ import { getPracticePreset } from '../lib/practicePresets'
 import { wpmStatus, wpmColor, wpmLabel } from '../lib/grading'
 import { useAudioLevel } from '../hooks/useAudioLevel'
 import { useDemoStore } from '../demo/demoStore'
-import type { TranscriptSegment } from '../types'
+import type { SessionSummary, TranscriptSegment } from '../types'
 
 export function PracticeScreen() {
   const { t, i18n } = useTranslation(['common', 'practice'])
@@ -25,6 +25,7 @@ export function PracticeScreen() {
   const cancelRecordingExit = useNavigationStore((s) => s.cancelRecordingExit)
   const session = useSessionStore()
   const setReport = useReportStore((s) => s.setReport)
+  const setRetryFeedback = useReportStore((s) => s.setRetryFeedback)
   const addHistory = useHistoryStore((s) => s.addSession)
   const settings = useSettingsStore()
   const retryTarget = useRetryPracticeStore((s) => s.target)
@@ -37,8 +38,10 @@ export function PracticeScreen() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const countdownRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const preflightStartRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const analysisTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [countdownValue, setCountdownValue] = useState<number | null>(null)
   const [isFocusMode, setIsFocusMode] = useState(Boolean(retryTarget))
+  const [pendingAnalysisReport, setPendingAnalysisReport] = useState<SessionSummary | null>(null)
 
   const beginRecording = useCallback(() => {
     session.reset()
@@ -52,7 +55,7 @@ export function PracticeScreen() {
     session.stopRecording()
     if (timerRef.current) clearInterval(timerRef.current)
 
-    const report = buildSessionSummary(
+    const nextReport = buildSessionSummary(
       Date.now().toString(),
       retryTarget?.sessionTitle
         ?? `${t('practice:session.titlePrefix')}${new Date().toLocaleTimeString(
@@ -67,15 +70,24 @@ export function PracticeScreen() {
         speedRangeSnapshot: practiceSpeedRange,
       }
     )
-    clearRetryPractice()
-    setReport(report)
-    addHistory(report)
-    setScreen('report')
+    setPendingAnalysisReport(nextReport)
+    analysisTimerRef.current = setTimeout(() => {
+      setReport(nextReport)
+      if (retryTarget) {
+        setRetryFeedback(retryTarget)
+      }
+      addHistory(nextReport)
+      clearRetryPractice()
+      setPendingAnalysisReport(null)
+      setScreen('report')
+      analysisTimerRef.current = null
+    }, retryTarget ? 1350 : 1100)
   }, [
     t,
     i18n.resolvedLanguage,
     session,
     setReport,
+    setRetryFeedback,
     addHistory,
     setScreen,
     practiceGoalId,
@@ -109,7 +121,7 @@ export function PracticeScreen() {
   }, [beginRecording, countdownValue])
 
   useEffect(() => {
-    if (isDemoActive || session.isRecording || countdownValue !== null) return
+    if (pendingAnalysisReport || isDemoActive || session.isRecording || countdownValue !== null) return
 
     preflightStartRef.current = setTimeout(() => {
       preflightStartRef.current = null
@@ -122,7 +134,7 @@ export function PracticeScreen() {
         preflightStartRef.current = null
       }
     }
-  }, [countdownValue, isDemoActive, session.isRecording])
+  }, [countdownValue, isDemoActive, pendingAnalysisReport, session.isRecording])
 
   // External demo/replay modes drive the screen state themselves, so stop any live timer first.
   useEffect(() => {
@@ -141,6 +153,7 @@ export function PracticeScreen() {
       if (timerRef.current) clearInterval(timerRef.current)
       if (countdownRef.current) clearTimeout(countdownRef.current)
       if (preflightStartRef.current) clearTimeout(preflightStartRef.current)
+      if (analysisTimerRef.current) clearTimeout(analysisTimerRef.current)
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -171,7 +184,7 @@ export function PracticeScreen() {
 
   const WAVE_BARS = 20
   const isRecordingActive = session.isRecording && !session.isPaused
-  const showPreflight = !isDemoActive && !session.isRecording && countdownValue === null
+  const showPreflight = !pendingAnalysisReport && !isDemoActive && !session.isRecording && countdownValue === null
   const showSecondaryPanels = !isFocusMode || isDemoActive
   const showRetryDetails = showPreflight || !isFocusMode
   const audioLevels = useAudioLevel(isRecordingActive, WAVE_BARS, settings.micDeviceId, false)
@@ -189,6 +202,7 @@ export function PracticeScreen() {
               transition={{ duration: 0.2 }}
             />
             <motion.div
+              data-annotation-id="practice-preflight"
               className="absolute inset-0 z-50 flex flex-col items-center justify-center px-6 text-center"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -204,6 +218,55 @@ export function PracticeScreen() {
               <p className="mt-3 text-sm text-gray-300">
                 {t('practice:countdown.subtitle')}
               </p>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {pendingAnalysisReport && (
+          <>
+            <motion.div
+              className="absolute inset-0 z-[60] bg-black/76 backdrop-blur-[8px]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            />
+            <motion.div
+              className="absolute inset-0 z-[70] flex items-center justify-center px-6"
+              initial={{ opacity: 0, y: 12, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 12, scale: 0.98 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+            >
+              <div className="w-full max-w-[280px] rounded-[28px] border border-white/10 bg-white/10 px-5 py-5 text-center shadow-2xl shadow-black/35">
+                <p className="text-[11px] uppercase tracking-[0.28em] text-accent-amber/80">
+                  {t('practice:analysis.eyebrow')}
+                </p>
+                <h3 className="mt-2 text-xl font-semibold text-white">
+                  {retryTarget ? t('practice:analysis.retryTitle') : t('practice:analysis.title')}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-gray-300">
+                  {retryTarget ? t('practice:analysis.retryBody') : t('practice:analysis.body')}
+                </p>
+                <div className="mt-4 space-y-2 text-left">
+                  <AnalysisProgressRow
+                    label={t('practice:analysis.steps.summary')}
+                    active
+                  />
+                  <AnalysisProgressRow
+                    label={t('practice:analysis.steps.patterns')}
+                    active
+                    delayClass="delay-100"
+                  />
+                  <AnalysisProgressRow
+                    label={retryTarget ? t('practice:analysis.steps.retry') : t('practice:analysis.steps.coaching')}
+                    active
+                    delayClass="delay-200"
+                  />
+                </div>
+              </div>
             </motion.div>
           </>
         )}
@@ -556,6 +619,28 @@ function PreflightStat({ label, value }: { label: string; value: string }) {
     <div className="rounded-2xl border border-white/8 bg-black/15 px-3 py-3">
       <p className="text-[10px] uppercase tracking-[0.14em] text-gray-500">{label}</p>
       <p className="mt-1 text-sm font-semibold text-white leading-snug">{value}</p>
+    </div>
+  )
+}
+
+function AnalysisProgressRow({
+  label,
+  active,
+  delayClass = '',
+}: {
+  label: string
+  active: boolean
+  delayClass?: string
+}) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-[11px] font-medium text-white">{label}</p>
+        <span className="text-[10px] text-emerald-300">{active ? '•' : ''}</span>
+      </div>
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+        <div className={`h-full rounded-full bg-gradient-to-r from-accent-blue to-accent-amber animate-pulse ${delayClass}`} style={{ width: active ? '100%' : '0%' }} />
+      </div>
     </div>
   )
 }

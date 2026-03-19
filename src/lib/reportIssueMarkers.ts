@@ -96,6 +96,16 @@ export function buildSpeedMarkers(
   }))
 }
 
+export function findPrimaryReportIssue(
+  report: SessionSummary,
+  speedRange: SpeedRange
+): ReportIssueMarker | null {
+  const fillerMarker = buildFillerMarkers(report)[0]
+  if (fillerMarker) return fillerMarker
+
+  return buildSpeedMarkers(report, speedRange).find((marker) => marker.kind !== 'speed-normal') ?? null
+}
+
 export function describeReportIssue(marker: ReportIssueMarker): string {
   if (marker.kind === 'filler') {
     const current = (marker.occurrenceIndex ?? 0) + 1

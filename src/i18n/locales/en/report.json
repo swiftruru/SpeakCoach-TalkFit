@@ -9,6 +9,24 @@
     "goalAchieved": "Goal Met",
     "goalRetry": "Try Again"
   },
+  "retryFeedback": {
+    "eyebrow": "Retry Result",
+    "originalSnippet": "Original snippet",
+    "retryAgain": "Retry Again",
+    "dismiss": "Keep This Report",
+    "fillerSuccessTitle": "“{{word}}” did not show up this time",
+    "fillerSuccessBody": "This retry sounds cleaner now. Review the full report and decide whether to tighten other filler habits next.",
+    "fillerRetryTitle": "“{{word}}” still appeared in this retry",
+    "fillerRetryBody": "It showed up {{count}} times in this retry. One more pass may help you finish the sentence more cleanly.",
+    "fastSuccessTitle": "This segment is back under control",
+    "fastSuccessBody": "No fast outliers showed up in the retry, so the pace is much steadier now.",
+    "fastRetryTitle": "This segment still runs a bit fast",
+    "fastRetryBody": "There are still {{count}} fast outliers. Slow the sentence ending down a little more.",
+    "slowSuccessTitle": "This segment feels more concise now",
+    "slowSuccessBody": "No slow outliers showed up in the retry, so the rhythm is closer to the target range.",
+    "slowRetryTitle": "This segment still needs more push",
+    "slowRetryBody": "There are still {{count}} slow outliers. Tighten the pauses and keep the sentence moving."
+  },
   "topHighlights": {
     "title": "Top 3 Takeaways",
     "description": "Start with the outcome, the main issue, and the next move before digging into the full charts.",

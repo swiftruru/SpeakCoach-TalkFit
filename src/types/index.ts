@@ -91,6 +91,11 @@ export interface SessionSummary {
   transcript: TranscriptSegment[]
 }
 
+export interface RetryFeedbackState {
+  target: RetryPracticeTarget
+  createdAt: number
+}
+
 export interface AnnotationItem {
   id: string
   targetId: string

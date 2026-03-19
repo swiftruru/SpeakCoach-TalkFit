@@ -9,6 +9,24 @@
     "goalAchieved": "已達標",
     "goalRetry": "再練一次"
   },
+  "retryFeedback": {
+    "eyebrow": "片段重練結果",
+    "originalSnippet": "原始片段",
+    "retryAgain": "再重練一次",
+    "dismiss": "先看報告",
+    "fillerSuccessTitle": "這次沒有再出現「{{word}}」",
+    "fillerSuccessBody": "這段重講後已更乾淨，可以先回頭看完整報告，再決定要不要繼續壓低其他贅字。",
+    "fillerRetryTitle": "這段還是出現了「{{word}}」",
+    "fillerRetryBody": "這次重練共出現 {{count}} 次，可以再來一輪，把句子一次講完整。",
+    "fastSuccessTitle": "這段速度已經穩回來了",
+    "fastSuccessBody": "重練後沒有再出現偏快點，先維持這個節奏，再回頭看整份報告。",
+    "fastRetryTitle": "這段還是有點偏快",
+    "fastRetryBody": "這次仍有 {{count}} 個偏快點，可以再慢半拍，把句尾收乾淨。",
+    "slowSuccessTitle": "這段節奏更俐落了",
+    "slowSuccessBody": "重練後沒有再出現偏慢點，這次的節奏已經更接近目標。",
+    "slowRetryTitle": "這段還需要再推進一點",
+    "slowRetryBody": "這次仍有 {{count}} 個偏慢點，可以再縮短停頓，把句子往前推。"
+  },
   "topHighlights": {
     "title": "本次三重點",
     "description": "先看這輪最重要的結論、主要問題與下一步，再決定要不要往下看完整圖表。",

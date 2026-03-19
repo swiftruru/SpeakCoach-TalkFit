@@ -9,6 +9,7 @@ interface AnnotationPanelProps {
   screen: Screen
   activeId: string | null
   pinnedId: string | null
+  availableTargetIds?: string[]
   isSpotlightMode?: boolean
   onHoverItem: (id: string | null) => void
   onTogglePin: (id: string) => void
@@ -19,6 +20,7 @@ export function AnnotationPanel({
   screen,
   activeId,
   pinnedId,
+  availableTargetIds,
   isSpotlightMode = false,
   onHoverItem,
   onTogglePin,
@@ -27,8 +29,13 @@ export function AnnotationPanel({
   const { t } = useTranslation(['common', 'annotation'])
   const annotations = useMemo(() => {
     const value = t(`annotation:items.${screen}`, { returnObjects: true })
-    return Array.isArray(value) ? (value as AnnotationItem[]) : []
-  }, [screen, t])
+    const localized = Array.isArray(value) ? (value as AnnotationItem[]) : []
+
+    if (!availableTargetIds?.length) return localized
+
+    const visibleTargets = new Set(availableTargetIds)
+    return localized.filter((item) => visibleTargets.has(item.targetId))
+  }, [availableTargetIds, screen, t])
   const screenLabels: Record<Screen, string> = {
     home: t('common:screenTabs.home'),
     practice: t('common:screenTabs.practice'),

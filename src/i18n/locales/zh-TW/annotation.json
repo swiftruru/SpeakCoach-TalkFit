@@ -51,6 +51,13 @@
         "type": "feature"
       },
       {
+        "id": "home-quick-resume",
+        "targetId": "home-quick-resume",
+        "title": "快速續練",
+        "description": "把最近一次練習放回首頁，讓使用者可直接回看報告，或從上次最明顯的問題繼續重練。",
+        "type": "design"
+      },
+      {
         "id": "home-record-btn",
         "targetId": "home-record-btn",
         "title": "開始練習按鈕",
@@ -60,11 +67,11 @@
     ],
     "practice": [
       {
-        "id": "retry-practice-banner",
-        "targetId": "retry-practice-banner",
-        "title": "片段重練提示",
-        "description": "從報告頁指定問題片段後，這裡會顯示原始片段與重練提示，讓使用者不用重新找上下文，就能直接針對最需要修正的一小段再練一次。",
-        "type": "feature"
+        "id": "practice-preflight",
+        "targetId": "practice-preflight",
+        "title": "開始前確認卡",
+        "description": "進入練習頁後會先短暫顯示本次目標、情境、建議語速與重點提醒，接著自動進入 3-2-1 倒數；若是片段重練，這裡也會直接帶出原始片段與修正方向。",
+        "type": "design"
       },
       {
         "id": "practice-badge",
@@ -85,6 +92,13 @@
         "targetId": "live-stats",
         "title": "即時統計列",
         "description": "三欄：贅字累計次數、目前最常出現的贅字、長停頓次數（超過 2 秒的靜默）。每偵測到一次贅字，對應數字會跳動一下。",
+        "type": "feature"
+      },
+      {
+        "id": "retry-practice-banner",
+        "targetId": "retry-practice-banner",
+        "title": "片段重練提示",
+        "description": "從報告頁指定問題片段後，這裡會顯示原始片段與重練提示，讓使用者不用重新找上下文，就能直接針對最需要修正的一小段再練一次。",
         "type": "feature"
       },
       {
@@ -165,6 +179,13 @@
         "title": "分享 / 匯出",
         "description": "除複製摘要與匯出 JSON 外，也能輸出分享卡 PNG / SVG。自動示範只會聚焦流程，不會真的觸發下載。",
         "type": "feature"
+      },
+      {
+        "id": "report-retry-feedback",
+        "targetId": "report-retry-feedback",
+        "title": "重練完成回饋",
+        "description": "若這份報告是由片段重練產生，最上方會直接告訴使用者這次是否比原本更好，並提供再次重練或繼續查看報告的選擇。",
+        "type": "design"
       }
     ],
     "history": [
@@ -181,6 +202,13 @@
         "title": "贅字趨勢圖",
         "description": "折線圖呈現每次練習的贅字次數變化，讓長期進步趨勢一目了然。",
         "type": "feature"
+      },
+      {
+        "id": "history-quick-compare",
+        "targetId": "history-quick-compare",
+        "title": "快速比較",
+        "description": "可先從列表挑兩筆紀錄加入比較，系統會整理贅字、語速、時長與最常贅字變化，幫使用者快速看出這次比上次好在哪裡。",
+        "type": "design"
       },
       {
         "id": "history-list",
