@@ -76,6 +76,7 @@ TalkFit 的核心概念，就是把這些原本只能「事後懊悔」的問題
 - **導覽說明跟隨**：左側浮動導覽的說明卡會跟著目前聚焦的模擬器區塊上下移動，避免到報告頁下半部時脫離視線
 - **說明面板分頁**：右側說明面板每頁最多顯示 4 個說明項目；當 demo 或 hover 聚焦到較後面的功能時，會自動切換到對應頁面
 - **自動 Spotlight 聚焦**：桌面版 hover 或 demo 聚焦到功能區塊時，會自動壓暗其餘區域，只保留單一手機區塊與對應說明卡
+- **新手導覽 Overlay**：第一次進站時，桌機版會以逐步框選的方式介紹頂部工具列、展示工具、左側導覽、手機模擬器與右側說明面板，也可從 `更多` 或 `Command Palette` 手動重新開啟
 - **簡報模式**：可切換成更乾淨的展示版面，收起頂部工具列並改用精簡 HUD 操作
 - **快速操作 Command Palette**：支援 `⌘K` / `Ctrl+K`，可快速跳頁、開始示範、切換簡報模式、進入全螢幕、開啟輸出畫面與執行重置
 - **快捷鍵操作**：支援 `?`、`⌘K / Ctrl+K`、`D`、`P`、`F`、`E`、`A`、`R`、`T`、`S`、`L` 等桌面快捷鍵，提升作品集展示與面試 demo 效率
@@ -121,6 +122,7 @@ TalkFit 的核心概念，就是把這些原本只能「事後懊悔」的問題
 - **自動 Spotlight 聚焦**：桌面版 hover 或 demo 聚焦到功能區塊時，會自動壓暗其餘區域，只保留單一手機區塊與對應說明卡
 - **簡報模式**：可切換成更乾淨的展示版面，收起頂部工具列，改用右上角精簡 HUD 操作
 - **頂部按鈕分組**：`✦ 設計動機` 與 `✦ Mock 資料` 保持主層；其餘展示輔助操作收進 `展示工具` 與 `更多` 子選單，減少頂部工具列擁擠感
+- **新手導覽**：第一次進站時會在桌機版自動開啟，逐步介紹網站主要操作；也可從 `更多` 或 `⌘K / Ctrl+K` 手動叫出
 - **右上角語言切換**：頂部最右側保留單一語言切換按鈕，不需要分別點 `中文` / `EN` 兩顆按鈕
 - **英文介面防溢位**：針對窄版卡片與設定說明補上自動換行與最小高度保護，避免切到英文後出現壓縮、截斷或卡片高低不齊
 - **快速操作 Command Palette**：按 `⌘K` / `Ctrl+K` 可叫出快速操作視窗，直接跳頁或切換展示狀態
@@ -168,6 +170,7 @@ flowchart LR
 
 - **互動入口**：首頁操作、設定、示範腳本與報告頁互動，最後都會回到 `sessionStore` / `reportStore` 這兩個核心狀態
 - **網站導覽層**：`AppLaunchOverlay`、`PrototypeNavigator` 與 URL query 共同負責進站節奏、章節切換、進度顯示與畫面深連結
+- **網站新手導覽層**：`GuidedTourOverlay`、`guidedTourStore` 與 `guidedTourSteps` 負責第一次進站 onboarding、步驟式聚焦框與手動重新導覽
 - **分析層**：練習資料經過 `buildSessionSummary`、評分邏輯、目標評估與 coaching helper，整理成可展示的摘要
 - **狀態層**：練習中狀態放在 `sessionStore`；練習結束後整理成 `reportStore` 與 `historyStore`
 - **設定層**：`settingsStore` 控制語速範圍、情境設定、練習目標、贅字清單、語言與回饋方式
@@ -213,7 +216,7 @@ npm run dev
 | `✦ Mock 資料` | 一鍵載入示範用練習紀錄與報告 |
 | `展示工具` | 以子選單收納 `⌘K 快速操作`、`收合 / 展開說明`、`輸出畫面`、`簡報模式`、`全螢幕` |
 | `開始示範（小螢幕）` | 小螢幕裝置可從頂部開始 / 停止示範；桌機版則改由左側浮動導覽操作 |
-| `更多` | 以子選單收納 `重置原型`、`畫面連結` 與 `亮 / 暗色切換` |
+| `更多` | 以子選單收納 `新手導覽`、`重置原型`、`畫面連結` 與 `亮 / 暗色切換` |
 | `右上角語言切換` | 頂部最右側的單一按鈕，可在繁中與英文之間即時切換整個網站與模擬器內容 |
 
 ---
@@ -226,6 +229,7 @@ src/
 ├── components/
 │   ├── PrototypeNavigator  # 原型章節導覽與進度列
 │   ├── AppLaunchOverlay    # 網站進站開場動畫
+│   ├── GuidedTourOverlay   # 網站新手導覽 overlay
 │   ├── DesignStoryModal    # 設計動機 / 關於 modal
 │   ├── CommandPaletteModal # 快速操作 Command Palette
 │   ├── CaptureExportModal  # 截圖 / 乾淨輸出 modal
@@ -236,8 +240,8 @@ src/
 ├── demo/             # 示範流程與示範回放資料
 ├── hooks/            # 波形動畫等互動 hook
 ├── i18n/             # i18next 設定、語言同步與各 namespace locales
-├── stores/           # navigation、session、report、history、settings、retryPractice、annotationGuide 等狀態
-├── lib/              # 分析邏輯、評分、語系化贅字資料、情境設定、示範資料、原型狀態、分享卡、DOM capture 與片段重練 helper
+├── stores/           # navigation、session、report、history、settings、retryPractice、annotationGuide、guidedTour 等狀態
+├── lib/              # 分析邏輯、評分、語系化贅字資料、情境設定、示範資料、原型狀態、分享卡、DOM capture、guided tour step 定義與片段重練 helper
 ├── annotation/       # 註解面板
 └── types/            # 共用型別
 

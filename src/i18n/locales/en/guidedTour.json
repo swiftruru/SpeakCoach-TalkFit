@@ -1,0 +1,29 @@
+{
+  "eyebrow": "Site Tour",
+  "progress": "{{current}} / {{total}}",
+  "actions": {
+    "finish": "Finish Tour"
+  },
+  "steps": {
+    "topbar": {
+      "title": "Top Toolbar",
+      "description": "This row holds Design Story, Mock Data, the showcase tools menu, the more menu, and the language switch at the far right. It is the fastest way to understand the main entry points of the prototype site."
+    },
+    "showcaseMenu": {
+      "title": "Showcase Tools",
+      "description": "This submenu groups site-level presentation tools such as Quick Actions, export view, presentation mode, and fullscreen. It is the main place to control portfolio and live-demo workflows."
+    },
+    "navigator": {
+      "title": "Left Navigator",
+      "description": "Use this panel to start the full walkthrough, control playback, and jump between chapters. The summary card on the right also updates with the current focus."
+    },
+    "phoneStage": {
+      "title": "Phone Prototype",
+      "description": "The center phone frame is the app prototype itself. Switch screens, play the walkthrough, and use hover together with the notes panel to understand each interaction."
+    },
+    "annotationPanel": {
+      "title": "Notes Panel",
+      "description": "Each note card maps to a specific UI area. The panel paginates automatically with the current focus and can pin a note when you want to stay on one feature during explanation."
+    }
+  }
+}

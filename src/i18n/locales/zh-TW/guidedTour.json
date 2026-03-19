@@ -1,0 +1,29 @@
+{
+  "eyebrow": "網站導覽",
+  "progress": "{{current}} / {{total}}",
+  "actions": {
+    "finish": "完成導覽"
+  },
+  "steps": {
+    "topbar": {
+      "title": "頂部工具列",
+      "description": "這裡放了設計動機、Mock 資料、展示工具、更多，以及最右側的語言切換。先從這一列，就能快速掌握整個原型網站的主要入口。"
+    },
+    "showcaseMenu": {
+      "title": "展示工具",
+      "description": "這個子選單收納網站層的展示功能，例如快速操作、輸出畫面、簡報模式與全螢幕。要做作品集展示或現場 demo，通常會從這裡開始。"
+    },
+    "navigator": {
+      "title": "左側導覽",
+      "description": "這裡可以開始完整示範、控制播放節奏，並快速切換章節。右半邊的摘要卡則會跟著目前焦點更新。"
+    },
+    "phoneStage": {
+      "title": "手機模擬器",
+      "description": "中間是 App 原型主畫面。你可以切換頁面、播放示範，並用 hover 搭配右側說明來理解每個畫面的互動。"
+    },
+    "annotationPanel": {
+      "title": "右側說明面板",
+      "description": "每張說明卡都對應一個功能區塊。面板會依焦點自動分頁，並支援固定說明，方便停留在單一功能上講解。"
+    }
+  }
+}

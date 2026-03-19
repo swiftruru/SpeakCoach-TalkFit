@@ -89,6 +89,11 @@
       "description": "開啟 PNG 匯出面板，輸出作品集展示版、乾淨展示版或純手機版。",
       "keywords": ["截圖", "輸出", "capture", "export", "png"]
     },
+    "guidedTour": {
+      "title": "開啟新手導覽",
+      "description": "用步驟式 overlay 介紹這個原型網站的主要操作方式。",
+      "keywords": ["導覽", "tour", "guide", "新手", "overlay"]
+    },
     "copyLink": {
       "title": "複製目前畫面連結",
       "description": "將目前畫面、主題與展示狀態複製成 permalink。",

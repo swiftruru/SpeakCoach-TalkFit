@@ -89,6 +89,11 @@
       "description": "Open the PNG export panel for showcase, clean presentation, or phone-only layouts.",
       "keywords": ["capture", "export", "png", "screenshot"]
     },
+    "guidedTour": {
+      "title": "Open Guided Tour",
+      "description": "Use a step-by-step overlay to introduce the main controls of the prototype site.",
+      "keywords": ["tour", "guide", "onboarding", "overlay"]
+    },
     "copyLink": {
       "title": "Copy Current View Link",
       "description": "Copy the current screen, theme, and showcase state as a permalink.",

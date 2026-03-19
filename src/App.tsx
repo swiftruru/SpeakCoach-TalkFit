@@ -9,6 +9,7 @@ import { getMockSessions } from './lib/mockData'
 import { DEFAULT_LANGUAGE } from './i18n/config'
 import { useAppLanguage } from './i18n/useAppLanguage'
 import { AppLaunchOverlay } from './components/AppLaunchOverlay'
+import { GuidedTourOverlay } from './components/GuidedTourOverlay'
 import { PhoneFrame } from './components/shell/PhoneFrame'
 import { PrototypeNavigator } from './components/PrototypeNavigator'
 import { AnnotationPanel } from './annotation/AnnotationPanel'
@@ -26,7 +27,9 @@ import { useLiveDemo } from './demo/useLiveDemo'
 import { getDemoSteps } from './demo/demoScript'
 import { ensurePrototypeDataForScreen, resetPrototypeState } from './lib/prototypeState'
 import { downloadElementAsPng } from './lib/domCapture'
+import { GUIDED_TOUR_STEPS } from './lib/guidedTourSteps'
 import { useAnnotationGuideStore } from './stores/annotationGuideStore'
+import { useGuidedTourStore } from './stores/guidedTourStore'
 import type { Screen } from './types'
 import './index.css'
 
@@ -46,9 +49,8 @@ function isScreen(value: string | null): value is Screen {
   return value !== null && SCREENS.includes(value as Screen)
 }
 
-function shouldShowLaunchOverlay() {
-  const params = new URLSearchParams(window.location.search)
-  const hasDeepLink =
+function hasDeepLinkParams(params = new URLSearchParams(window.location.search)) {
+  return (
     params.has('screen') ||
     params.has('panel') ||
     params.has('annotation') ||
@@ -56,9 +58,14 @@ function shouldShowLaunchOverlay() {
     params.has('step') ||
     params.has('theme') ||
     params.has('view')
+  )
+}
+
+function shouldShowLaunchOverlay() {
+  const params = new URLSearchParams(window.location.search)
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-  return !hasDeepLink && !prefersReducedMotion
+  return !hasDeepLinkParams(params) && !prefersReducedMotion
 }
 
 function isMobileBrowserDevice() {
@@ -127,6 +134,7 @@ export default function App() {
   const [showLaunchOverlay, setShowLaunchOverlay] = useState(() => shouldShowLaunchOverlay())
   const [pendingPhoneLaunch, setPendingPhoneLaunch] = useState(false)
   const [showPhoneLaunch, setShowPhoneLaunch] = useState(false)
+  const [guidedTourTargetRect, setGuidedTourTargetRect] = useState<DOMRect | null>(null)
   const [showMobileAnnotations, setShowMobileAnnotations] = useState(
     () => new URLSearchParams(window.location.search).get('panel') === 'open'
   )
@@ -163,16 +171,27 @@ export default function App() {
   const pinnedAnnotationSource = useAnnotationGuideStore((s) => s.source)
   const pinAnnotationGuide = useAnnotationGuideStore((s) => s.pin)
   const clearAnnotationGuide = useAnnotationGuideStore((s) => s.clear)
+  const isGuidedTourOpen = useGuidedTourStore((s) => s.isOpen)
+  const guidedTourStepIndex = useGuidedTourStore((s) => s.currentStepIndex)
+  const guidedTourDismissed = useGuidedTourStore((s) => s.dismissed)
+  const guidedTourCompleted = useGuidedTourStore((s) => s.completed)
+  const startGuidedTour = useGuidedTourStore((s) => s.start)
+  const previousGuidedTourStep = useGuidedTourStore((s) => s.previous)
+  const nextGuidedTourStep = useGuidedTourStore((s) => s.next)
+  const closeGuidedTour = useGuidedTourStore((s) => s.close)
+  const skipGuidedTour = useGuidedTourStore((s) => s.skip)
+  const finishGuidedTour = useGuidedTourStore((s) => s.finish)
   const { startDemo, stopDemo, isDemoActive } = useDemoStore()
   const setDemoMode = useDemoStore((s) => s.setMode)
   const demoMode = useDemoStore((s) => s.mode)
   const currentStepIndex = useDemoStore((s) => s.currentStepIndex)
   const goToStep = useDemoStore((s) => s.goToStep)
   useLiveDemo()
+  const currentGuidedTourStep = GUIDED_TOUR_STEPS[guidedTourStepIndex] ?? GUIDED_TOUR_STEPS[0]
   const activeAnnotationId = pinnedAnnotationId ?? hoveredAnnotationId
   const activeHoverSource = pinnedAnnotationId ? (pinnedAnnotationSource ?? 'demo') : hoverSource
   const currentDemoSteps = getDemoSteps(demoMode)
-  const isSpotlightActive = !isMobile && Boolean(activeAnnotationId)
+  const isSpotlightActive = !isMobile && Boolean(activeAnnotationId) && !isGuidedTourOpen
 
   // Theme: light by default, persist in localStorage
   const [isDark, setIsDark] = useState(() => {
@@ -683,22 +702,40 @@ export default function App() {
   }, [setReport, showPhoneNotification, t])
 
   const handlePhoneMouseOver = useCallback((e: React.MouseEvent) => {
-    if (pinnedAnnotationId || !isDesktopAnnotationsVisible) return
+    if (isGuidedTourOpen || pinnedAnnotationId || !isDesktopAnnotationsVisible) return
     const target = e.target as HTMLElement
     const annotated = target.closest('[data-annotation-id]') as HTMLElement | null
     const id = annotated?.dataset?.annotationId ?? null
     setHoveredAnnotationId(id)
     setHoverSource(id ? 'phone' : null)
-  }, [isDesktopAnnotationsVisible, pinnedAnnotationId])
+  }, [isDesktopAnnotationsVisible, isGuidedTourOpen, pinnedAnnotationId])
 
   const handlePhoneMouseOut = useCallback((e: React.MouseEvent) => {
-    if (pinnedAnnotationId || !isDesktopAnnotationsVisible) return
+    if (isGuidedTourOpen || pinnedAnnotationId || !isDesktopAnnotationsVisible) return
     const related = e.relatedTarget as HTMLElement | null
     if (!related?.closest?.('[data-annotation-id]') && !related?.closest?.('[data-annotation-card-for]')) {
       setHoveredAnnotationId(null)
       setHoverSource(null)
     }
-  }, [isDesktopAnnotationsVisible, pinnedAnnotationId])
+  }, [isDesktopAnnotationsVisible, isGuidedTourOpen, pinnedAnnotationId])
+
+  const handleStartGuidedTour = useCallback(() => {
+    if (isMobile) return
+
+    stopDemo()
+    setOpenDesktopMenu(null)
+    setShowCommandPalette(false)
+    setShowCaptureModal(false)
+    setShowShortcutsModal(false)
+    setShowStoryModal(false)
+    setIsPresentationMode(false)
+    setIsDesktopAnnotationsVisible(true)
+    setShowMobileAnnotations(false)
+    setHoveredAnnotationId(null)
+    clearAnnotationGuide()
+    setHoverSource(null)
+    startGuidedTour()
+  }, [clearAnnotationGuide, isMobile, startGuidedTour, stopDemo])
 
   const handleResetPrototype = useCallback(() => {
     resetPrototypeState()
@@ -717,6 +754,101 @@ export default function App() {
       body: t('app:notifications.prototypeReset.body'),
     })
   }, [clearAnnotationGuide, showPhoneNotification, t])
+
+  useEffect(() => {
+    if (isMobile && isGuidedTourOpen) {
+      closeGuidedTour()
+    }
+  }, [closeGuidedTour, isGuidedTourOpen, isMobile])
+
+  useEffect(() => {
+    if (!isGuidedTourOpen || isMobile || !currentGuidedTourStep) {
+      setGuidedTourTargetRect(null)
+      return
+    }
+
+    setOpenDesktopMenu(currentGuidedTourStep.openMenu ?? null)
+    setIsDesktopAnnotationsVisible(true)
+
+    let frame = 0
+    const updateTargetRect = () => {
+      const target = document.querySelector(currentGuidedTourStep.target) as HTMLElement | null
+      setGuidedTourTargetRect(target?.getBoundingClientRect() ?? null)
+    }
+
+    const scheduleUpdate = () => {
+      window.cancelAnimationFrame(frame)
+      frame = window.requestAnimationFrame(updateTargetRect)
+    }
+
+    scheduleUpdate()
+
+    const target = document.querySelector(currentGuidedTourStep.target) as HTMLElement | null
+    const resizeObserver = new ResizeObserver(() => {
+      scheduleUpdate()
+    })
+
+    if (target) resizeObserver.observe(target)
+
+    window.addEventListener('resize', scheduleUpdate)
+    window.addEventListener('scroll', scheduleUpdate, true)
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+      resizeObserver.disconnect()
+      window.removeEventListener('resize', scheduleUpdate)
+      window.removeEventListener('scroll', scheduleUpdate, true)
+    }
+  }, [currentGuidedTourStep, isDesktopAnnotationsVisible, isGuidedTourOpen, isMobile, openDesktopMenu])
+
+  useEffect(() => {
+    if (!isGuidedTourOpen) {
+      setGuidedTourTargetRect(null)
+      setOpenDesktopMenu(null)
+    }
+  }, [isGuidedTourOpen])
+
+  useEffect(() => {
+    if (
+      isMobile ||
+      isGuidedTourOpen ||
+      guidedTourDismissed ||
+      guidedTourCompleted ||
+      showLaunchOverlay ||
+      pendingPhoneLaunch ||
+      showPhoneLaunch ||
+      isDemoActive ||
+      showStoryModal ||
+      showCommandPalette ||
+      showCaptureModal ||
+      showShortcutsModal ||
+      isPresentationMode ||
+      hasDeepLinkParams()
+    ) {
+      return
+    }
+
+    const timer = window.setTimeout(() => {
+      handleStartGuidedTour()
+    }, 640)
+
+    return () => window.clearTimeout(timer)
+  }, [
+    guidedTourCompleted,
+    guidedTourDismissed,
+    handleStartGuidedTour,
+    isDemoActive,
+    isGuidedTourOpen,
+    isMobile,
+    isPresentationMode,
+    pendingPhoneLaunch,
+    showCaptureModal,
+    showCommandPalette,
+    showLaunchOverlay,
+    showPhoneLaunch,
+    showShortcutsModal,
+    showStoryModal,
+  ])
 
   const handleCopyCurrentViewLink = useCallback(async () => {
     try {
@@ -777,7 +909,7 @@ export default function App() {
             }
           })
 
-          clone.querySelectorAll<HTMLElement>('[data-capture-role="spotlight-overlay"], [data-capture-role="hover-connector"]').forEach((node) => node.remove())
+          clone.querySelectorAll<HTMLElement>('[data-capture-role="spotlight-overlay"], [data-capture-role="hover-connector"], [data-capture-role="guided-tour-overlay"]').forEach((node) => node.remove())
         },
       })
 
@@ -906,6 +1038,14 @@ export default function App() {
         onSelect: () => setShowCaptureModal(true),
       },
       {
+        id: 'open-guided-tour',
+        title: t('commandPalette:actions.guidedTour.title'),
+        description: t('commandPalette:actions.guidedTour.description'),
+        section: t('commandPalette:sections.tools'),
+        keywords: getKeywords('commandPalette:actions.guidedTour.keywords'),
+        onSelect: handleStartGuidedTour,
+      },
+      {
         id: 'copy-link',
         title: t('commandPalette:actions.copyLink.title'),
         description: t('commandPalette:actions.copyLink.description'),
@@ -960,6 +1100,7 @@ export default function App() {
   }, [
     handleCopyCurrentViewLink,
     handleToggleFullscreen,
+    handleStartGuidedTour,
     handleLoadMockData,
     handleResetPrototype,
     handleToggleAnnotationPanel,
@@ -1021,6 +1162,27 @@ export default function App() {
           setShowShortcutsModal(false)
         }
         return
+      }
+
+      if (isGuidedTourOpen) {
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          skipGuidedTour()
+          return
+        }
+
+        if (e.key === 'ArrowRight') {
+          e.preventDefault()
+          if (guidedTourStepIndex < GUIDED_TOUR_STEPS.length - 1) nextGuidedTourStep(GUIDED_TOUR_STEPS.length)
+          else finishGuidedTour()
+          return
+        }
+
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault()
+          if (guidedTourStepIndex > 0) previousGuidedTourStep()
+          return
+        }
       }
 
       if (!showStoryModal && e.key.toLowerCase() === 'd') {
@@ -1097,18 +1259,24 @@ export default function App() {
   }, [
     currentDemoSteps.length,
     currentStepIndex,
+    finishGuidedTour,
     goToStep,
     handleCopyCurrentViewLink,
     handleResetPrototype,
+    guidedTourStepIndex,
     handleToggleAnnotationPanel,
     handleToggleDemo,
     handleToggleFullscreen,
+    isGuidedTourOpen,
     handleTogglePresentationMode,
     isDemoActive,
+    nextGuidedTourStep,
+    previousGuidedTourStep,
     showCommandPalette,
     showCaptureModal,
     showShortcutsModal,
     showStoryModal,
+    skipGuidedTour,
     stopDemo,
   ])
 
@@ -1191,7 +1359,7 @@ export default function App() {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.18 }}
           >
-        <div className="flex items-center gap-2 md:gap-3">
+        <div data-tour-target="topbar-actions" className="flex items-center gap-2 md:gap-3">
           <img src="/app-icon.png" alt="TalkFit" className="w-10 h-10 md:w-20 md:h-20 rounded-2xl object-cover flex-shrink-0 shadow-sm" />
           <div>
             <h1 className="text-sm font-semibold text-text-primary leading-none">{t('common:appName')}</h1>
@@ -1251,6 +1419,7 @@ export default function App() {
             <AnimatePresence>
               {openDesktopMenu === 'showcase' && (
                 <motion.div
+                  data-tour-target="topbar-showcase-menu"
                   className="absolute right-0 top-[calc(100%+10px)] z-30 w-56 rounded-2xl border border-divider bg-bg-surface/96 p-2 shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-md"
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1360,6 +1529,16 @@ export default function App() {
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.16 }}
                 >
+                  <button
+                    onClick={() => {
+                      handleStartGuidedTour()
+                      setOpenDesktopMenu(null)
+                    }}
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
+                  >
+                    <span>{t('common:actions.guidedTour')}</span>
+                    <span className="text-[11px] text-text-muted">{t('app:topbar.tourHint')}</span>
+                  </button>
                   <button
                     onClick={() => {
                       handleResetPrototype()
@@ -1595,7 +1774,7 @@ export default function App() {
           }`}
         >
           <div className={`flex items-start justify-center ${isPresentationMode ? 'gap-4 xl:gap-5' : 'gap-5 xl:gap-7'}`}>
-            <div data-capture-role="navigator" className="hidden lg:block w-[344px] flex-shrink-0">
+            <div data-capture-role="navigator" data-tour-target="prototype-navigator" className="hidden lg:block w-[344px] flex-shrink-0">
               <div ref={navigatorStickyRef} className="sticky top-6">
                 <div
                   ref={navigatorInnerRef}
@@ -1609,6 +1788,7 @@ export default function App() {
 
             <div
               ref={phoneStageRef}
+              data-tour-target="phone-stage"
               style={
                 isMobile
                   ? { transform: 'scale(0.9)', transformOrigin: 'top center', marginBottom: '-81px' }
@@ -1640,6 +1820,7 @@ export default function App() {
           {isDesktopAnnotationsVisible && (
             <motion.div
               data-capture-role="annotation-panel"
+              data-tour-target="annotation-panel"
               className="hidden md:flex bg-bg-surface overflow-hidden flex-col flex-shrink-0"
               style={{ width: isPresentationMode ? 360 : 340 }}
               initial={{ opacity: 0, x: 18 }}
@@ -1770,6 +1951,17 @@ export default function App() {
       </AnimatePresence>
 
       <DesignStoryModal isOpen={showStoryModal} onClose={() => setShowStoryModal(false)} />
+      <GuidedTourOverlay
+        isOpen={isGuidedTourOpen}
+        step={currentGuidedTourStep}
+        stepIndex={guidedTourStepIndex}
+        totalSteps={GUIDED_TOUR_STEPS.length}
+        targetRect={guidedTourTargetRect}
+        onPrevious={previousGuidedTourStep}
+        onNext={() => nextGuidedTourStep(GUIDED_TOUR_STEPS.length)}
+        onSkip={skipGuidedTour}
+        onFinish={finishGuidedTour}
+      />
       <CommandPaletteModal
         isOpen={showCommandPalette}
         actions={commandPaletteActions}

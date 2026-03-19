@@ -11,6 +11,7 @@ import zhDesign from './locales/zh-TW/design.json'
 import zhDemo from './locales/zh-TW/demo.json'
 import zhHistory from './locales/zh-TW/history.json'
 import zhHome from './locales/zh-TW/home.json'
+import zhGuidedTour from './locales/zh-TW/guidedTour.json'
 import zhLaunch from './locales/zh-TW/launch.json'
 import zhNavigator from './locales/zh-TW/navigator.json'
 import zhPractice from './locales/zh-TW/practice.json'
@@ -26,6 +27,7 @@ import enDesign from './locales/en/design.json'
 import enDemo from './locales/en/demo.json'
 import enHistory from './locales/en/history.json'
 import enHome from './locales/en/home.json'
+import enGuidedTour from './locales/en/guidedTour.json'
 import enLaunch from './locales/en/launch.json'
 import enNavigator from './locales/en/navigator.json'
 import enPractice from './locales/en/practice.json'
@@ -57,6 +59,7 @@ const zhResources = {
   shortcuts: zhShortcuts,
   launch: zhLaunch,
   home: zhHome,
+  guidedTour: zhGuidedTour,
   demo: zhDemo,
   history: zhHistory,
   practice: zhPractice,
@@ -75,6 +78,7 @@ const enResources = {
   shortcuts: enShortcuts,
   launch: enLaunch,
   home: enHome,
+  guidedTour: enGuidedTour,
   demo: enDemo,
   history: enHistory,
   practice: enPractice,
@@ -112,6 +116,7 @@ void i18n
       'shortcuts',
       'launch',
       'home',
+      'guidedTour',
       'demo',
       'history',
       'practice',
