@@ -79,6 +79,26 @@
       "description": "Toggle the notes panel for cleaner presentation or guided walkthroughs.",
       "keywords": ["notes", "annotation", "panel", "hide"]
     },
+    "laserPointerOn": {
+      "title": "Enable Laser Pointer",
+      "description": "Use a red site-level laser dot to guide the audience during projector or recording demos.",
+      "keywords": ["laser", "pointer", "presentation", "projector"]
+    },
+    "laserPointerOff": {
+      "title": "Disable Laser Pointer",
+      "description": "Hide the site-level laser dot and return to normal mouse navigation.",
+      "keywords": ["laser", "pointer", "disable", "hide"]
+    },
+    "cursorBoostOn": {
+      "title": "Enable Cursor Boost",
+      "description": "Enlarge tap ripples, hover arrows, and focus outlines for projector-friendly demos.",
+      "keywords": ["cursor", "projector", "ripple", "spotlight", "arrow"]
+    },
+    "cursorBoostOff": {
+      "title": "Disable Cursor Boost",
+      "description": "Return tap feedback, connector arrows, and focus outlines to the default size.",
+      "keywords": ["cursor", "projector", "ripple", "spotlight", "disable"]
+    },
     "loadMock": {
       "title": "Load Mock Data",
       "description": "Quickly fill the Home, Report, and History screens with showcase data.",

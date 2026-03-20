@@ -9,6 +9,7 @@ import type { Screen } from '../../types'
 interface PhoneFrameProps {
   screen: Screen
   isLaunching?: boolean
+  isCursorEnhanced?: boolean
   children: React.ReactNode
 }
 
@@ -31,7 +32,12 @@ const ROSE_GOLD = `linear-gradient(
   #f5ddd6 100%
 )`
 
-export function PhoneFrame({ screen, isLaunching = false, children }: PhoneFrameProps) {
+export function PhoneFrame({
+  screen,
+  isLaunching = false,
+  isCursorEnhanced = false,
+  children,
+}: PhoneFrameProps) {
   const { t } = useTranslation(['common', 'launch'])
   const {
     wrapperRef,
@@ -46,6 +52,10 @@ export function PhoneFrame({ screen, isLaunching = false, children }: PhoneFrame
   const outerR = 48  // outer frame radius
   const ringW = 4    // rose gold ring thickness
   const innerR = outerR - ringW  // black body radius = 44
+  const rippleSize = isCursorEnhanced ? 112 : 80
+  const idleCursorSize = isCursorEnhanced ? 60 : 48
+  const pressedCursorSize = isCursorEnhanced ? 74 : 58
+  const cursorBorderWidth = isCursorEnhanced ? 2.5 : 1.5
 
   return (
     <div className="relative flex-shrink-0">
@@ -136,11 +146,14 @@ export function PhoneFrame({ screen, isLaunching = false, children }: PhoneFrame
                           data-capture-ignore
                           className="phone-ripple absolute rounded-full"
                           style={{
-                            width: 80,
-                            height: 80,
+                            width: rippleSize,
+                            height: rippleSize,
                             left: r.x,
                             top: r.y,
-                            background: 'rgba(255,255,255,0.35)',
+                            background: isCursorEnhanced
+                              ? 'rgba(255,255,255,0.5)'
+                              : 'rgba(255,255,255,0.35)',
+                            animationDuration: isCursorEnhanced ? '0.62s' : '0.5s',
                           }}
                         />
                       ))}
@@ -150,18 +163,20 @@ export function PhoneFrame({ screen, isLaunching = false, children }: PhoneFrame
                           data-capture-ignore
                           className="absolute rounded-full transition-[width,height,opacity] duration-100"
                           style={{
-                            width: cursor.pressed ? 58 : 48,
-                            height: cursor.pressed ? 58 : 48,
+                            width: cursor.pressed ? pressedCursorSize : idleCursorSize,
+                            height: cursor.pressed ? pressedCursorSize : idleCursorSize,
                             left: cursor.x,
                             top: cursor.y,
                             transform: 'translate(-50%, -50%)',
                             background: cursor.pressed
-                              ? 'rgba(255,255,255,0.38)'
-                              : 'rgba(255,255,255,0.22)',
+                              ? (isCursorEnhanced ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.38)')
+                              : (isCursorEnhanced ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.22)'),
                             border: cursor.pressed
-                              ? '1.5px solid rgba(255,255,255,0.9)'
-                              : '1.5px solid rgba(255,255,255,0.7)',
-                            boxShadow: '0 2px 16px rgba(0,0,0,0.22)',
+                              ? `${cursorBorderWidth}px solid rgba(255,255,255,0.96)`
+                              : `${cursorBorderWidth}px solid rgba(255,255,255,0.82)`,
+                            boxShadow: isCursorEnhanced
+                              ? '0 6px 28px rgba(0,0,0,0.28)'
+                              : '0 2px 16px rgba(0,0,0,0.22)',
                           }}
                         />
                       )}

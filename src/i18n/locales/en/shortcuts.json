@@ -14,6 +14,8 @@
     "fullscreen": "Toggle true fullscreen presentation",
     "capture": "Open the capture export modal",
     "annotations": "Toggle the notes panel",
+    "laserPointer": "Toggle laser pointer mode",
+    "cursorBoost": "Toggle cursor boost mode",
     "reset": "Reset the prototype",
     "previous": "Go to the previous step",
     "next": "Go to the next step",

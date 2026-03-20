@@ -6,6 +6,8 @@
     "tourHint": "Guide",
     "annotationsHint": "Panel",
     "captureHint": "PNG",
+    "laserHint": "Laser",
+    "cursorHint": "Projector",
     "presentationHint": "View",
     "fullscreenHint": "Screen",
     "resetHint": "Clear",
@@ -50,5 +52,14 @@
       "title": "Export failed",
       "body": "This browser could not finish the export. Try the latest desktop browser instead."
     }
+  },
+  "idleHint": {
+    "eyebrow": "Showcase Hint",
+    "title": "Need a quick next step?",
+    "description": "You can jump into the demo, turn on projector-friendly visuals, or export the current view with one shortcut.",
+    "demo": "Start Demo",
+    "cursor": "Cursor Boost",
+    "capture": "Export View",
+    "palette": "Quick Actions"
   }
 }

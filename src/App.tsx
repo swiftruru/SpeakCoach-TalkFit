@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useMotionValue } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { useNavigationStore } from './stores/navigationStore'
 import { useHistoryStore } from './stores/historyStore'
@@ -58,7 +58,9 @@ function hasDeepLinkParams(params = new URLSearchParams(window.location.search))
     params.has('demo') ||
     params.has('step') ||
     params.has('theme') ||
-    params.has('view')
+    params.has('view') ||
+    params.has('cursor') ||
+    params.has('laser')
   )
 }
 
@@ -127,6 +129,16 @@ export default function App() {
   const [isPresentationMode, setIsPresentationMode] = useState(
     () => new URLSearchParams(window.location.search).get('view') === 'present'
   )
+  const [isCursorEnhancementMode, setIsCursorEnhancementMode] = useState(
+    () => new URLSearchParams(window.location.search).get('cursor') === 'boost'
+  )
+  const [isLaserPointerMode, setIsLaserPointerMode] = useState(
+    () => new URLSearchParams(window.location.search).get('laser') === '1'
+  )
+  const [isLaserPointerVisible, setIsLaserPointerVisible] = useState(false)
+  const [isLaserPointerMoving, setIsLaserPointerMoving] = useState(false)
+  const [isLaserPointerPressed, setIsLaserPointerPressed] = useState(false)
+  const [showIdleHint, setShowIdleHint] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(() => Boolean(document.fullscreenElement))
   const [capturePreset, setCapturePreset] = useState<'showcase' | 'presentation' | 'phone'>('showcase')
   const [isDesktopAnnotationsVisible, setIsDesktopAnnotationsVisible] = useState(
@@ -147,25 +159,14 @@ export default function App() {
   const phoneStageRef = useRef<HTMLDivElement | null>(null)
   const phoneExportRef = useRef<HTMLDivElement | null>(null)
   const hasAppliedInitialUrlState = useRef(false)
-
-  useEffect(() => {
-    const handler = () => {
-      setIsMobile(window.innerWidth < 768)
-      setShowDesktopNotice((current) => current && isMobileBrowserDevice())
-    }
-    window.addEventListener('resize', handler)
-    return () => window.removeEventListener('resize', handler)
-  }, [])
-
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(Boolean(document.fullscreenElement))
-    }
-
-    document.addEventListener('fullscreenchange', handleFullscreenChange)
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
-  }, [])
-
+  const idleHintTimerRef = useRef<number | null>(null)
+  const laserPointerRafRef = useRef<number | null>(null)
+  const laserPointerMoveTimeoutRef = useRef<number | null>(null)
+  const laserPointerTrailRef = useRef<{ x: number; y: number; time: number } | null>(null)
+  const laserPointerX = useMotionValue(-999)
+  const laserPointerY = useMotionValue(-999)
+  const laserBeamAngle = useMotionValue(-28)
+  const laserBeamLength = useMotionValue(190)
   const sessions = useHistoryStore((s) => s.sessions)
   const report = useReportStore((s) => s.report)
   const setReport = useReportStore((s) => s.setReport)
@@ -188,6 +189,229 @@ export default function App() {
   const setDemoMode = useDemoStore((s) => s.setMode)
   const demoMode = useDemoStore((s) => s.mode)
   const currentStepIndex = useDemoStore((s) => s.currentStepIndex)
+  const currentGuidedTourStep = GUIDED_TOUR_STEPS[guidedTourStepIndex] ?? GUIDED_TOUR_STEPS[0]
+  const activeAnnotationId = pinnedAnnotationId ?? hoveredAnnotationId
+  const activeHoverSource = pinnedAnnotationId ? (pinnedAnnotationSource ?? 'demo') : hoverSource
+  const currentDemoSteps = getDemoSteps(demoMode)
+  const annotationLayoutKey = availableAnnotationIds.join('|')
+  const isSpotlightActive = !isMobile && Boolean(activeAnnotationId) && !isGuidedTourOpen
+  const isLaserPointerRenderable = (
+    isLaserPointerMode &&
+    !isMobile &&
+    !showLaunchOverlay &&
+    !showCommandPalette &&
+    !showCaptureModal &&
+    !showShortcutsModal &&
+    !showStoryModal &&
+    !isGuidedTourOpen
+  )
+  const canShowIdleHint = (
+    !isMobile &&
+    !isPresentationMode &&
+    !isDemoActive &&
+    !isLaserPointerMode &&
+    !showLaunchOverlay &&
+    !showCommandPalette &&
+    !showCaptureModal &&
+    !showShortcutsModal &&
+    !showStoryModal &&
+    !isGuidedTourOpen
+  )
+
+  useEffect(() => {
+    const handler = () => {
+      setIsMobile(window.innerWidth < 768)
+      setShowDesktopNotice((current) => current && isMobileBrowserDevice())
+    }
+    window.addEventListener('resize', handler)
+    return () => window.removeEventListener('resize', handler)
+  }, [])
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement))
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  }, [])
+
+  useEffect(() => {
+    if (!isLaserPointerRenderable) {
+      setIsLaserPointerVisible(false)
+      setIsLaserPointerMoving(false)
+      setIsLaserPointerPressed(false)
+      laserPointerTrailRef.current = null
+      laserPointerX.set(-999)
+      laserPointerY.set(-999)
+      laserBeamAngle.set(-28)
+      laserBeamLength.set(190)
+      if (laserPointerRafRef.current) {
+        window.cancelAnimationFrame(laserPointerRafRef.current)
+        laserPointerRafRef.current = null
+      }
+      if (laserPointerMoveTimeoutRef.current) {
+        window.clearTimeout(laserPointerMoveTimeoutRef.current)
+        laserPointerMoveTimeoutRef.current = null
+      }
+      return
+    }
+
+    const handlePointerMove = (event: PointerEvent) => {
+      if (laserPointerRafRef.current) {
+        window.cancelAnimationFrame(laserPointerRafRef.current)
+      }
+
+      laserPointerRafRef.current = window.requestAnimationFrame(() => {
+        const now = performance.now()
+        const previousPoint = laserPointerTrailRef.current
+        if (previousPoint) {
+          const dx = event.clientX - previousPoint.x
+          const dy = event.clientY - previousPoint.y
+          const distance = Math.hypot(dx, dy)
+          const elapsed = Math.max(now - previousPoint.time, 16)
+
+          if (distance > 0.6) {
+            laserBeamAngle.set((Math.atan2(dy, dx) * 180) / Math.PI)
+          }
+
+          const velocity = distance / elapsed
+          const nextBeamLength = Math.max(170, Math.min(320, 185 + distance * 1.2 + velocity * 160))
+          laserBeamLength.set(nextBeamLength)
+        } else {
+          laserBeamLength.set(210)
+        }
+
+        laserPointerTrailRef.current = {
+          x: event.clientX,
+          y: event.clientY,
+          time: now,
+        }
+        laserPointerX.set(event.clientX)
+        laserPointerY.set(event.clientY)
+        setIsLaserPointerVisible(true)
+        setIsLaserPointerMoving(true)
+        if (laserPointerMoveTimeoutRef.current) {
+          window.clearTimeout(laserPointerMoveTimeoutRef.current)
+        }
+        laserPointerMoveTimeoutRef.current = window.setTimeout(() => {
+          setIsLaserPointerMoving(false)
+          laserPointerMoveTimeoutRef.current = null
+        }, 110)
+      })
+    }
+
+    const handlePointerDown = () => {
+      setIsLaserPointerPressed(true)
+      setIsLaserPointerVisible(true)
+    }
+
+    const handlePointerUp = () => {
+      setIsLaserPointerPressed(false)
+    }
+
+    const handlePointerOut = (event: MouseEvent) => {
+      if (event.relatedTarget === null) {
+        setIsLaserPointerVisible(false)
+        setIsLaserPointerMoving(false)
+        setIsLaserPointerPressed(false)
+        laserPointerTrailRef.current = null
+        if (laserPointerMoveTimeoutRef.current) {
+          window.clearTimeout(laserPointerMoveTimeoutRef.current)
+          laserPointerMoveTimeoutRef.current = null
+        }
+      }
+    }
+
+    const handleBlur = () => {
+      setIsLaserPointerVisible(false)
+      setIsLaserPointerMoving(false)
+      setIsLaserPointerPressed(false)
+      laserPointerTrailRef.current = null
+      if (laserPointerMoveTimeoutRef.current) {
+        window.clearTimeout(laserPointerMoveTimeoutRef.current)
+        laserPointerMoveTimeoutRef.current = null
+      }
+    }
+
+    window.addEventListener('pointermove', handlePointerMove, { passive: true })
+    window.addEventListener('pointerdown', handlePointerDown, { passive: true })
+    window.addEventListener('pointerup', handlePointerUp, { passive: true })
+    window.addEventListener('mouseout', handlePointerOut)
+    window.addEventListener('blur', handleBlur)
+
+    return () => {
+      if (laserPointerRafRef.current) {
+        window.cancelAnimationFrame(laserPointerRafRef.current)
+        laserPointerRafRef.current = null
+      }
+      if (laserPointerMoveTimeoutRef.current) {
+        window.clearTimeout(laserPointerMoveTimeoutRef.current)
+        laserPointerMoveTimeoutRef.current = null
+      }
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerdown', handlePointerDown)
+      window.removeEventListener('pointerup', handlePointerUp)
+      window.removeEventListener('mouseout', handlePointerOut)
+      window.removeEventListener('blur', handleBlur)
+    }
+  }, [isLaserPointerRenderable, laserBeamAngle, laserBeamLength, laserPointerX, laserPointerY])
+
+  useEffect(() => {
+    if (!canShowIdleHint) {
+      setShowIdleHint(false)
+      if (idleHintTimerRef.current) {
+        window.clearTimeout(idleHintTimerRef.current)
+        idleHintTimerRef.current = null
+      }
+      return
+    }
+
+    const resetIdleTimer = () => {
+      setShowIdleHint(false)
+      if (idleHintTimerRef.current) {
+        window.clearTimeout(idleHintTimerRef.current)
+      }
+      idleHintTimerRef.current = window.setTimeout(() => {
+        setShowIdleHint(true)
+      }, 12000)
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setShowIdleHint(false)
+        if (idleHintTimerRef.current) {
+          window.clearTimeout(idleHintTimerRef.current)
+          idleHintTimerRef.current = null
+        }
+        return
+      }
+
+      resetIdleTimer()
+    }
+
+    resetIdleTimer()
+
+    window.addEventListener('pointermove', resetIdleTimer, { passive: true })
+    window.addEventListener('pointerdown', resetIdleTimer, { passive: true })
+    window.addEventListener('wheel', resetIdleTimer, { passive: true })
+    window.addEventListener('keydown', resetIdleTimer)
+    window.addEventListener('scroll', resetIdleTimer, true)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      if (idleHintTimerRef.current) {
+        window.clearTimeout(idleHintTimerRef.current)
+        idleHintTimerRef.current = null
+      }
+      window.removeEventListener('pointermove', resetIdleTimer)
+      window.removeEventListener('pointerdown', resetIdleTimer)
+      window.removeEventListener('wheel', resetIdleTimer)
+      window.removeEventListener('keydown', resetIdleTimer)
+      window.removeEventListener('scroll', resetIdleTimer, true)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [canShowIdleHint])
 
   useEffect(() => {
     const stage = phoneStageRef.current
@@ -237,12 +461,6 @@ export default function App() {
 
   const goToStep = useDemoStore((s) => s.goToStep)
   useLiveDemo()
-  const currentGuidedTourStep = GUIDED_TOUR_STEPS[guidedTourStepIndex] ?? GUIDED_TOUR_STEPS[0]
-  const activeAnnotationId = pinnedAnnotationId ?? hoveredAnnotationId
-  const activeHoverSource = pinnedAnnotationId ? (pinnedAnnotationSource ?? 'demo') : hoverSource
-  const currentDemoSteps = getDemoSteps(demoMode)
-  const annotationLayoutKey = availableAnnotationIds.join('|')
-  const isSpotlightActive = !isMobile && Boolean(activeAnnotationId) && !isGuidedTourOpen
 
   // Theme: light by default, persist in localStorage
   const [isDark, setIsDark] = useState(() => {
@@ -689,6 +907,12 @@ export default function App() {
     if (isPresentationMode) url.searchParams.set('view', 'present')
     else url.searchParams.delete('view')
 
+    if (isCursorEnhancementMode) url.searchParams.set('cursor', 'boost')
+    else url.searchParams.delete('cursor')
+
+    if (isLaserPointerMode) url.searchParams.set('laser', '1')
+    else url.searchParams.delete('laser')
+
     if (currentLanguage !== DEFAULT_LANGUAGE) url.searchParams.set('lang', currentLanguage)
     else url.searchParams.delete('lang')
 
@@ -697,8 +921,10 @@ export default function App() {
     currentLanguage,
     currentStepIndex,
     isDark,
+    isCursorEnhancementMode,
     isDemoActive,
     isDesktopAnnotationsVisible,
+    isLaserPointerMode,
     isPresentationMode,
     pinnedAnnotationId,
     screen,
@@ -726,6 +952,14 @@ export default function App() {
 
   const handleTogglePresentationMode = useCallback(() => {
     setIsPresentationMode((current) => !current)
+  }, [])
+
+  const handleToggleCursorEnhancementMode = useCallback(() => {
+    setIsCursorEnhancementMode((current) => !current)
+  }, [])
+
+  const handleToggleLaserPointerMode = useCallback(() => {
+    setIsLaserPointerMode((current) => !current)
   }, [])
 
   const handleToggleFullscreen = useCallback(async () => {
@@ -784,6 +1018,7 @@ export default function App() {
     setShowCaptureModal(false)
     setShowShortcutsModal(false)
     setShowStoryModal(false)
+    setIsLaserPointerMode(false)
     setIsPresentationMode(false)
     setIsDesktopAnnotationsVisible(true)
     setShowMobileAnnotations(false)
@@ -802,6 +1037,8 @@ export default function App() {
     setShowCaptureModal(false)
     setShowMobileAnnotations(false)
     setIsDesktopAnnotationsVisible(true)
+    setIsCursorEnhancementMode(false)
+    setIsLaserPointerMode(false)
     setIsPresentationMode(false)
     setShowStoryModal(false)
     setShowShortcutsModal(false)
@@ -1077,6 +1314,36 @@ export default function App() {
         onSelect: handleToggleAnnotationPanel,
       },
       {
+        id: 'toggle-laser-pointer',
+        title: isLaserPointerMode
+          ? t('commandPalette:actions.laserPointerOff.title')
+          : t('commandPalette:actions.laserPointerOn.title'),
+        description: isLaserPointerMode
+          ? t('commandPalette:actions.laserPointerOff.description')
+          : t('commandPalette:actions.laserPointerOn.description'),
+        section: t('commandPalette:sections.showcase'),
+        shortcut: 'X',
+        keywords: isLaserPointerMode
+          ? getKeywords('commandPalette:actions.laserPointerOff.keywords')
+          : getKeywords('commandPalette:actions.laserPointerOn.keywords'),
+        onSelect: handleToggleLaserPointerMode,
+      },
+      {
+        id: 'toggle-cursor-enhancement',
+        title: isCursorEnhancementMode
+          ? t('commandPalette:actions.cursorBoostOff.title')
+          : t('commandPalette:actions.cursorBoostOn.title'),
+        description: isCursorEnhancementMode
+          ? t('commandPalette:actions.cursorBoostOff.description')
+          : t('commandPalette:actions.cursorBoostOn.description'),
+        section: t('commandPalette:sections.showcase'),
+        shortcut: 'C',
+        keywords: isCursorEnhancementMode
+          ? getKeywords('commandPalette:actions.cursorBoostOff.keywords')
+          : getKeywords('commandPalette:actions.cursorBoostOn.keywords'),
+        onSelect: handleToggleCursorEnhancementMode,
+      },
+      {
         id: 'load-mock',
         title: t('commandPalette:actions.loadMock.title'),
         description: t('commandPalette:actions.loadMock.description'),
@@ -1160,12 +1427,16 @@ export default function App() {
     handleLoadMockData,
     handleResetPrototype,
     handleToggleAnnotationPanel,
+    handleToggleCursorEnhancementMode,
     handleToggleDemo,
     handleTogglePresentationMode,
+    handleToggleLaserPointerMode,
     isDark,
+    isCursorEnhancementMode,
     isDemoActive,
     isDesktopAnnotationsVisible,
     isFullscreen,
+    isLaserPointerMode,
     isPresentationMode,
     requestScreen,
     showMobileAnnotations,
@@ -1259,6 +1530,18 @@ export default function App() {
         return
       }
 
+      if (!showStoryModal && e.key.toLowerCase() === 'c') {
+        e.preventDefault()
+        handleToggleCursorEnhancementMode()
+        return
+      }
+
+      if (!showStoryModal && e.key.toLowerCase() === 'x') {
+        e.preventDefault()
+        handleToggleLaserPointerMode()
+        return
+      }
+
       if (!showStoryModal && e.key.toLowerCase() === 'p') {
         e.preventDefault()
         handleTogglePresentationMode()
@@ -1321,8 +1604,10 @@ export default function App() {
     handleResetPrototype,
     guidedTourStepIndex,
     handleToggleAnnotationPanel,
+    handleToggleCursorEnhancementMode,
     handleToggleDemo,
     handleToggleFullscreen,
+    handleToggleLaserPointerMode,
     isGuidedTourOpen,
     handleTogglePresentationMode,
     isDemoActive,
@@ -1391,7 +1676,12 @@ export default function App() {
   }
 
   return (
-    <div ref={appRootRef} className="min-h-screen bg-bg-base flex flex-col font-sans">
+    <div
+      ref={appRootRef}
+      className={`min-h-screen bg-bg-base flex flex-col font-sans ${
+        isLaserPointerRenderable ? 'laser-pointer-active' : ''
+      }`}
+    >
       {/* Highlight style injection */}
       {activeAnnotationId && isMobile && (
         <style>{`
@@ -1511,6 +1801,34 @@ export default function App() {
                   >
                     <span>{t('common:actions.exportCapture')}</span>
                     <span className="text-[11px] text-text-muted">{t('app:topbar.captureHint')}</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleToggleLaserPointerMode()
+                      setOpenDesktopMenu(null)
+                    }}
+                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition-all ${
+                      isLaserPointerMode
+                        ? 'bg-red-50 text-red-700'
+                        : 'text-text-secondary hover:bg-bg-card hover:text-text-primary'
+                    }`}
+                  >
+                    <span>{isLaserPointerMode ? t('common:actions.laserPointerOff') : t('common:actions.laserPointerOn')}</span>
+                    <span className="text-[11px] text-text-muted">{t('app:topbar.laserHint')}</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleToggleCursorEnhancementMode()
+                      setOpenDesktopMenu(null)
+                    }}
+                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition-all ${
+                      isCursorEnhancementMode
+                        ? 'bg-amber-50 text-amber-700'
+                        : 'text-text-secondary hover:bg-bg-card hover:text-text-primary'
+                    }`}
+                  >
+                    <span>{isCursorEnhancementMode ? t('common:actions.cursorBoostOff') : t('common:actions.cursorBoostOn')}</span>
+                    <span className="text-[11px] text-text-muted">{t('app:topbar.cursorHint')}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -1659,6 +1977,26 @@ export default function App() {
               {isDesktopAnnotationsVisible ? t('common:actions.collapseAnnotations') : t('common:actions.openAnnotations')}
             </button>
             <button
+              onClick={handleToggleLaserPointerMode}
+              className={`rounded-full border px-3 py-1.5 text-xs transition-all ${
+                isLaserPointerMode
+                  ? 'border-red-300/70 bg-red-50 text-red-700 hover:bg-red-100'
+                  : 'border-divider text-text-secondary hover:bg-bg-card hover:text-text-primary'
+              }`}
+            >
+              {isLaserPointerMode ? t('common:actions.laserPointerOff') : t('common:actions.laserPointerOn')}
+            </button>
+            <button
+              onClick={handleToggleCursorEnhancementMode}
+              className={`rounded-full border px-3 py-1.5 text-xs transition-all ${
+                isCursorEnhancementMode
+                  ? 'border-amber-300/70 bg-amber-50 text-amber-700 hover:bg-amber-100'
+                  : 'border-divider text-text-secondary hover:bg-bg-card hover:text-text-primary'
+              }`}
+            >
+              {isCursorEnhancementMode ? t('common:actions.cursorBoostOff') : t('common:actions.cursorBoostOn')}
+            </button>
+            <button
               onClick={() => setShowCaptureModal(true)}
               className="rounded-full border border-divider px-3 py-1.5 text-xs text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
             >
@@ -1677,6 +2015,124 @@ export default function App() {
               {t('common:actions.quickActions')}
             </button>
             {renderLanguageToggle()}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isLaserPointerRenderable && (
+          <motion.div
+            className="pointer-events-none fixed inset-0 z-[65] hidden md:block"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isLaserPointerVisible ? 1 : 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.12 }}
+          >
+            <motion.div
+              className="absolute h-0 w-0"
+              animate={{ opacity: isLaserPointerMoving ? 1 : 0 }}
+              transition={{ duration: 0.14 }}
+              style={{
+                left: laserPointerX,
+                top: laserPointerY,
+                rotate: laserBeamAngle,
+              }}
+            >
+              <motion.div
+                className="laser-beam-haze absolute right-0 top-0 -translate-y-1/2 origin-right rounded-full"
+                style={{
+                  width: laserBeamLength,
+                  opacity: isLaserPointerPressed ? 1 : 0.82,
+                  scaleX: isLaserPointerPressed ? 1.08 : 1,
+                }}
+              />
+              <motion.div
+                className="laser-beam-core absolute right-0 top-0 -translate-y-1/2 origin-right rounded-full"
+                style={{
+                  width: laserBeamLength,
+                  opacity: isLaserPointerPressed ? 1 : 0.92,
+                  scaleX: isLaserPointerPressed ? 1.04 : 1,
+                }}
+              />
+            </motion.div>
+            <motion.div
+              className="laser-point-halo absolute h-14 w-14 -translate-x-1/2 -translate-y-1/2 rounded-full"
+              style={{
+                left: laserPointerX,
+                top: laserPointerY,
+                scale: isLaserPointerPressed ? 1.18 : 1,
+                opacity: isLaserPointerPressed ? 1 : 0.82,
+              }}
+            />
+            <motion.div
+              className="laser-point-ring absolute h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full"
+              style={{
+                left: laserPointerX,
+                top: laserPointerY,
+                scale: isLaserPointerPressed ? 1.16 : 1,
+                opacity: isLaserPointerPressed ? 0.86 : 0.56,
+              }}
+            />
+            <motion.div
+              className="laser-point-body absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full"
+              style={{
+                left: laserPointerX,
+                top: laserPointerY,
+                scale: isLaserPointerPressed ? 1.18 : 1,
+                opacity: isLaserPointerPressed ? 1 : 0.96,
+              }}
+            />
+            <motion.div
+              className="laser-point-core absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full"
+              style={{
+                left: laserPointerX,
+                top: laserPointerY,
+                scale: isLaserPointerPressed ? 1.2 : 1,
+                opacity: isLaserPointerPressed ? 1 : 0.96,
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showIdleHint && (
+          <motion.div
+            className="pointer-events-none fixed bottom-5 right-5 z-[45] hidden md:block"
+            initial={{ opacity: 0, y: 12, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 12, scale: 0.98 }}
+            transition={{ duration: 0.22 }}
+          >
+            <div className="max-w-[320px] rounded-2xl border border-divider bg-bg-surface/94 px-4 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-md">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-blue-light">
+                {t('app:idleHint.eyebrow')}
+              </p>
+              <p className="mt-2 text-sm font-medium text-text-primary">
+                {t('app:idleHint.title')}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-text-secondary">
+                {t('app:idleHint.description')}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {[
+                  { keys: 'D', label: t('app:idleHint.demo') },
+                  { keys: 'C', label: t('app:idleHint.cursor') },
+                  { keys: 'E', label: t('app:idleHint.capture') },
+                  { keys: '⌘K', label: t('app:idleHint.palette') },
+                ].map((item) => (
+                  <div
+                    key={`${item.keys}-${item.label}`}
+                    className="flex items-center gap-1.5 rounded-full border border-divider bg-bg-card px-2.5 py-1 text-[11px] text-text-secondary"
+                  >
+                    <kbd className="rounded bg-bg-card2 px-1.5 py-0.5 font-mono text-[10px] text-text-primary">
+                      {item.keys}
+                    </kbd>
+                    <span>{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1718,11 +2174,21 @@ export default function App() {
                     ) : null}
                   </mask>
                   <filter id="spotlight-shadow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="0" dy="12" stdDeviation="18" floodColor="rgba(15,23,42,0.12)" />
+                    <feDropShadow
+                      dx="0"
+                      dy={isCursorEnhancementMode ? '14' : '12'}
+                      stdDeviation={isCursorEnhancementMode ? '24' : '18'}
+                      floodColor={isCursorEnhancementMode ? 'rgba(15,23,42,0.18)' : 'rgba(15,23,42,0.12)'}
+                    />
                   </filter>
                 </defs>
 
-                <rect width="100%" height="100%" fill="rgba(15,23,42,0.18)" mask="url(#spotlight-mask)" />
+                <rect
+                  width="100%"
+                  height="100%"
+                  fill={isCursorEnhancementMode ? 'rgba(15,23,42,0.24)' : 'rgba(15,23,42,0.18)'}
+                  mask="url(#spotlight-mask)"
+                />
 
                 <rect
                   x={spotlightGeometry.phoneRect.x}
@@ -1731,8 +2197,8 @@ export default function App() {
                   height={spotlightGeometry.phoneRect.height}
                   rx={spotlightGeometry.phoneRect.radius}
                   fill="none"
-                  stroke="rgba(251,191,36,0.7)"
-                  strokeWidth="2"
+                  stroke={isCursorEnhancementMode ? 'rgba(253,224,71,0.96)' : 'rgba(251,191,36,0.7)'}
+                  strokeWidth={isCursorEnhancementMode ? 4.5 : 2}
                   filter="url(#spotlight-shadow)"
                 />
                 {spotlightGeometry.annotationRect ? (
@@ -1743,8 +2209,8 @@ export default function App() {
                     height={spotlightGeometry.annotationRect.height}
                     rx={spotlightGeometry.annotationRect.radius}
                     fill="none"
-                    stroke="rgba(249,115,22,0.55)"
-                    strokeWidth="2"
+                    stroke={isCursorEnhancementMode ? 'rgba(251,146,60,0.9)' : 'rgba(249,115,22,0.55)'}
+                    strokeWidth={isCursorEnhancementMode ? 4 : 2}
                     filter="url(#spotlight-shadow)"
                   />
                 ) : null}
@@ -1771,14 +2237,19 @@ export default function App() {
                     <stop offset="100%" stopColor="rgba(249, 115, 22, 0.95)" />
                   </linearGradient>
                   <filter id="annotation-arrow-glow" x="-30%" y="-30%" width="160%" height="160%">
-                    <feDropShadow dx="0" dy="0" stdDeviation="3.5" floodColor="rgba(249, 115, 22, 0.22)" />
+                    <feDropShadow
+                      dx="0"
+                      dy="0"
+                      stdDeviation={isCursorEnhancementMode ? '6' : '3.5'}
+                      floodColor={isCursorEnhancementMode ? 'rgba(249, 115, 22, 0.34)' : 'rgba(249, 115, 22, 0.22)'}
+                    />
                   </filter>
                 </defs>
                 <motion.path
                   d={hoverConnector.d}
                   fill="none"
                   stroke="url(#annotation-arrow-gradient)"
-                  strokeWidth="2.75"
+                  strokeWidth={isCursorEnhancementMode ? 4.25 : 2.75}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   filter="url(#annotation-arrow-glow)"
@@ -1790,7 +2261,7 @@ export default function App() {
                   d={hoverConnector.arrowHeadD}
                   fill="rgba(255, 237, 213, 0.98)"
                   stroke="rgba(249, 115, 22, 0.9)"
-                  strokeWidth="2.2"
+                  strokeWidth={isCursorEnhancementMode ? 3.4 : 2.2}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   filter="url(#annotation-arrow-glow)"
@@ -1801,22 +2272,22 @@ export default function App() {
                 <circle
                   cx={hoverConnector.arrowHighlight.x}
                   cy={hoverConnector.arrowHighlight.y}
-                  r="2.2"
+                  r={isCursorEnhancementMode ? '3.4' : '2.2'}
                   fill="rgba(255, 255, 255, 0.82)"
                 />
                 <circle
                   cx={hoverConnector.start.x}
                   cy={hoverConnector.start.y}
-                  r="10"
+                  r={isCursorEnhancementMode ? '15' : '10'}
                   fill="rgba(251, 191, 36, 0.12)"
                 />
                 <circle
                   cx={hoverConnector.start.x}
                   cy={hoverConnector.start.y}
-                  r="5"
+                  r={isCursorEnhancementMode ? '7' : '5'}
                   fill="rgba(255, 247, 237, 0.96)"
                   stroke="rgba(245, 158, 11, 0.88)"
-                  strokeWidth="2"
+                  strokeWidth={isCursorEnhancementMode ? '3' : '2'}
                 />
               </svg>
             </motion.div>
@@ -1858,7 +2329,11 @@ export default function App() {
               onMouseOut={handlePhoneMouseOut}
             >
               <div ref={phoneExportRef} data-capture-role="phone-stage">
-                <PhoneFrame screen={screen} isLaunching={showPhoneLaunch}>
+                <PhoneFrame
+                  screen={screen}
+                  isLaunching={showPhoneLaunch}
+                  isCursorEnhanced={isCursorEnhancementMode}
+                >
                   <ScreenContent screen={screen} />
                 </PhoneFrame>
               </div>
@@ -2007,6 +2482,7 @@ export default function App() {
         stepIndex={guidedTourStepIndex}
         totalSteps={GUIDED_TOUR_STEPS.length}
         targetRect={guidedTourTargetRect}
+        isCursorEnhanced={isCursorEnhancementMode}
         onPrevious={previousGuidedTourStep}
         onNext={() => nextGuidedTourStep(GUIDED_TOUR_STEPS.length)}
         onSkip={skipGuidedTour}

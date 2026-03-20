@@ -9,6 +9,7 @@ interface GuidedTourOverlayProps {
   stepIndex: number
   totalSteps: number
   targetRect: DOMRect | null
+  isCursorEnhanced?: boolean
   onPrevious: () => void
   onNext: () => void
   onSkip: () => void
@@ -25,6 +26,7 @@ export function GuidedTourOverlay({
   stepIndex,
   totalSteps,
   targetRect,
+  isCursorEnhanced = false,
   onPrevious,
   onNext,
   onSkip,
@@ -40,14 +42,17 @@ export function GuidedTourOverlay({
   const spotlightRect = useMemo(() => {
     if (!targetRect) return null
 
+    const padding = isCursorEnhanced ? 16 : 10
+    const radius = isCursorEnhanced ? 28 : 22
+
     return {
-      left: targetRect.left - 10,
-      top: targetRect.top - 10,
-      width: targetRect.width + 20,
-      height: targetRect.height + 20,
-      radius: 22,
+      left: targetRect.left - padding,
+      top: targetRect.top - padding,
+      width: targetRect.width + padding * 2,
+      height: targetRect.height + padding * 2,
+      radius,
     }
-  }, [targetRect])
+  }, [isCursorEnhanced, targetRect])
 
   useEffect(() => {
     if (!isOpen) return
@@ -156,7 +161,7 @@ export function GuidedTourOverlay({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.18 }}
         >
-          <div className="absolute inset-0 z-0 bg-slate-950/38" />
+          <div className={`absolute inset-0 z-0 ${isCursorEnhanced ? 'bg-slate-950/46' : 'bg-slate-950/38'}`} />
 
           {spotlightRect && (
             <>
@@ -174,16 +179,27 @@ export function GuidedTourOverlay({
                     />
                   </mask>
                 </defs>
-                <rect width="100%" height="100%" fill="rgba(15,23,42,0.56)" mask="url(#guided-tour-mask)" />
+                <rect
+                  width="100%"
+                  height="100%"
+                  fill={isCursorEnhanced ? 'rgba(15,23,42,0.64)' : 'rgba(15,23,42,0.56)'}
+                  mask="url(#guided-tour-mask)"
+                />
               </svg>
 
               <motion.div
-                className="pointer-events-none absolute z-[1] rounded-[24px] border border-amber-300/95 shadow-[0_0_0_1px_rgba(251,191,36,0.18),0_18px_42px_rgba(249,115,22,0.18)]"
+                className="pointer-events-none absolute z-[1] rounded-[24px]"
                 style={{
                   left: spotlightRect.left,
                   top: spotlightRect.top,
                   width: spotlightRect.width,
                   height: spotlightRect.height,
+                  border: isCursorEnhanced
+                    ? '3px solid rgba(253, 224, 71, 0.98)'
+                    : '1px solid rgba(252, 211, 77, 0.95)',
+                  boxShadow: isCursorEnhanced
+                    ? '0 0 0 2px rgba(251,191,36,0.22), 0 24px 56px rgba(249,115,22,0.24)'
+                    : '0 0 0 1px rgba(251,191,36,0.18), 0 18px 42px rgba(249,115,22,0.18)',
                 }}
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}

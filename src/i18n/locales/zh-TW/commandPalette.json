@@ -79,6 +79,26 @@
       "description": "切換右側說明面板，方便純展示或講解。",
       "keywords": ["說明", "annotation", "panel", "收合"]
     },
+    "laserPointerOn": {
+      "title": "開啟雷射筆模式",
+      "description": "用網站層紅色雷射點輔助簡報講解，適合投影或錄影時指出重點。",
+      "keywords": ["雷射筆", "laser", "pointer", "簡報", "投影"]
+    },
+    "laserPointerOff": {
+      "title": "關閉雷射筆模式",
+      "description": "停止顯示網站層雷射點，回到一般滑鼠操作。",
+      "keywords": ["雷射筆", "laser", "pointer", "關閉"]
+    },
+    "cursorBoostOn": {
+      "title": "開啟游標強化",
+      "description": "放大觸控 ripple、hover 箭頭與框選邊線，讓投影展示更清楚。",
+      "keywords": ["游標", "投影", "ripple", "spotlight", "箭頭"]
+    },
+    "cursorBoostOff": {
+      "title": "關閉游標強化",
+      "description": "恢復一般展示尺寸的觸控提示、箭頭與框選樣式。",
+      "keywords": ["游標", "投影", "ripple", "spotlight", "關閉"]
+    },
     "loadMock": {
       "title": "載入 Mock 資料",
       "description": "快速補齊首頁、報告與歷史頁的展示資料。",

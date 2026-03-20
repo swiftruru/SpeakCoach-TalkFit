@@ -6,6 +6,8 @@
     "tourHint": "導覽",
     "annotationsHint": "面板",
     "captureHint": "PNG",
+    "laserHint": "雷射",
+    "cursorHint": "投影",
     "presentationHint": "展示",
     "fullscreenHint": "視圖",
     "resetHint": "清除資料",
@@ -50,5 +52,14 @@
       "title": "輸出失敗",
       "body": "瀏覽器目前無法完成匯出，建議改用桌機最新版瀏覽器。"
     }
+  },
+  "idleHint": {
+    "eyebrow": "展示小提醒",
+    "title": "停一下也沒關係",
+    "description": "如果你正在找下一步，可以直接用快捷鍵切示範、開投影輔助或匯出畫面。",
+    "demo": "開始示範",
+    "cursor": "游標強化",
+    "capture": "輸出畫面",
+    "palette": "快速操作"
   }
 }

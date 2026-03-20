@@ -23,6 +23,8 @@ export function KeyboardShortcutsModal({
           { keys: ['F'], description: t('shortcuts:items.fullscreen') },
           { keys: ['E'], description: t('shortcuts:items.capture') },
           { keys: ['A'], description: t('shortcuts:items.annotations') },
+          { keys: ['X'], description: t('shortcuts:items.laserPointer') },
+          { keys: ['C'], description: t('shortcuts:items.cursorBoost') },
           { keys: ['R'], description: t('shortcuts:items.reset') },
         ],
       },
