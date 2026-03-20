@@ -1512,6 +1512,12 @@ export default function App() {
         }
       }
 
+      if (!showStoryModal && isPresentationMode && e.key === 'Escape') {
+        e.preventDefault()
+        setIsPresentationMode(false)
+        return
+      }
+
       if (!showStoryModal && e.key.toLowerCase() === 'd') {
         e.preventDefault()
         handleToggleDemo()
@@ -1611,6 +1617,7 @@ export default function App() {
     isGuidedTourOpen,
     handleTogglePresentationMode,
     isDemoActive,
+    isPresentationMode,
     nextGuidedTourStep,
     previousGuidedTourStep,
     showCommandPalette,
@@ -1774,16 +1781,6 @@ export default function App() {
                 >
                   <button
                     onClick={() => {
-                      setShowCommandPalette(true)
-                      setOpenDesktopMenu(null)
-                    }}
-                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
-                  >
-                    <span>{t('app:topbar.quickActions')}</span>
-                    <span className="text-[11px] text-text-muted">{t('common:actions.quickActions')}</span>
-                  </button>
-                  <button
-                    onClick={() => {
                       handleToggleAnnotationPanel()
                       setOpenDesktopMenu(null)
                     }}
@@ -1804,34 +1801,6 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      handleToggleLaserPointerMode()
-                      setOpenDesktopMenu(null)
-                    }}
-                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition-all ${
-                      isLaserPointerMode
-                        ? 'bg-red-50 text-red-700'
-                        : 'text-text-secondary hover:bg-bg-card hover:text-text-primary'
-                    }`}
-                  >
-                    <span>{isLaserPointerMode ? t('common:actions.laserPointerOff') : t('common:actions.laserPointerOn')}</span>
-                    <span className="text-[11px] text-text-muted">{t('app:topbar.laserHint')}</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleToggleCursorEnhancementMode()
-                      setOpenDesktopMenu(null)
-                    }}
-                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition-all ${
-                      isCursorEnhancementMode
-                        ? 'bg-amber-50 text-amber-700'
-                        : 'text-text-secondary hover:bg-bg-card hover:text-text-primary'
-                    }`}
-                  >
-                    <span>{isCursorEnhancementMode ? t('common:actions.cursorBoostOff') : t('common:actions.cursorBoostOn')}</span>
-                    <span className="text-[11px] text-text-muted">{t('app:topbar.cursorHint')}</span>
-                  </button>
-                  <button
-                    onClick={() => {
                       handleTogglePresentationMode()
                       setOpenDesktopMenu(null)
                     }}
@@ -1849,6 +1818,17 @@ export default function App() {
                   >
                     <span>{isFullscreen ? t('common:actions.exitFullscreen') : t('common:actions.fullscreen')}</span>
                     <span className="text-[11px] text-text-muted">{t('app:topbar.fullscreenHint')}</span>
+                  </button>
+                  <div className="my-1 h-px bg-divider" />
+                  <button
+                    onClick={() => {
+                      setShowCommandPalette(true)
+                      setOpenDesktopMenu(null)
+                    }}
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
+                  >
+                    <span>{t('app:topbar.quickActions')}</span>
+                    <span className="text-[11px] text-text-muted">{t('common:actions.quickActions')}</span>
                   </button>
                 </motion.div>
               )}
@@ -1969,7 +1949,6 @@ export default function App() {
             >
               {t('common:actions.endPresentation')}
             </button>
-            {renderLanguageToggle()}
             <button
               onClick={handleToggleAnnotationPanel}
               className="rounded-full border border-divider px-3 py-1.5 text-xs text-text-secondary transition-all hover:bg-bg-card hover:text-text-primary"
