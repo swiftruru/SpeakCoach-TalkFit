@@ -626,11 +626,11 @@ export function PracticeScreen() {
         </div>
       )}
 
-      {!showPreflight && (
-        <>
-          <div
-            data-annotation-id="practice-goal-progress"
-            className="mx-4 mb-4 rounded-2xl border border-[#f7dce7]/18 bg-white/5 px-3.5 py-3"
+	      {!showPreflight && (
+	        <>
+	          <div
+	            data-annotation-id="practice-goal-progress"
+	            className="mx-4 mb-4 rounded-2xl border border-[#f7dce7]/18 bg-white/5 px-3.5 py-3"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -654,16 +654,39 @@ export function PracticeScreen() {
               {goalEvaluation.statusText}
             </p>
             {isFocusMode && (
-              <p className="text-[11px] text-accent-amber mt-1.5">
-                {t('practice:focusMode.helper')}
-              </p>
-            )}
-          </div>
+	              <p className="text-[11px] text-accent-amber mt-1.5">
+	                {t('practice:focusMode.helper')}
+	              </p>
+	            )}
+	          </div>
 
-          {/* Live stats */}
-          <div
-            data-annotation-id="live-stats"
-            className="grid grid-cols-3 gap-3 mx-4 mb-4"
+	          {showSecondaryPanels && (
+	            <div
+	              data-annotation-id="live-transcript"
+	              className="mx-4 mb-4 bg-gray-900 rounded-xl p-3 max-h-[100px] overflow-y-auto phone-scroll"
+	            >
+	              <p className="text-[11px] text-gray-500 mb-1.5">{t('practice:transcript.title')}</p>
+	              <p className="text-xs text-gray-300 leading-relaxed">
+	                {session.transcript.map((seg, i) => (
+	                  <TranscriptWord key={i} segment={seg} />
+	                ))}
+	                {session.transcript.length === 0 && !session.isRecording && (
+	                  <span className="text-gray-600">{t('practice:transcript.emptyIdle')}</span>
+	                )}
+	                {session.transcript.length === 0 && session.isRecording && retryTarget && (
+	                  <span className="text-gray-500">{t('practice:transcript.emptyRetry')}</span>
+	                )}
+	                {session.transcript.length === 0 && session.isRecording && !retryTarget && (
+	                  <span className="text-gray-500">{t('practice:transcript.emptyPrototype')}</span>
+	                )}
+	              </p>
+	            </div>
+	          )}
+
+	          {/* Live stats */}
+	          <div
+	            data-annotation-id="live-stats"
+	            className="grid grid-cols-3 gap-3 mx-4 mb-4"
           >
             <LiveStatCard
               label={t('practice:liveStats.fillerCount')}
@@ -677,11 +700,11 @@ export function PracticeScreen() {
         </>
       )}
 
-      {showSecondaryPanels && (
-        <>
-          {/* Waveform */}
-          <div
-            data-annotation-id="waveform"
+	      {showSecondaryPanels && (
+	        <>
+	          {/* Waveform */}
+	          <div
+	            data-annotation-id="waveform"
             className="mx-4 mb-3 bg-gray-900 rounded-xl px-4 py-3 flex items-center justify-center gap-0.5 h-14"
           >
             {audioLevels.map((level, i) => {
@@ -701,33 +724,11 @@ export function PracticeScreen() {
                     transition: 'height 80ms ease-out, background-color 150ms ease',
                   }}
                 />
-              )
-            })}
-          </div>
-
-          {/* Live transcript */}
-          <div
-            data-annotation-id="live-transcript"
-            className="mx-4 mb-4 bg-gray-900 rounded-xl p-3 max-h-[100px] overflow-y-auto phone-scroll"
-          >
-            <p className="text-[11px] text-gray-500 mb-1.5">{t('practice:transcript.title')}</p>
-            <p className="text-xs text-gray-300 leading-relaxed">
-              {session.transcript.map((seg, i) => (
-                <TranscriptWord key={i} segment={seg} />
-              ))}
-              {session.transcript.length === 0 && !session.isRecording && (
-                <span className="text-gray-600">{t('practice:transcript.emptyIdle')}</span>
-              )}
-              {session.transcript.length === 0 && session.isRecording && retryTarget && (
-                <span className="text-gray-500">{t('practice:transcript.emptyRetry')}</span>
-              )}
-              {session.transcript.length === 0 && session.isRecording && !retryTarget && (
-                <span className="text-gray-500">{t('practice:transcript.emptyPrototype')}</span>
-              )}
-            </p>
-          </div>
-        </>
-      )}
+	              )
+	            })}
+	          </div>
+	        </>
+	      )}
 
       <AnimatePresence>
         {isRecordingExitConfirmOpen && (

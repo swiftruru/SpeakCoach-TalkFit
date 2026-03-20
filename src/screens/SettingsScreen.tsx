@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSettingsStore } from '../stores/settingsStore'
 import { useHistoryStore } from '../stores/historyStore'
+import { useAnnotationGuideStore } from '../stores/annotationGuideStore'
 import { LANGUAGE_OPTIONS } from '../i18n/config'
 import { CATEGORY_COLORS, getDefaultFillerWords } from '../lib/fillerWords'
 import {
@@ -15,16 +16,30 @@ import {
 } from '../lib/practiceGoals'
 import type { FillerWord } from '../types'
 
+const SETTINGS_ADVANCED_TARGET_IDS = new Set([
+  'filler-chip-editor',
+  'settings-feedback',
+  'settings-language',
+])
+
 export function SettingsScreen() {
   const { t, i18n } = useTranslation(['common', 'settings'])
   const settings = useSettingsStore()
   const clearAll = useHistoryStore((s) => s.clearAll)
+  const pinnedAnnotationId = useAnnotationGuideStore((s) => s.pinnedId)
+  const pinnedAnnotationSource = useAnnotationGuideStore((s) => s.source)
   const [newWord, setNewWord] = useState('')
   const [showAddInput, setShowAddInput] = useState(false)
   const [settingsMode, setSettingsMode] = useState<'recommended' | 'advanced'>('recommended')
   const presets = getPracticePresetList()
   const goals = getPracticeGoalList()
-  const showAdvancedSections = settingsMode === 'advanced'
+  const forcedSettingsMode = useMemo(() => {
+    if (pinnedAnnotationSource !== 'demo' && pinnedAnnotationSource !== 'annotation') return null
+    if (!pinnedAnnotationId) return null
+    return SETTINGS_ADVANCED_TARGET_IDS.has(pinnedAnnotationId) ? 'advanced' : null
+  }, [pinnedAnnotationId, pinnedAnnotationSource])
+  const effectiveSettingsMode = forcedSettingsMode ?? settingsMode
+  const showAdvancedSections = effectiveSettingsMode === 'advanced'
 
   const handleAddWord = () => {
     if (newWord.trim()) {
@@ -47,7 +62,7 @@ export function SettingsScreen() {
               type="button"
               onClick={() => setSettingsMode('recommended')}
               className={`rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
-                settingsMode === 'recommended'
+                effectiveSettingsMode === 'recommended'
                   ? 'bg-accent-blue text-white shadow-sm'
                   : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
               }`}
@@ -58,7 +73,7 @@ export function SettingsScreen() {
               type="button"
               onClick={() => setSettingsMode('advanced')}
               className={`rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
-                settingsMode === 'advanced'
+                effectiveSettingsMode === 'advanced'
                   ? 'bg-accent-blue text-white shadow-sm'
                   : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
               }`}
@@ -67,7 +82,7 @@ export function SettingsScreen() {
             </button>
           </div>
           <p className="mt-2 px-1 text-[11px] leading-relaxed text-gray-500">
-            {settingsMode === 'recommended'
+            {effectiveSettingsMode === 'recommended'
               ? t('settings:mode.recommendedDescription')
               : t('settings:mode.advancedDescription')}
           </p>

@@ -4,6 +4,7 @@ import { useNavigationStore } from '../stores/navigationStore'
 import { useReportStore } from '../stores/reportStore'
 import { useRetryPracticeStore } from '../stores/retryPracticeStore'
 import { useSettingsStore } from '../stores/settingsStore'
+import { useAnnotationGuideStore } from '../stores/annotationGuideStore'
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ReferenceLine,
   ResponsiveContainer, CartesianGrid, ReferenceArea
@@ -23,6 +24,20 @@ import { gradeColor, fillerCountColor } from '../lib/grading'
 import { ReportShareCard } from '../components/report/ReportShareCard'
 import type { ReportIssueMarker, TranscriptSegment } from '../types'
 
+const REPORT_DETAIL_TARGET_IDS = new Set([
+  'report-score-section',
+  'report-coaching-next-steps',
+  'filler-ranking',
+  'speed-curve-chart',
+  'annotated-transcript',
+  'report-share-preview',
+  'report-share-row',
+])
+
+const REPORT_SUMMARY_TARGET_IDS = new Set([
+  'report-summary-mode-card',
+])
+
 export function ReportScreen() {
   const { t } = useTranslation(['common', 'report'])
   const setScreen = useNavigationStore((s) => s.setScreen)
@@ -32,12 +47,22 @@ export function ReportScreen() {
   const startRetryPractice = useRetryPracticeStore((s) => s.startRetryPractice)
   const configuredSpeedRange = useSettingsStore((s) => s.speedRange)
   const currentPracticeGoalId = useSettingsStore((s) => s.practiceGoalId)
+  const pinnedAnnotationId = useAnnotationGuideStore((s) => s.pinnedId)
+  const pinnedAnnotationSource = useAnnotationGuideStore((s) => s.source)
   const [activeMarkerId, setActiveMarkerId] = useState<string | null>(null)
   const transcriptRefs = useRef<Array<HTMLSpanElement | null>>([])
   const shareCardRef = useRef<SVGSVGElement | null>(null)
   const [shareExporting, setShareExporting] = useState<'png' | 'svg' | null>(null)
   const [shareError, setShareError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'summary' | 'details'>('summary')
+  const forcedViewMode = useMemo(() => {
+    if (pinnedAnnotationSource !== 'demo' && pinnedAnnotationSource !== 'annotation') return null
+    if (!pinnedAnnotationId) return null
+    if (REPORT_DETAIL_TARGET_IDS.has(pinnedAnnotationId)) return 'details' as const
+    if (REPORT_SUMMARY_TARGET_IDS.has(pinnedAnnotationId)) return 'summary' as const
+    return null
+  }, [pinnedAnnotationId, pinnedAnnotationSource])
+  const effectiveViewMode = forcedViewMode ?? viewMode
 
   const speedRange = report?.speedRangeSnapshot ?? configuredSpeedRange
   const practiceGoalId = report?.practiceGoalId ?? currentPracticeGoalId
@@ -260,6 +285,7 @@ export function ReportScreen() {
     () => (scopedActiveMarkerId ? markerMap.get(scopedActiveMarkerId) ?? null : null),
     [markerMap, scopedActiveMarkerId]
   )
+
   const defaultMockMarkerId = useMemo(() => {
     if (!report?.id.startsWith('mock-')) return null
     return fillerMarkers[0]?.id
@@ -449,22 +475,22 @@ export function ReportScreen() {
 
       <div data-annotation-id="report-view-toggle" className="mx-4 mt-4 mb-3 rounded-2xl border border-gray-200 bg-white p-2 shadow-sm">
         <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => setViewMode('summary')}
-            className={`rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
-              viewMode === 'summary'
+            <button
+              type="button"
+              onClick={() => setViewMode('summary')}
+              className={`rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
+              effectiveViewMode === 'summary'
                 ? 'bg-accent-blue text-white shadow-sm'
                 : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
             }`}
           >
             {t('report:viewMode.summary')}
           </button>
-          <button
-            type="button"
-            onClick={() => setViewMode('details')}
-            className={`rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
-              viewMode === 'details'
+            <button
+              type="button"
+              onClick={() => setViewMode('details')}
+              className={`rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
+              effectiveViewMode === 'details'
                 ? 'bg-accent-blue text-white shadow-sm'
                 : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
             }`}
@@ -598,7 +624,7 @@ export function ReportScreen() {
         </div>
       )}
 
-      {viewMode === 'summary' ? (
+      {effectiveViewMode === 'summary' ? (
         <div
           data-annotation-id="report-summary-mode-card"
           className="mx-4 mb-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"

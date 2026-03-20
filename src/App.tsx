@@ -241,6 +241,7 @@ export default function App() {
   const activeAnnotationId = pinnedAnnotationId ?? hoveredAnnotationId
   const activeHoverSource = pinnedAnnotationId ? (pinnedAnnotationSource ?? 'demo') : hoverSource
   const currentDemoSteps = getDemoSteps(demoMode)
+  const annotationLayoutKey = availableAnnotationIds.join('|')
   const isSpotlightActive = !isMobile && Boolean(activeAnnotationId) && !isGuidedTourOpen
 
   // Theme: light by default, persist in localStorage
@@ -390,7 +391,7 @@ export default function App() {
       top: Math.max(0, Math.min(nextTop, maxScrollTop)),
       behavior: 'smooth',
     })
-  }, [activeAnnotationId, activeHoverSource])
+  }, [activeAnnotationId, activeHoverSource, annotationLayoutKey])
 
   const updateNavigatorOffset = useCallback(() => {
     if (isMobile || !activeAnnotationId) {
@@ -424,7 +425,7 @@ export default function App() {
     const nextOffset = Math.max(0, Math.min(desiredOffset, maxDown))
 
     setNavigatorOffsetY((current) => (Math.abs(current - nextOffset) < 1 ? current : nextOffset))
-  }, [activeAnnotationId, isMobile])
+  }, [activeAnnotationId, annotationLayoutKey, isMobile])
 
   const updateHoverConnector = useCallback(() => {
     if (!activeAnnotationId || isMobile) {
@@ -606,7 +607,7 @@ export default function App() {
       window.removeEventListener('resize', handleReposition)
       window.removeEventListener('scroll', handleReposition, true)
     }
-  }, [activeAnnotationId, isMobile, screen, updateHoverConnector])
+  }, [activeAnnotationId, annotationLayoutKey, isMobile, screen, updateHoverConnector])
 
   useEffect(() => {
     let frame = 0
@@ -647,7 +648,7 @@ export default function App() {
       scroller?.removeEventListener('scroll', scheduleUpdate)
       window.removeEventListener('resize', scheduleUpdate)
     }
-  }, [activeAnnotationId, isMobile, screen, updateNavigatorOffset])
+  }, [activeAnnotationId, annotationLayoutKey, isMobile, screen, updateNavigatorOffset])
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
