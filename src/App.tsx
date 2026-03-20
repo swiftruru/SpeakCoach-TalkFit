@@ -2381,19 +2381,20 @@ export default function App() {
             {label}
           </button>
         ))}
-        {/* 說明 toggle */}
+        {/* Mobile design story entry */}
         <button
-          onClick={() => setShowMobileAnnotations((v) => !v)}
+          onClick={() => {
+            setShowMobileAnnotations(false)
+            setShowStoryModal(true)
+          }}
           className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-[10px] transition-all ${
-            showMobileAnnotations ? 'text-accent-purple' : 'text-text-muted'
+            showStoryModal ? 'text-accent-purple' : 'text-text-muted'
           }`}
         >
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
+            <path d="M12 4l1.9 3.8L18 9l-3 2.9.7 4.1-3.7-1.9L8.3 16l.7-4.1L6 9l4.1-1.2L12 4z" />
           </svg>
-          {t('common:mobile.annotations')}
+          {t('common:actions.designStory')}
         </button>
       </nav>
 

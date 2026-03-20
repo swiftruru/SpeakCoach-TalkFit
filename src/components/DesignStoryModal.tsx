@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
+import { useAppLanguage } from '../i18n/useAppLanguage'
 
 type ModalTab = 'story' | 'about'
 
@@ -48,7 +49,15 @@ const TECH_STACK = [
 
 export function DesignStoryModal({ isOpen, onClose }: Props) {
   const { t } = useTranslation(['design', 'common'])
+  const { currentLanguage, setLanguage } = useAppLanguage()
   const [activeTab, setActiveTab] = useState<ModalTab>('story')
+  const nextLanguage = currentLanguage === 'zh-TW' ? 'en' : 'zh-TW'
+  const nextLanguageLabel = nextLanguage === 'zh-TW'
+    ? t('common:languageToggle.switchToZh')
+    : t('common:languageToggle.switchToEn')
+  const currentLanguageLabel = currentLanguage === 'zh-TW'
+    ? t('common:languageToggle.zh')
+    : t('common:languageToggle.en')
 
   const highlights = useMemo(() => {
     const value = t('design:story.highlights', { returnObjects: true })
@@ -145,16 +154,30 @@ export function DesignStoryModal({ isOpen, onClose }: Props) {
                   </button>
                 </div>
               </div>
-              <button
-                onClick={handleClose}
-                className="justify-self-end mt-1 w-8 h-8 rounded-full border border-divider text-text-muted hover:text-text-primary hover:border-text-secondary transition-all flex items-center justify-center flex-shrink-0"
-                aria-label={t('common:actions.close')}
-              >
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
+              <div className="justify-self-end mt-1 flex items-center gap-2">
+                <button
+                  onClick={() => setLanguage(nextLanguage)}
+                  className="inline-flex items-center gap-2 rounded-full border border-divider bg-bg-surface px-3 py-1.5 text-xs font-medium text-text-secondary transition-all hover:border-accent-blue/30 hover:bg-accent-blue/10 hover:text-text-primary"
+                  title={nextLanguageLabel}
+                  aria-label={nextLanguageLabel}
+                >
+                  <LanguageIcon />
+                  <span>{t('common:languageToggle.label')}</span>
+                  <span className="rounded-full bg-bg-card px-1.5 py-0.5 text-[10px] font-semibold text-text-primary">
+                    {currentLanguageLabel}
+                  </span>
+                </button>
+                <button
+                  onClick={handleClose}
+                  className="w-8 h-8 rounded-full border border-divider text-text-muted hover:text-text-primary hover:border-text-secondary transition-all flex items-center justify-center flex-shrink-0"
+                  aria-label={t('common:actions.close')}
+                >
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <div className="overflow-y-auto phone-scroll flex-1 p-6">
@@ -313,6 +336,18 @@ export function DesignStoryModal({ isOpen, onClose }: Props) {
         </motion.div>
       )}
     </AnimatePresence>
+  )
+}
+
+function LanguageIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M4 5h8" />
+      <path d="M8 3v2c0 4.4-2 8.1-5 10" strokeLinecap="round" />
+      <path d="M6 11c1.2 1.5 2.6 2.9 4.2 4" strokeLinecap="round" />
+      <path d="M14 19l4.2-10.5L22.5 19" />
+      <path d="M15.6 15h5.2" strokeLinecap="round" />
+    </svg>
   )
 }
 
