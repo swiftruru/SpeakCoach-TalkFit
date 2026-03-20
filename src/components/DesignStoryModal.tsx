@@ -98,7 +98,7 @@ export function DesignStoryModal({ isOpen, onClose }: Props) {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center p-6"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -108,14 +108,14 @@ export function DesignStoryModal({ isOpen, onClose }: Props) {
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
 
           <motion.div
-            className="relative bg-bg-base rounded-3xl border border-divider shadow-2xl w-full max-w-4xl max-h-[88vh] overflow-hidden flex flex-col"
+            className="relative flex max-h-[calc(100dvh-1.5rem)] w-full max-w-4xl flex-col overflow-hidden rounded-[2rem] border border-divider bg-bg-base shadow-2xl sm:max-h-[88vh] sm:rounded-3xl"
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ duration: 0.22 }}
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-4 px-8 pt-6 pb-4 border-b border-divider flex-shrink-0">
+            <div className="grid flex-shrink-0 grid-cols-1 items-start gap-4 border-b border-divider px-5 pt-5 pb-4 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:px-8 sm:pt-6">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <div className="w-1 h-3.5 rounded-full bg-accent-purple" />
@@ -123,18 +123,18 @@ export function DesignStoryModal({ isOpen, onClose }: Props) {
                     {t(`design:eyebrow.${activeTab}`)}
                   </span>
                 </div>
-                <h2 className="text-xl font-bold text-text-primary">
+                <h2 className="text-[2rem] font-bold leading-[1.08] text-text-primary sm:text-xl sm:leading-tight">
                   {t(`design:title.${activeTab}`)}
                 </h2>
-                <p className="text-sm text-text-secondary mt-0.5">
+                <p className="mt-1 max-w-[28rem] text-sm leading-relaxed text-text-secondary sm:mt-0.5">
                   {t(`design:subtitle.${activeTab}`)}
                 </p>
               </div>
-              <div className="pt-1">
-                <div className="rounded-2xl border border-divider bg-bg-surface p-1 flex items-center gap-1">
+              <div className="justify-self-start pt-0 sm:pt-1">
+                <div className="flex items-center gap-1 rounded-2xl border border-divider bg-bg-surface p-1">
                   <button
                     onClick={() => setActiveTab('story')}
-                    className={`rounded-xl px-3 py-1.5 text-xs font-medium transition-all ${
+                    className={`rounded-xl px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-all ${
                       activeTab === 'story'
                         ? 'bg-accent-purple/12 text-accent-purple'
                         : 'text-text-secondary hover:text-text-primary'
@@ -144,7 +144,7 @@ export function DesignStoryModal({ isOpen, onClose }: Props) {
                   </button>
                   <button
                     onClick={() => setActiveTab('about')}
-                    className={`rounded-xl px-3 py-1.5 text-xs font-medium transition-all ${
+                    className={`rounded-xl px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-all ${
                       activeTab === 'about'
                         ? 'bg-accent-blue/12 text-accent-blue-light'
                         : 'text-text-secondary hover:text-text-primary'
@@ -154,15 +154,15 @@ export function DesignStoryModal({ isOpen, onClose }: Props) {
                   </button>
                 </div>
               </div>
-              <div className="justify-self-end mt-1 flex items-center gap-2">
+              <div className="mt-0 flex items-center justify-between gap-2 sm:mt-1 sm:justify-self-end">
                 <button
                   onClick={() => setLanguage(nextLanguage)}
-                  className="inline-flex items-center gap-2 rounded-full border border-divider bg-bg-surface px-3 py-1.5 text-xs font-medium text-text-secondary transition-all hover:border-accent-blue/30 hover:bg-accent-blue/10 hover:text-text-primary"
+                  className="inline-flex min-w-0 items-center gap-2 rounded-full border border-divider bg-bg-surface px-3 py-1.5 text-xs font-medium text-text-secondary transition-all hover:border-accent-blue/30 hover:bg-accent-blue/10 hover:text-text-primary"
                   title={nextLanguageLabel}
                   aria-label={nextLanguageLabel}
                 >
                   <LanguageIcon />
-                  <span>{t('common:languageToggle.label')}</span>
+                  <span className="whitespace-nowrap">{t('common:languageToggle.label')}</span>
                   <span className="rounded-full bg-bg-card px-1.5 py-0.5 text-[10px] font-semibold text-text-primary">
                     {currentLanguageLabel}
                   </span>
@@ -180,7 +180,7 @@ export function DesignStoryModal({ isOpen, onClose }: Props) {
               </div>
             </div>
 
-            <div className="overflow-y-auto phone-scroll flex-1 p-6">
+            <div className="phone-scroll flex-1 overflow-y-auto p-4 sm:p-6">
               {activeTab === 'story' ? (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                   <div className="bg-bg-surface rounded-2xl border border-divider overflow-hidden flex flex-col">
@@ -322,12 +322,12 @@ export function DesignStoryModal({ isOpen, onClose }: Props) {
               )}
             </div>
 
-            <div className="flex-shrink-0 border-t border-divider px-8 py-3 flex items-center justify-between">
+            <div className="flex flex-shrink-0 flex-col gap-2 border-t border-divider px-5 py-3 text-center sm:flex-row sm:items-center sm:justify-between sm:px-8 sm:text-left">
               <p className="text-[11px] text-text-muted">
                 {t('common:appName')} · {t(`design:footer.${activeTab}`)}
               </p>
-              <div className="flex items-center gap-2">
-                <div className="w-px h-3 bg-divider" />
+              <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
+                <div className="hidden h-3 w-px bg-divider sm:block" />
                 <span className="text-xs font-medium text-text-secondary">{t('design:footer.authorZh')}</span>
                 <span className="text-[11px] text-text-muted tracking-wide">{t('design:footer.authorEn')}</span>
               </div>
