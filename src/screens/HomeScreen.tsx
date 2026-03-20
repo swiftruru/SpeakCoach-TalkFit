@@ -301,11 +301,11 @@ function StatCard({
   compactUnit?: boolean
 }) {
   return (
-    <div className="flex min-h-[148px] flex-col justify-between rounded-2xl bg-white px-3 py-4 shadow-sm text-center">
+    <div className="flex min-h-[148px] flex-col rounded-2xl bg-white px-3 py-4 shadow-sm text-center">
       <p className="mb-1 min-h-[1.8rem] text-[11px] leading-snug tracking-[0.01em] text-gray-400">
         {label}
       </p>
-      <div className="flex min-h-[2.8rem] items-end justify-center">
+      <div className="flex flex-1 items-center justify-center">
         <p className={`text-xl font-bold leading-[1.05] tracking-tight ${color}`}>
           {value}
           {unit && (
@@ -315,11 +315,13 @@ function StatCard({
           )}
         </p>
       </div>
-      {sub && (
-        <p className="mt-2 min-h-[1.8rem] text-[11px] leading-snug tracking-[0.01em] text-gray-400">
-          {sub}
-        </p>
-      )}
+      <div className="mt-2 min-h-[1.8rem]">
+        {sub ? (
+          <p className="text-[11px] leading-snug tracking-[0.01em] text-gray-400">
+            {sub}
+          </p>
+        ) : null}
+      </div>
     </div>
   )
 }
