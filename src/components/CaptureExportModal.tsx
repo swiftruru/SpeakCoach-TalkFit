@@ -43,7 +43,7 @@ export function CaptureExportModal({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[60] flex items-center justify-center p-6"
+          className="safe-modal-shell fixed inset-0 z-[60] flex items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -53,14 +53,14 @@ export function CaptureExportModal({
           <div className="absolute inset-0 bg-black/45 backdrop-blur-sm" />
 
           <motion.div
-            className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-divider bg-bg-base shadow-2xl"
+            className="safe-modal-panel relative flex w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-divider bg-bg-base shadow-2xl"
             initial={{ scale: 0.96, opacity: 0, y: 8 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.96, opacity: 0, y: 8 }}
             transition={{ duration: 0.2 }}
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="border-b border-divider px-8 py-6">
+            <div className="border-b border-divider px-5 py-5 sm:px-8 sm:py-6">
                 <div className="mb-1 flex items-center gap-2">
                   <div className="h-3.5 w-1 rounded-full bg-accent-blue" />
                   <span className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-blue-light">
@@ -87,7 +87,7 @@ export function CaptureExportModal({
               </div>
             </div>
 
-            <div className="space-y-3 px-8 py-6">
+            <div className="phone-scroll flex-1 space-y-3 overflow-y-auto px-5 py-5 sm:px-8 sm:py-6">
               {capturePresets.map((preset) => {
                 const isSelected = preset.id === selectedPreset
 
@@ -108,7 +108,7 @@ export function CaptureExportModal({
               })}
             </div>
 
-            <div className="flex items-center justify-between gap-3 border-t border-divider px-8 py-5">
+            <div className="flex flex-shrink-0 items-center justify-between gap-3 border-t border-divider px-5 py-5 sm:px-8">
               <p className="text-xs leading-relaxed text-text-muted">
                 {t('capture:footer')}
               </p>

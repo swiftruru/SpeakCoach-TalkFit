@@ -118,7 +118,7 @@ export function CommandPaletteModal({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[60] flex items-start justify-center px-4 py-16 md:px-8"
+          className="safe-modal-shell fixed inset-0 z-[60] flex items-start justify-center md:px-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -128,7 +128,7 @@ export function CommandPaletteModal({
           <div className="absolute inset-0 bg-black/45 backdrop-blur-sm" />
 
           <motion.div
-            className="relative w-full max-w-3xl overflow-hidden rounded-[28px] border border-divider bg-bg-base shadow-2xl"
+            className="safe-modal-panel relative flex w-full max-w-3xl flex-col overflow-hidden rounded-[28px] border border-divider bg-bg-base shadow-2xl"
             initial={{ opacity: 0, y: 12, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.98 }}
@@ -172,7 +172,7 @@ export function CommandPaletteModal({
               </div>
             </div>
 
-            <div className="max-h-[68vh] overflow-y-auto px-4 py-4 md:px-6">
+            <div className="phone-scroll flex-1 overflow-y-auto px-4 py-4 md:px-6">
               {groupedActions.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-divider bg-bg-surface px-5 py-10 text-center">
                   <p className="text-sm font-medium text-text-primary">{t('commandPalette:empty.title')}</p>

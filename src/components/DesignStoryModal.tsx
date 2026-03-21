@@ -98,7 +98,7 @@ export function DesignStoryModal({ isOpen, onClose }: Props) {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6"
+          className="safe-modal-shell fixed inset-0 z-50 flex items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -108,7 +108,7 @@ export function DesignStoryModal({ isOpen, onClose }: Props) {
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
 
           <motion.div
-            className="relative flex max-h-[calc(100dvh-1.5rem)] w-full max-w-4xl flex-col overflow-hidden rounded-[2rem] border border-divider bg-bg-base shadow-2xl sm:max-h-[88vh] sm:rounded-3xl"
+            className="safe-modal-panel relative flex w-full max-w-4xl flex-col overflow-hidden rounded-[2rem] border border-divider bg-bg-base shadow-2xl sm:rounded-3xl"
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}

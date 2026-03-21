@@ -62,6 +62,8 @@ TalkFit 的核心概念，就是把這些原本只能「事後懊悔」的問題
 
 ## 近期更新
 
+- **手機版 safe area 補齊**：手機瀏覽時，底部列、行動版 bottom sheet、浮動提示與多個 modal 已補上 `safe-area-inset` 與 `100svh / 100dvh` 處理；Safari 工具列升降、瀏海與 home indicator 場景下，版面不會再貼邊或被底部系統區域壓住
+- **首屏 bundle 拆分優化**：將 `Practice / Report / History / Settings` 畫面與 `設計動機`、`Command Palette`、`輸出畫面`、`快捷鍵` 等 modal 改為延後載入，並額外拆分 `recharts`、`framer-motion`、`html2canvas` 等 vendor chunk，移除建置時的 chunk size warning
 - **設計動機彈窗手機版 RWD 修正**：`設計動機 / 關於` modal 在手機上已改成直向堆疊 header，標題、分頁、語言切換與關閉按鈕不再互相擠壓；footer 也改為可換行排版，避免小螢幕出現一字一行或整體跑版
 - **設計動機彈窗內建語言切換**：`✦ 設計動機` modal 右上角已加入中英文切換按鈕，閱讀產品概念、作者資訊與技術說明時，不用先關掉彈窗回到網站外層切換語言
 - **手機版底部入口改為設計動機**：手機瀏覽時，底部右側原本的 `說明` 入口已改成 `設計動機`，直接對應到產品介紹與 `關於` 內容；比起行動版註解面板，更適合作為小螢幕主要補充資訊入口
@@ -181,6 +183,7 @@ TalkFit 的核心概念，就是把這些原本只能「事後懊悔」的問題
 - **右上角語言切換**：頂部最右側保留單一語言切換按鈕，不需要分別點 `中文` / `EN` 兩顆按鈕
 - **設計動機彈窗語言切換**：開啟 `設計動機 / 關於` 後，彈窗右上角也能直接切換中英文，不用關掉 modal 再回頂部操作
 - **設計動機彈窗手機版排版**：手機上會改用單欄堆疊 header，先顯示標題，再放分頁與操作按鈕；底部作者資訊也支援換行，不再沿用桌機三欄結構硬擠
+- **手機版 safe area 適配**：底部列、行動版 bottom sheet、浮動提示與 modal 會一起避開瀏海、home indicator 與 Safari 工具列升降，手機展示更接近正式產品
 - **英文介面防溢位**：針對窄版卡片與設定說明補上自動換行與最小高度保護，避免切到英文後出現壓縮、截斷或卡片高低不齊
 - **手機版設計動機入口**：手機瀏覽時，底部右側快捷入口已改成 `設計動機`，直接打開產品介紹與 `關於` modal，比起註解面板更適合小螢幕閱讀
 - **快速操作 Command Palette**：按 `⌘K` / `Ctrl+K` 可叫出快速操作視窗，直接跳頁或切換展示狀態
@@ -252,6 +255,13 @@ flowchart LR
 | 畫面輸出 | html2canvas + DOM Capture Helper |
 | 原型互動 | Mock Data + Sample Replay Script + Session/Report Store |
 | 視覺回饋 | Scripted Waveform + SVG Share Card Export |
+
+### 前端效能策略
+
+- 非首屏畫面（`Practice / Report / History / Settings`）改用 lazy import，避免首頁初始 bundle 吃進整個原型
+- `設計動機`、`Command Palette`、`輸出畫面`、`快捷鍵` 等 modal 改為開啟時才載入
+- `html2canvas` 對應的匯出流程改成匯出當下才動態載入，平常瀏覽不先背下截圖成本
+- Vite 已針對 `recharts`、`framer-motion`、`html2canvas` 與核心 app vendor 做 chunk 拆分，降低單一 chunk 過大風險
 
 ---
 
@@ -345,6 +355,7 @@ docs/
 - 練習結束後會先顯示底部完成卡，提供 `查看完整報告`、`立刻重練` 與 `回首頁`；完成卡打開時不會再讓背景重新啟動 `3-2-1` 倒數
 - `✦ 設計動機` modal 內含兩個分頁：`設計動機` 與 `關於`，後者補充版本資訊、名稱由來、作者背景與技術細節；彈窗右上角也能直接切換中英文
 - 手機上開啟 `設計動機 / 關於` 時，header 會改成直向堆疊，避免標題被分頁和語言按鈕擠成狹窄直排；footer 也會自動換行
+- 手機版固定底部列、行動版說明 sheet、浮動提示與主要 modal 都已補上 safe area 邏輯，能較穩定面對 Safari 工具列升降與 `100dvh` 場景
 - `⌘K 快速操作` 會開啟 Command Palette；`?` 則會開啟快捷鍵視窗，方便在面試或 demo 前快速複習
 - `簡報模式` 會收起頂部工具列，改用右上角精簡 HUD 操作，讓展示畫面更乾淨；進入後也可直接按 `Esc` 快速退出
 - `雷射筆模式` 可用簡報 HUD、`Command Palette` 或 `X` 切換；移動時才會出現紅色光束拖尾，停下來時只保留光點

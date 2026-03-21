@@ -23,6 +23,11 @@
     --color-text-secondary: #6b7280;
     --color-text-muted: #9ca3af;
     --color-border-divider: #e5e7eb;
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-right: env(safe-area-inset-right, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-left: env(safe-area-inset-left, 0px);
+    --mobile-site-nav-height: 4.75rem;
   }
 
   /* Dark theme — Dracula-inspired */
@@ -41,6 +46,9 @@
     font-family: 'Noto Sans TC', system-ui, sans-serif;
     background-color: var(--color-bg-base);
     color: var(--color-text-primary);
+    min-height: 100vh;
+    min-height: 100svh;
+    min-height: 100dvh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -221,6 +229,62 @@
 }
 
 @layer utilities {
+  .min-h-safe-screen {
+    min-height: 100vh;
+    min-height: 100svh;
+    min-height: 100dvh;
+  }
+
+  .safe-modal-shell {
+    padding-top: calc(var(--safe-area-top) + 0.75rem);
+    padding-right: calc(var(--safe-area-right) + 0.75rem);
+    padding-bottom: calc(var(--safe-area-bottom) + 0.75rem);
+    padding-left: calc(var(--safe-area-left) + 0.75rem);
+  }
+
+  .safe-modal-panel {
+    max-height: calc(100dvh - var(--safe-area-top) - var(--safe-area-bottom) - 1.5rem);
+  }
+
+  .pb-safe {
+    padding-bottom: var(--safe-area-bottom);
+  }
+
+  @media (max-width: 767px) {
+    .safe-mobile-page-offset {
+      padding-bottom: calc(var(--mobile-site-nav-height) + var(--safe-area-bottom) + 1.25rem);
+    }
+
+    .safe-bottom-nav {
+      min-height: calc(var(--mobile-site-nav-height) + var(--safe-area-bottom));
+      padding-top: 0.5rem;
+      padding-right: calc(var(--safe-area-right) + 0.5rem);
+      padding-bottom: calc(var(--safe-area-bottom) + 0.5rem);
+      padding-left: calc(var(--safe-area-left) + 0.5rem);
+    }
+
+    .safe-bottom-sheet {
+      height: min(72svh, calc(100dvh - var(--safe-area-top) - 1rem));
+      padding-bottom: var(--safe-area-bottom);
+    }
+
+    .safe-mobile-notice {
+      right: calc(var(--safe-area-right) + 1rem);
+      bottom: calc(var(--mobile-site-nav-height) + var(--safe-area-bottom) + 1rem);
+      max-width: min(260px, calc(100vw - var(--safe-area-left) - var(--safe-area-right) - 2rem));
+    }
+  }
+
+  @media (min-width: 640px) {
+    .safe-modal-shell {
+      padding: 1.5rem;
+    }
+
+    .safe-modal-panel {
+      max-height: 88vh;
+    }
+  }
+
   .annotation-highlight {
     @apply ring-2 ring-accent-blue/60 shadow-glow transition-all duration-200;
   }

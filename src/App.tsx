@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
+import { lazy, Suspense, useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { AnimatePresence, motion, useMotionValue } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { useNavigationStore } from './stores/navigationStore'
@@ -13,20 +13,10 @@ import { GuidedTourOverlay } from './components/GuidedTourOverlay'
 import { PhoneFrame } from './components/shell/PhoneFrame'
 import { PrototypeNavigator } from './components/PrototypeNavigator'
 import { AnnotationPanel } from './annotation/AnnotationPanel'
-import { DesignStoryModal } from './components/DesignStoryModal'
-import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal'
-import { CommandPaletteModal } from './components/CommandPaletteModal'
-import { CaptureExportModal } from './components/CaptureExportModal'
 import { HomeScreen } from './screens/HomeScreen'
-import { PracticeScreen } from './screens/PracticeScreen'
-import { ReportScreen } from './screens/ReportScreen'
-import { HistoryScreen } from './screens/HistoryScreen'
-import { SettingsScreen } from './screens/SettingsScreen'
 import { useDemoStore } from './demo/demoStore'
 import { useLiveDemo } from './demo/useLiveDemo'
 import { getDemoSteps } from './demo/demoScript'
-import { ensurePrototypeDataForScreen, resetPrototypeState } from './lib/prototypeState'
-import { downloadElementAsPng } from './lib/domCapture'
 import { GUIDED_TOUR_STEPS } from './lib/guidedTourSteps'
 import { useAnnotationGuideStore } from './stores/annotationGuideStore'
 import { useGuidedTourStore } from './stores/guidedTourStore'
@@ -34,14 +24,49 @@ import { useRetryPracticeStore } from './stores/retryPracticeStore'
 import type { Screen } from './types'
 import './index.css'
 
+const PracticeScreen = lazy(() =>
+  import('./screens/PracticeScreen').then((module) => ({ default: module.PracticeScreen }))
+)
+const ReportScreen = lazy(() =>
+  import('./screens/ReportScreen').then((module) => ({ default: module.ReportScreen }))
+)
+const HistoryScreen = lazy(() =>
+  import('./screens/HistoryScreen').then((module) => ({ default: module.HistoryScreen }))
+)
+const SettingsScreen = lazy(() =>
+  import('./screens/SettingsScreen').then((module) => ({ default: module.SettingsScreen }))
+)
+const DesignStoryModal = lazy(() =>
+  import('./components/DesignStoryModal').then((module) => ({ default: module.DesignStoryModal }))
+)
+const KeyboardShortcutsModal = lazy(() =>
+  import('./components/KeyboardShortcutsModal').then((module) => ({ default: module.KeyboardShortcutsModal }))
+)
+const CommandPaletteModal = lazy(() =>
+  import('./components/CommandPaletteModal').then((module) => ({ default: module.CommandPaletteModal }))
+)
+const CaptureExportModal = lazy(() =>
+  import('./components/CaptureExportModal').then((module) => ({ default: module.CaptureExportModal }))
+)
+
+function ScreenLoadingFallback() {
+  return <div className="min-h-full bg-gray-50" />
+}
+
 function ScreenContent({ screen }: { screen: Screen }) {
-  switch (screen) {
-    case 'home':     return <HomeScreen />
-    case 'practice': return <PracticeScreen />
-    case 'report':   return <ReportScreen />
-    case 'history':  return <HistoryScreen />
-    case 'settings': return <SettingsScreen />
-  }
+  return (
+    <Suspense fallback={<ScreenLoadingFallback />}>
+      {(() => {
+        switch (screen) {
+          case 'home':     return <HomeScreen />
+          case 'practice': return <PracticeScreen />
+          case 'report':   return <ReportScreen />
+          case 'history':  return <HistoryScreen />
+          case 'settings': return <SettingsScreen />
+        }
+      })()}
+    </Suspense>
+  )
 }
 
 const SCREENS: Screen[] = ['home', 'practice', 'report', 'history', 'settings']
@@ -551,8 +576,11 @@ export default function App() {
     const params = new URLSearchParams(window.location.search)
     const screenParam = params.get('screen')
     if (isScreen(screenParam)) {
-      ensurePrototypeDataForScreen(screenParam)
-      setScreen(screenParam)
+      void (async () => {
+        const { ensurePrototypeDataForScreen } = await import('./lib/prototypeState')
+        ensurePrototypeDataForScreen(screenParam)
+        setScreen(screenParam)
+      })()
     }
 
     const annotationParam = params.get('annotation')
@@ -1028,7 +1056,8 @@ export default function App() {
     startGuidedTour()
   }, [clearAnnotationGuide, isMobile, startGuidedTour, stopDemo])
 
-  const handleResetPrototype = useCallback(() => {
+  const handleResetPrototype = useCallback(async () => {
+    const { resetPrototypeState } = await import('./lib/prototypeState')
     resetPrototypeState()
     setHoveredAnnotationId(null)
     clearAnnotationGuide()
@@ -1174,6 +1203,8 @@ export default function App() {
     setIsExportingCapture(true)
 
     try {
+      const { downloadElementAsPng } = await import('./lib/domCapture')
+
       await downloadElementAsPng(target, {
         fileName: `talkfit-${capturePreset}-${new Date().toISOString().slice(0, 10)}.png`,
         background: '#f8fafc',
@@ -1249,8 +1280,11 @@ export default function App() {
         section: t('commandPalette:sections.screen'),
         keywords: action.keywords,
         onSelect: () => {
-          ensurePrototypeDataForScreen(action.id)
-          requestScreen(action.id)
+          void (async () => {
+            const { ensurePrototypeDataForScreen } = await import('./lib/prototypeState')
+            ensurePrototypeDataForScreen(action.id)
+            requestScreen(action.id)
+          })()
         },
       })),
       {
@@ -1685,7 +1719,7 @@ export default function App() {
   return (
     <div
       ref={appRootRef}
-      className={`min-h-screen bg-bg-base flex flex-col font-sans ${
+      className={`min-h-safe-screen bg-bg-base flex flex-col font-sans ${
         isLaserPointerRenderable ? 'laser-pointer-active' : ''
       }`}
     >
@@ -2275,7 +2309,7 @@ export default function App() {
 
         {/* Phone area */}
         <div
-          className={`flex-1 overflow-auto px-4 pb-8 md:pb-8 ${
+          className={`safe-mobile-page-offset flex-1 overflow-auto px-4 pb-8 md:pb-8 ${
             isPresentationMode ? 'pt-5 md:px-6 md:pt-5' : 'pt-6 md:px-8'
           }`}
         >
@@ -2368,7 +2402,7 @@ export default function App() {
       </div>
 
       {/* Mobile bottom nav — mobile only */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-bg-surface border-t border-divider flex items-center justify-around px-2 py-2">
+      <nav className="safe-bottom-nav md:hidden fixed bottom-0 inset-x-0 z-30 flex items-center justify-around border-t border-divider bg-bg-surface/96 backdrop-blur-xl">
         {mobileNav.map(({ id, label, icon }) => (
           <button
             key={id}
@@ -2413,8 +2447,7 @@ export default function App() {
             />
             {/* Sheet */}
             <motion.div
-              className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-bg-surface rounded-t-2xl flex flex-col"
-              style={{ height: '70vh' }}
+              className="safe-bottom-sheet md:hidden fixed bottom-0 inset-x-0 z-50 flex flex-col rounded-t-2xl bg-bg-surface"
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
@@ -2455,7 +2488,11 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <DesignStoryModal isOpen={showStoryModal} onClose={() => setShowStoryModal(false)} />
+      {showStoryModal ? (
+        <Suspense fallback={null}>
+          <DesignStoryModal isOpen={showStoryModal} onClose={() => setShowStoryModal(false)} />
+        </Suspense>
+      ) : null}
       <GuidedTourOverlay
         isOpen={isGuidedTourOpen}
         step={currentGuidedTourStep}
@@ -2468,28 +2505,40 @@ export default function App() {
         onSkip={skipGuidedTour}
         onFinish={finishGuidedTour}
       />
-      <CommandPaletteModal
-        isOpen={showCommandPalette}
-        actions={commandPaletteActions}
-        onClose={() => setShowCommandPalette(false)}
-      />
-      <CaptureExportModal
-        isOpen={showCaptureModal}
-        isExporting={isExportingCapture}
-        selectedPreset={capturePreset}
-        onSelectPreset={setCapturePreset}
-        onExport={() => { void handleExportCapture() }}
-        onClose={() => setShowCaptureModal(false)}
-      />
-      <KeyboardShortcutsModal
-        isOpen={showShortcutsModal}
-        onClose={() => setShowShortcutsModal(false)}
-      />
+      {showCommandPalette ? (
+        <Suspense fallback={null}>
+          <CommandPaletteModal
+            isOpen={showCommandPalette}
+            actions={commandPaletteActions}
+            onClose={() => setShowCommandPalette(false)}
+          />
+        </Suspense>
+      ) : null}
+      {showCaptureModal ? (
+        <Suspense fallback={null}>
+          <CaptureExportModal
+            isOpen={showCaptureModal}
+            isExporting={isExportingCapture}
+            selectedPreset={capturePreset}
+            onSelectPreset={setCapturePreset}
+            onExport={() => { void handleExportCapture() }}
+            onClose={() => setShowCaptureModal(false)}
+          />
+        </Suspense>
+      ) : null}
+      {showShortcutsModal ? (
+        <Suspense fallback={null}>
+          <KeyboardShortcutsModal
+            isOpen={showShortcutsModal}
+            onClose={() => setShowShortcutsModal(false)}
+          />
+        </Suspense>
+      ) : null}
       {/* Mobile-browser notice — floating card, bottom-right */}
       <AnimatePresence>
         {showDesktopNotice && (
           <motion.div
-            className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-40 flex items-start gap-2.5 px-4 py-3 rounded-2xl border border-accent-amber/35 bg-bg-card shadow-xl max-w-[260px]"
+            className="safe-mobile-notice fixed bottom-20 right-4 z-40 flex max-w-[260px] items-start gap-2.5 rounded-2xl border border-accent-amber/35 bg-bg-card px-4 py-3 shadow-xl md:bottom-6 md:right-6"
             initial={{ opacity: 0, y: 12, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.95 }}
